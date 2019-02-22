@@ -94,11 +94,11 @@ module.exports = {
                 })
         });
     },
-    deactivateAgent: (id) => {
+    deactivateAgent: (id, status) => {
         return new Promise((resolve, reject) => {
             database
                 .getConnection()
-                .query('UPDATE agents SET is_active=? WHERE id=?', [false, id], (error, results, fields) => {
+                .query('UPDATE agents SET is_active=? WHERE id=?', [status, id], (error, results, fields) => {
                     if (error) {
                         reject(error);
                     } else {
