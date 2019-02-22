@@ -101,7 +101,7 @@ router.post('/login', (req, res) => {
                                         last_name,
                                         email,
                                         id,
-                                        is_admin
+                                        // is_admin
                                     } = agent;
                                     agent = null;
                                     const newAgent = {
@@ -109,7 +109,7 @@ router.post('/login', (req, res) => {
                                         last_name,
                                         email,
                                         id,
-                                        is_admin
+                                        // is_admin
                                     };
                                     res.status(200).send({
                                         success: "Agent was found",
