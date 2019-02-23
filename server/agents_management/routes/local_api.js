@@ -16,7 +16,7 @@ const router = express.Router();
  * @return 409(conflict) if the email address already exist
  * TODO: apply operations logging
  */
-router.post('/create', (req, res) => {
+router.post('/create', auth, (req, res) => {
     const {
         firstName,
         lastName,
@@ -87,7 +87,7 @@ router.get('/', auth, (req, res) => {
  * @returns 200 if it's successful
  * TODO: apply operations logging
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', auth, (req, res) => {
     controller.getAgentById(req.params.id)
         .then((result) => {
             res.send({
@@ -106,7 +106,7 @@ router.get('/:id', (req, res) => {
  * @return 409(conflict) if the email address already exist
  * TODO: apply operations logging 
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', auth, (req, res) => {
     const {
         last_name,
         first_name,
@@ -150,7 +150,7 @@ router.put('/:id', (req, res) => {
  * @returns 200 if it's successful
  * TODO: apply operations logging
  */
-router.put('/password/:id', (req, res) => {
+router.put('/password/:id', auth, (req, res) => {
     const password = req.body.password;
     const id = req.params.id;
     bcrypt.hash(password, 10)
@@ -180,7 +180,7 @@ router.put('/password/:id', (req, res) => {
  * @returns 200 if it's successful
  * TODO: apply operations logging
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', auth, (req, res) => {
     controller.softDeleteAgent(req.params.id)
         .then((result) => {
             res.send({
@@ -201,7 +201,7 @@ router.delete('/:id', (req, res) => {
  * TODO: apply operations logging
  * TODO: apply auth middleware
  */
-router.post('/role', (req, res) => {
+router.post('/role', auth, (req, res) => {
     const id = req.body.id;
     controller.isAdmin(id)
         .then((result) => {

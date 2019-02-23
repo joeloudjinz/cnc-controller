@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const database = require('../config/database');
-const secret = 'loujein-0000-inno-acad';
+const server = require('../config/server');
+const secret = server.TOKEN_SECRET;
 
 module.exports = {
     /**
@@ -49,7 +50,7 @@ module.exports = {
                         token,
                         date: new Date()
                     }, secret, {
-                        expiresIn: "1h"
+                        expiresIn: "24h"
                     }, (error, refresh_token) => {
                         if (error) {
                             reject(error);
@@ -109,7 +110,7 @@ module.exports = {
     },
     validateToken: (token) => {
         return new Promise((resolve, reject) => {
-            jwt.verify(token, 'loujein-0000-inno-acad', (error, decoded) => {
+            jwt.verify(token, secret, (error, decoded) => {
                 if (error) {
                     reject(error);
                 } else {

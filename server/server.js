@@ -1,7 +1,9 @@
 const express = require('express');
 const body_parser = require('body-parser');
 const cors = require('cors');
+
 const database = require('./config/database');
+const server = require('./config/server');
 
 const app = express();
 
@@ -16,7 +18,7 @@ app.use('/api/local/agents', agentsManagementLocalApis);
 const authenticationApis = require('./authentication/routes/api');
 app.use('/api/local/auth', authenticationApis);
 
-const port = process.env.PORT || 3000;
+const port = server.PORT;
 
 app.listen(port, () => {
     console.log('server started at port ' + port);
