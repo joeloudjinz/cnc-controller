@@ -32,20 +32,24 @@ router.post('/upload', upload.single('image'), (req, res) => {
                     filesHandler.moveDotGcode(result.dirgcode, fileName)
                         .then((result) => {
                             res.send({
+                                success: "Operation completed successfully, Image Conversion is Done",
                                 result
                             });
                         }).catch((err) => {
-                            res.send({
+                            res.status(500).send({
+                                failure: "Internal error occurred while moving gcode to directory",
                                 error
                             });
                         });
                 }).catch((error) => {
-                    res.send({
+                    res.status(500).send({
+                        failure: "Internal error occurred while converting image, try again",
                         error
                     });
                 });
         }).catch((error) => {
-            res.send({
+            res.status(500).send({
+                failure: "Internal error occurred, try again",
                 error
             });
         });
