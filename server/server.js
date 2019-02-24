@@ -16,11 +16,19 @@ app.use(body_parser.json());
 app.use(cors());
 
 //? APIs of agent management
-const agentsManagementLocalApis = require('./agents_management/routes/local_api');
+const agentsManagementPath = path(__dirname, 'agents_management', 'routes', 'local_api');
+const agentsManagementLocalApis = require(agentsManagementPath);
 app.use('/api/local/agents', agentsManagementLocalApis);
+
 //? APIs of authentication
-const authenticationApis = require('./authentication/routes/api');
+const authenticationPath = path.join(__dirname, 'authentication', 'routes', 'api');
+const authenticationApis = require(authenticationPath);
 app.use('/api/local/auth', authenticationApis);
+
+const imageConversionPath = path.join(__dirname, 'image_conversion', 'routes', 'api');
+const imageConversionApis = require(imageConversionPath);
+app.use('/api/local/image', imageConversionApis);
+
 
 const port = server.PORT;
 
