@@ -1,17 +1,15 @@
 const fs = require('fs');
 const path = require('path');
-const root_path = require('app-root-path');
+const root_path = require('app-root-path').path;
 
 const imgDir = path.join(root_path, 'server', 'resources', 'images');
 const gcodeDir = path.join(root_path, 'server', 'resources', 'gcodes');
 
-// const imgNamePlusExt = req.file.filename;
-// const newPath = root_path + '/server/resources/images/' + imgNamePlusExt;
-
 module.exports = {
     moveDotGcode: async (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
-            await fs.rename(oldPath, gcodeDir + fileName, async (err) => {
+            const newPath = path.join(gcodeDir, fileName);
+            await fs.rename(oldPath, newPath, (err) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -22,7 +20,8 @@ module.exports = {
     },
     moveImage: async (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
-            await fs.rename(oldPath, imgDir + fileName, async (err) => {
+            const newPath = path.join(imgDir, fileName);
+            await fs.rename(oldPath, newPath, (err) => {
                 if (err) {
                     reject(err);
                 } else {
