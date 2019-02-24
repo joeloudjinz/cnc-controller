@@ -1,9 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const path = require('path');
 
-const controller = require('../controller');
-// TODO: apply auth middleware to all the endpoints
-const auth = require('../../middlewares/auth');
+const controllerPath = path.join('..', 'controller');
+const controller = require(controllerPath);
+
+const authPath = path.join('..', '..', 'middlewares', 'auth');
+const auth = require(authPath);
 
 const router = express.Router();
 

@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
-const database = require('../config/database');
-const server = require('../config/server');
+const path = require('path');
+
+const dbConfigPath = path.join('..', 'config', 'database');
+const database = require(dbConfigPath);
+
+const serverConfigPath = path.join('..', 'config', 'server');
+const server = require(serverConfigPath);
 const secret = server.TOKEN_SECRET;
 
 module.exports = {

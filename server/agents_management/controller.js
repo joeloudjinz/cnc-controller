@@ -1,4 +1,7 @@
-const database = require('../config/database');
+const path = require('path');
+
+const dbConfigPath = path.join('..', 'config', 'database');
+const database = require(dbConfigPath);
 
 const connection = database.getConnection();
 

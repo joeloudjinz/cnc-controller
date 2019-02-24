@@ -1,8 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const path = require('path');
 
-const controller = require('../controller');
-// const auth = require('../../middlewares/auth');
+const controllerPath = path.join('..', 'controller');
+const controller = require(controllerPath);
 
 const router = express.Router();
 /**
