@@ -1,7 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 
-const uploadsPath = path.join('..', 'resources', 'uploads');
+const uploadsPath = path.join(__dirname, '..', 'resources', 'uploads');
 
 module.exports = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -9,7 +9,9 @@ module.exports = multer.diskStorage({
         callback(null, uploadsPath);
     },
     filename: function (req, file, callback) {
+        //? extracting the extension of the image
+        const ext = file.originalname.split(".").reverse()[0];
         //? to give the file a new name
-        callback(null, new Date().toISOString() + "-" + file.originalname);
+        callback(null, new Date().toISOString() + "." + ext);
     }
 });

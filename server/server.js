@@ -16,7 +16,7 @@ app.use(body_parser.json());
 app.use(cors());
 
 //? APIs of agent management
-const agentsManagementPath = path(__dirname, 'agents_management', 'routes', 'local_api');
+const agentsManagementPath = path.join(__dirname, 'agents_management', 'routes', 'local_api');
 const agentsManagementLocalApis = require(agentsManagementPath);
 app.use('/api/local/agents', agentsManagementLocalApis);
 
@@ -26,9 +26,9 @@ const authenticationApis = require(authenticationPath);
 app.use('/api/local/auth', authenticationApis);
 
 //? APIs of Image conversion
-const imageConversionPath = path.join(__dirname, 'image_conversion', 'routes', 'api');
+const imageConversionPath = path.join(__dirname, 'image_converter', 'routes', 'api');
 const imageConversionApis = require(imageConversionPath);
-app.use('/api/local/image', imageConversionApis);
+app.use('/api/local/images', imageConversionApis);
 
 
 const port = server.PORT;
