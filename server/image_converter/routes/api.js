@@ -23,20 +23,31 @@ router.post('/upload', upload.single('image'), (req, res) => {
 
     filesHandler.moveImage(fileObject.path, fileObject.filename)
         .then((newPath) => {
-            controller.defaultImageConversion(newPath, 1280)
+            controller.defaultImageConversion(newPath, 212)
                 .then((result) => {
-                    res.send({
-                        result
-                    })
+                    //? filename ex 2019-02-24T16:25:36.772Z.gcode
+                    const splitted = fileObject.filename.split(".");
+                    //? splitted[0] + "." + splitted[1] => 2019-02-24T16:25:36 + 772Z
+                    const fileName = splitted[0] + "." + splitted[1];
+                    filesHandler.moveDotGcode(result.dirgcode, fileName)
+                        .then((result) => {
+                            res.send({
+                                result
+                            });
+                        }).catch((err) => {
+                            res.send({
+                                error
+                            });
+                        });
                 }).catch((error) => {
                     res.send({
                         error
-                    })
+                    });
                 });
         }).catch((error) => {
             res.send({
                 error
-            })
+            });
         });
 
 });
