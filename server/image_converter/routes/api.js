@@ -16,7 +16,10 @@ const controllerPath = path.join('..', 'controller');
 const controller = require(controllerPath);
 
 const router = express.Router();
-
+/**
+ * upload an image, store it into images directory, convert it into gcode and store the file int gcodes directory
+ * expects an image in the request
+ */
 router.post('/upload', upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
@@ -35,7 +38,7 @@ router.post('/upload', upload.single('image'), (req, res) => {
                                 success: "Operation completed successfully, Image Conversion is Done",
                                 result
                             });
-                        }).catch((err) => {
+                        }).catch((error) => {
                             res.status(500).send({
                                 failure: "Internal error occurred while moving gcode to directory",
                                 error
