@@ -20,12 +20,19 @@ const router = express.Router();
 router.post('/upload', upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
-    
+
     filesHandler.moveImage(fileObject.path, fileObject.filename)
-        .then((result) => {
-            res.send({
-                result
-            })
+        .then((newPath) => {
+            controller.defaultImageConversion(newPath, 1280)
+                .then((result) => {
+                    res.send({
+                        result
+                    })
+                }).catch((error) => {
+                    res.send({
+                        error
+                    })
+                });
         }).catch((error) => {
             res.send({
                 error

@@ -62,9 +62,9 @@ module.exports = {
      * @event error: displays the error 
      * @event complete: called at the completion of the process, used to send data about the conversion to the api call
      */
-    defaultImageConversion: (image, height) => {
+    defaultImageConversion: (imagePath, height) => {
         //! let filePath = root_path + '/server/resources/images/' + imagName + imgExt;
-        let filePath = path.join(root_path, 'server', 'resources', image);
+        // let filePath = path.join(root_path, 'server', 'resources', image);
         return new Promise(async (resolve, reject) => {
             await img2gcode
                 .start({ // It is mm
@@ -79,7 +79,7 @@ module.exports = {
                     blackZ: -2,
                     safeZ: 1,
                     info: "emitter", // "none" or "console" or "emitter"
-                    dirImg: filePath
+                    dirImg: imagePath
                 })
                 .on('log', (str) => {
                     console.log(str);
