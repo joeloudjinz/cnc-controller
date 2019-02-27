@@ -20,39 +20,39 @@ module.exports = {
      * @event error: displays the error 
      * @event complete: called at the completion of the process, used to send data about the conversion to the api call
      */
-    defaultImageConversion: async (imgName, imgExt, imgHeight) => {
-        let filePath = root_path + '/server/resources/images/' + imgName + imgExt;
-        // console.log(filePath);
-        await img2gcode
-            .start({ // It is mm
-                toolDiameter: 1,
-                scaleAxes: parseInt(imgHeight),
-                deepStep: -1,
-                feedrate: {
-                    work: 1200,
-                    idle: 3000
-                },
-                whiteZ: 0,
-                blackZ: -2,
-                safeZ: 1,
-                info: "emitter", // "none" or "console" or "emitter"
-                dirImg: filePath
-            })
-            .on('log', (str) => {
-                console.log(str);
-            })
-            .on('tick', (perc) => {
-                console.log(perc);
-            })
-            .on('error', (err) => {
-                // console.log(err);
-                results = err;
-            }).on('complete', (data) => {
-                results = data;
-            });
-        return results;
-    },
-    
+    // defaultImageConversion: async (imgName, imgExt, imgHeight) => {
+    //     let filePath = root_path + '/server/resources/images/' + imgName + imgExt;
+    //     // console.log(filePath);
+    //     await img2gcode
+    //         .start({ // It is mm
+    //             toolDiameter: 1,
+    //             scaleAxes: parseInt(imgHeight),
+    //             deepStep: -1,
+    //             feedrate: {
+    //                 work: 1200,
+    //                 idle: 3000
+    //             },
+    //             whiteZ: 0,
+    //             blackZ: -2,
+    //             safeZ: 1,
+    //             info: "emitter", // "none" or "console" or "emitter"
+    //             dirImg: filePath
+    //         })
+    //         .on('log', (str) => {
+    //             console.log(str);
+    //         })
+    //         .on('tick', (perc) => {
+    //             // console.log(perc);
+    //         })
+    //         .on('error', (err) => {
+    //             // console.log(err);
+    //             results = err;
+    //         }).on('complete', (data) => {
+    //             results = data;
+    //         });
+    //     return results;
+    // },
+
     /**
      * ? convert an image into gcode with default parameters
      * @param image: name and ext of the image
@@ -63,8 +63,6 @@ module.exports = {
      * @event complete: called at the completion of the process, used to send data about the conversion to the api call
      */
     defaultImageConversion: (imagePath, height) => {
-        //! let filePath = root_path + '/server/resources/images/' + imagName + imgExt;
-        // let filePath = path.join(root_path, 'server', 'resources', image);
         return new Promise(async (resolve, reject) => {
             await img2gcode
                 .start({ // It is mm
@@ -85,7 +83,7 @@ module.exports = {
                     console.log(str);
                 })
                 .on('tick', (perc) => {
-                    console.log(perc);
+                    // console.log(perc);
                 })
                 .on('error', (err) => {
                     reject(err);

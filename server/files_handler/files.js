@@ -6,7 +6,7 @@ const imgDir = path.join(root_path, 'server', 'resources', 'images');
 const gcodeDir = path.join(root_path, 'server', 'resources', 'gcodes');
 
 module.exports = {
-    moveDotGcode: async (oldPath, fileName) => {
+    moveDotGcode: (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
             const newPath = path.join(gcodeDir, fileName);
             await fs.rename(oldPath, newPath, (err) => {
