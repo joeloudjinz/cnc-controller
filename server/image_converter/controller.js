@@ -11,49 +11,6 @@ let results = false;
  */
 module.exports = {
     /**
-     * ? The function take an image and convert it into gcode coordinates with a default configuration
-     * @param imgName: name of the image
-     * @param imgHeight: image height provided from the client side
-     * @param imgExt: extension of the image, provided from the client side
-     * @event log: Displays information about the conversion at the start
-     * @event tick: Percentage of black pixels processed. 0 (0%) to 1 (100%)
-     * @event error: displays the error 
-     * @event complete: called at the completion of the process, used to send data about the conversion to the api call
-     */
-    // defaultImageConversion: async (imgName, imgExt, imgHeight) => {
-    //     let filePath = root_path + '/server/resources/images/' + imgName + imgExt;
-    //     // console.log(filePath);
-    //     await img2gcode
-    //         .start({ // It is mm
-    //             toolDiameter: 1,
-    //             scaleAxes: parseInt(imgHeight),
-    //             deepStep: -1,
-    //             feedrate: {
-    //                 work: 1200,
-    //                 idle: 3000
-    //             },
-    //             whiteZ: 0,
-    //             blackZ: -2,
-    //             safeZ: 1,
-    //             info: "emitter", // "none" or "console" or "emitter"
-    //             dirImg: filePath
-    //         })
-    //         .on('log', (str) => {
-    //             console.log(str);
-    //         })
-    //         .on('tick', (perc) => {
-    //             // console.log(perc);
-    //         })
-    //         .on('error', (err) => {
-    //             // console.log(err);
-    //             results = err;
-    //         }).on('complete', (data) => {
-    //             results = data;
-    //         });
-    //     return results;
-    // },
-
-    /**
      * ? convert an image into gcode with default parameters
      * @param image: name and ext of the image
      * @param height: image height
@@ -62,28 +19,27 @@ module.exports = {
      * @event error: displays the error 
      * @event complete: called at the completion of the process, used to send data about the conversion to the api call
      */
-    defaultImageConversion: (imagePath, height) => {
+    defaultImageConversion: (imagePath, params) => {
+        const parameters = JSON.parse(params);
         return new Promise(async (resolve, reject) => {
             await img2gcode
                 .start({ // It is mm
-                    toolDiameter: 1,
-                    scaleAxes: parseInt(height),
-                    deepStep: -1,
+                    toolDiameter: parameters.toolDiameter || 1,
+                    sensitivity: parameters.sensitivity || 0.95,
+                    scaleAxes: parseInt(parameters.scaleAxes),
+                    deepStep: parseInt(parameters.deepStep) || -1,
                     feedrate: {
-                        work: 1200,
-                        idle: 3000
+                        work: parseInt(parameters.work) || 1200,
+                        idle: parseInt(parameters.idle) || 3000
                     },
-                    whiteZ: 0,
-                    blackZ: -2,
-                    safeZ: 1,
+                    whiteZ: parseInt(parameters.whiteZ) || 0,
+                    blackZ: parseInt(parameters.blackZ) || -2,
+                    safeZ: parseInt(parameters.safeZ) || 1,
                     info: "emitter", // "none" or "console" or "emitter"
                     dirImg: imagePath
                 })
                 .on('log', (str) => {
                     console.log(str);
-                })
-                .on('tick', (perc) => {
-                    // console.log(perc);
                 })
                 .on('error', (err) => {
                     reject(err);
@@ -96,47 +52,9 @@ module.exports = {
     /**
      * TODO: create a function that stores the conversion process details 
      */
+    storeConversionDetails() {
+        return new Promise((resolve, reject) => {
 
-    /**
-     * the function take an image and convert it into gcode coordinates inside a Promise
-     * @param imgName: name of the image
-     * @param imgHeight: image height provided from the client side
-     * @param imgExt: extension of the image, provided from the client side
-     * @event log: Displays information about the conversion at the start
-     * @event tick: Percentage of black pixels processed. 0 (0%) to 1 (100%)
-     * @event error: displays the error 
-     * @event complete: called at the completion of the process, used to send data about the conversion to the api call
-     */
-    convertImagePromise: (imagNamePlusExt, imgHeight) => {
-        let filePath = root_path + '/server/resources/images/' + imagNamePlusExt;
-        return new Promise(async (resolve, reject) => {
-            await img2gcode
-                .start({ // It is mm
-                    toolDiameter: 1,
-                    scaleAxes: parseInt(imgHeight),
-                    deepStep: -1,
-                    feedrate: {
-                        work: 1200,
-                        idle: 3000
-                    },
-                    whiteZ: 0,
-                    blackZ: -2,
-                    safeZ: 1,
-                    info: "emitter", // "none" or "console" or "emitter"
-                    dirImg: filePath
-                })
-                .on('log', (str) => {
-                    console.log(str);
-                })
-                .on('tick', (perc) => {
-                    console.log(perc);
-                })
-                .on('error', (err) => {
-                    reject(err);
-                })
-                .on('complete', (data) => {
-                    resolve(data);
-                });
         });
     }
 }

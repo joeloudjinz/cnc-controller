@@ -24,9 +24,11 @@ router.post('/convert', upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
     let results = null;
+    const params = req.body.parameters;
+    // console.log(req.file);
     filesHandler.moveImage(fileObject.path, fileObject.filename)
         .then((newPath) => {
-            controller.defaultImageConversion(newPath, 212)
+            controller.defaultImageConversion(newPath, params)
                 .then((data) => {
                     results = data;
                     //? filename ex 2019-02-24T16:25:36.772Z.gcode
@@ -37,8 +39,8 @@ router.post('/convert', upload.single('image'), (req, res) => {
                         .then((result) => {
                             const tt = new Date(Date.now());
                             const endTime = `${tt.getHours()}:${tt.getMinutes()}:${tt.getSeconds()}`;
-                            console.log(results.config);
-                            console.log(endTime);
+                            // console.log(results.config);
+                            // console.log(endTime);
                             const {
                                 toolDiameter,
                                 sensitivity,
@@ -91,7 +93,6 @@ router.post('/convert', upload.single('image'), (req, res) => {
                 error
             });
         });
-
 });
 
 module.exports = router;
