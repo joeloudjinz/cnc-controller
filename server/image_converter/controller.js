@@ -52,6 +52,9 @@ module.exports = {
         })
         .on("complete", data => {
           resolve(data);
+        })
+        .then((data) => {
+          console.log(data);
         });
     });
   },
