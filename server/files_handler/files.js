@@ -30,4 +30,32 @@ module.exports = {
             });
         });
     },
-}
+    getGCodeFileStats: (fileName) => {
+        const newPath = path.join(gcodeDir, fileName);
+        // console.log(newPath);
+        return new Promise((resolve, reject) => {
+            fs.access(newPath, async (error) => {
+                if (error) {
+                    console.log(error);
+                    reject('File Does Not Exist');
+                } else {
+                    await fs.stat(newPath, (error, stats) => {
+                        if (error) {
+                            reject(error);
+                            console.log(error);
+                        } else {
+                            // console.log(stats);
+                            resolve({
+                                size: parseInt(stats["size"]) / 1000000.0
+                            });
+                        }
+                    });
+                }
+            });
+
+        });
+    }
+};
+// deleteImage: async (filePath) => {
+
+// }

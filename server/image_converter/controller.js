@@ -44,6 +44,9 @@ module.exports = {
         .on("log", str => {
           console.log(str);
         })
+        .on("tick", prec => {
+          console.log(prec);
+        })
         .on("error", err => {
           reject(err);
         })
@@ -63,7 +66,7 @@ module.exports = {
       "(`image`,`gcode`,`too_diameter`,`sensitivity`,`scale_axes`,`deep_step`," +
       "`white_z`,`black_z`,`safe_z`,`feed_rate`,`time`,`error_per`,`image_size`,`date`) " +
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    console.log("Data in storeConversionDetails => " + data);
+    // console.log("Data in storeConversionDetails => " + data);
     return new Promise((resolve, reject) => {
       try {
         database.getConnection().query(query,

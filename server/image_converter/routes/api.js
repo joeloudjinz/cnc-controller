@@ -19,7 +19,6 @@ const router = express.Router();
 /**
  ** upload an image, store it into images directory, convert it into gcode and store the file into gcodes directory
  ** expects an image in the request
- * TODO: send the file size in the response
  * TODO: remove image after bad conversion process
  * TODO: remove everything when error occurs while storing conversion data
  */
@@ -36,7 +35,7 @@ router.post('/convert', upload.single('image'), (req, res) => {
                     //? filename ex 2019-02-24T16:25:36.772Z.gcode
                     const splitted = fileObject.filename.split(".");
                     //? splitted[0] + "." + splitted[1] => 2019-02-24T16:25:36 + 772Z
-                    const fileName = splitted[0] + "." + splitted[1];
+                    const fileName = splitted[0] + "." + splitted[1] + ".gcode";
                     filesHandler.moveDotGcode(data.dirgcode, fileName)
                         .then((result) => {
                             const tt = new Date(Date.now());
@@ -58,7 +57,7 @@ router.post('/convert', upload.single('image'), (req, res) => {
                             const startTime = `${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`;
                             controller.storeConversionDetails({
                                 image: fileObject.filename,
-                                gcode: `${fileName}.gcode`,
+                                gcode: fileName,
                                 toolDiameter,
                                 sensitivity,
                                 scaleAxes,
@@ -71,26 +70,39 @@ router.post('/convert', upload.single('image'), (req, res) => {
                                 errBlackPixel,
                                 imgSize
                             }).then((result) => {
-                                res.send({
-                                    success: "Operation completed successfully, Image Conversion is Done",
-                                    data: {
-                                        toolDiameter,
-                                        sensitivity,
-                                        scaleAxes,
-                                        deepStep,
-                                        whiteZ,
-                                        blackZ,
-                                        safeZ,
-                                        feedrate,
-                                        errBlackPixel,
-                                        imgSize,
-                                        startTime,
-                                        endTime,
-                                        elapsedTime: (tt - t) * 0.001,
-                                        fileName: `${fileName}.gcode`
-                                    }
-                                });
+                                filesHandler.getGCodeFileStats(fileName)
+                                    .then((result) => {
+                                        let size = result.size;
+                                        // console.log();
+                                        res.send({
+                                            success: "Operation Completed Successfully, Image Conversion is Done",
+                                            data: {
+                                                toolDiameter,
+                                                sensitivity,
+                                                scaleAxes,
+                                                deepStep,
+                                                whiteZ,
+                                                blackZ,
+                                                safeZ,
+                                                feedrate,
+                                                errBlackPixel,
+                                                imgSize,
+                                                startTime,
+                                                endTime,
+                                                elapsedTime: (tt - t) * 0.001,
+                                                fileName: fileName,
+                                                size: size
+                                            }
+                                        });
+                                    }).catch((error) => {
+                                        console.log(error);
+                                        res.status(500).send({
+                                            failure: "Internal error occurred while getting file stats",
+                                            error
+                                        });
+                                    });
                             }).catch((error) => {
+                                console.log(error);
                                 res.status(500).send({
                                     failure: "Internal error occurred while storing data into Database",
                                     error
