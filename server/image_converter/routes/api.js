@@ -17,15 +17,17 @@ const controller = require(controllerPath);
 
 const router = express.Router();
 /**
- * upload an image, store it into images directory, convert it into gcode and store the file into gcodes directory
- * expects an image in the request
+ ** upload an image, store it into images directory, convert it into gcode and store the file into gcodes directory
+ ** expects an image in the request
+ * TODO: send the file size in the response
+ * TODO: remove image after bad conversion process
+ * TODO: remove everything when error occurs while storing conversion data
  */
 router.post('/convert', upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
     let results = null;
     const params = req.body.parameters;
-    // console.log(req.file);
     filesHandler.moveImage(fileObject.path, fileObject.filename)
         .then((newPath) => {
             controller.defaultImageConversion(newPath, params)
@@ -39,8 +41,6 @@ router.post('/convert', upload.single('image'), (req, res) => {
                         .then((result) => {
                             const tt = new Date(Date.now());
                             const endTime = `${tt.getHours()}:${tt.getMinutes()}:${tt.getSeconds()}`;
-                            // console.log(results.config);
-                            // console.log(endTime);
                             const {
                                 toolDiameter,
                                 sensitivity,
@@ -56,24 +56,45 @@ router.post('/convert', upload.single('image'), (req, res) => {
                             } = results.config;
                             const t = new Date(time);
                             const startTime = `${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`;
-                            res.send({
-                                success: "Operation completed successfully, Image Conversion is Done",
-                                data: {
-                                    toolDiameter,
-                                    sensitivity,
-                                    scaleAxes,
-                                    deepStep,
-                                    whiteZ,
-                                    blackZ,
-                                    safeZ,
-                                    feedrate,
-                                    errBlackPixel,
-                                    imgSize,
-                                    startTime,
-                                    endTime,
-                                    elapsedTime: (tt - t) * 0.001,
-                                    fileName: `${fileName}.gcode`
-                                }
+                            controller.storeConversionDetails({
+                                image: fileObject.filename,
+                                gcode: `${fileName}.gcode`,
+                                toolDiameter,
+                                sensitivity,
+                                scaleAxes,
+                                deepStep,
+                                whiteZ,
+                                blackZ,
+                                safeZ,
+                                feedrate,
+                                time,
+                                errBlackPixel,
+                                imgSize
+                            }).then((result) => {
+                                res.send({
+                                    success: "Operation completed successfully, Image Conversion is Done",
+                                    data: {
+                                        toolDiameter,
+                                        sensitivity,
+                                        scaleAxes,
+                                        deepStep,
+                                        whiteZ,
+                                        blackZ,
+                                        safeZ,
+                                        feedrate,
+                                        errBlackPixel,
+                                        imgSize,
+                                        startTime,
+                                        endTime,
+                                        elapsedTime: (tt - t) * 0.001,
+                                        fileName: `${fileName}.gcode`
+                                    }
+                                });
+                            }).catch((error) => {
+                                res.status(500).send({
+                                    failure: "Internal error occurred while storing data into Database",
+                                    error
+                                });
                             });
                         }).catch((error) => {
                             res.status(500).send({
@@ -85,7 +106,7 @@ router.post('/convert', upload.single('image'), (req, res) => {
                     res.status(500).send({
                         failure: "Internal error occurred while converting image, try again",
                         error
-                    })
+                    });
                 });
         }).catch((error) => {
             res.status(500).send({
