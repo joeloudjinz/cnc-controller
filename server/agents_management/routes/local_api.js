@@ -227,6 +227,12 @@ router.post('/role', auth, (req, res) => {
 });
 /**
  * reset agent password with random one
+ * @returns the new password
+ * @returns 500 if the query executed unsuccessfully
+ * @returns 500 if the there was an error while hashing the new password
+ * @returns 400 (Bad Request) if no id was sent by the front-end
+ * @returns 200 if it's successful
+ * TODO: apply operations logging
  */
 router.get('/reset/:id', (req, res) => {
     console.log(req.params.id);

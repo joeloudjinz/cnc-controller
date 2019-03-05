@@ -224,7 +224,11 @@ module.exports = {
     },
     /**
      * Check if the user with the given id is an admin or an agent
-     * 
+     * @params agent id
+     * @returns promise: reject(error) if there was an error while executing the query
+     * @returns promise: reject(no id) if there is no matching id value
+     * @returns promise: resolve(result) if the execution was successful
+     * TODO: apply operations logging
      */
     isAdmin: (id) => {
         console.log(id);
@@ -248,6 +252,9 @@ module.exports = {
     },
     /**
      * generate a string of 8 characters 
+     * @returns promise: reject(error) if there was an error 
+     * @returns promise: resolve(result) if the string was generated successfully
+     * TODO: apply operations logging
      */
     generateString: () => {
         let generated = "";
