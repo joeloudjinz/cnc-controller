@@ -30,6 +30,10 @@ const imageConversionPath = path.join(__dirname, 'image_converter', 'routes', 'a
 const imageConversionApis = require(imageConversionPath);
 app.use('/api/local/images', imageConversionApis);
 
+//? APIs of GCode Handler
+const filesHandlerPath = path.join(__dirname, 'files_handler', 'routes', 'api');
+const filesHandlerAPI = require(filesHandlerPath);
+app.use('/api/local/files', filesHandlerAPI);
 
 const port = server.PORT;
 

@@ -129,5 +129,18 @@ module.exports = {
                 fs.unlinkSync(newPath);
             }
         });
+    },
+    gCodeFileExist: (fileName) => {
+        const newPath = path.join(gcodeDir, fileName);
+        console.log(newPath);
+        return new Promise(async (resolve, reject) => {
+            fs.access(newPath, (error) => {
+                if (error) {
+                    console.log(error);
+                    reject(error);
+                } else
+                    resolve(newPath);
+            });
+        });
     }
 };
