@@ -103,8 +103,12 @@ router.post('/convert', upload.single('image'), (req, res) => {
                                     });
                             }).catch((error) => {
                                 console.log(error);
+                                //! delete image
+                                controller.deleteImageFileSync(fileObject.filename);
+                                //! delete gcode file
+                                controller.deleteGCodeFileSync(fileName);
                                 res.status(500).send({
-                                    failure: "Internal error occurred while storing data into Database",
+                                    failure: "Internal error occurred while storing data into Database, try again",
                                     error
                                 });
                             });
@@ -115,6 +119,8 @@ router.post('/convert', upload.single('image'), (req, res) => {
                             });
                         });
                 }).catch((error) => {
+                    //! delete the uploaded image here
+                    controller.deleteImageFileSync(fileObject.filename);
                     res.status(500).send({
                         failure: "Internal error occurred while converting image, try again",
                         error
