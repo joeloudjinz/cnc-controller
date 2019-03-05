@@ -4,6 +4,9 @@ const path = require('path');
 const fileHandlerPath = path.join('..', '..', 'files_handler', 'files');
 const filesHandler = require(fileHandlerPath);
 
+const authPath = path.join('..', '..', 'middlewares', 'auth');
+const auth = require(authPath);
+
 router.post('/gcode/download', (req, res) => {
     const fileName = req.body.name;
     console.log(req.body);

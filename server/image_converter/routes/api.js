@@ -11,18 +11,18 @@ const upload = multer({
     storage: multerConfiguration
 });
 
+const authPath = path.join('..', '..', 'middlewares', 'auth');
+const auth = require(authPath);
 
 const controllerPath = path.join('..', 'controller');
 const controller = require(controllerPath);
 
 const router = express.Router();
 /**
- ** upload an image, store it into images directory, convert it into gcode and store the file into gcodes directory
- ** expects an image in the request
- * TODO: remove image after bad conversion process
- * TODO: remove everything when error occurs while storing conversion data
+ *? upload an image, store it into images directory, convert it into gcode and store the file into gcodes directory
+ *? expects an image in the request
  */
-router.post('/convert', upload.single('image'), (req, res) => {
+router.post('/convert', auth, upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
     let results = null;
