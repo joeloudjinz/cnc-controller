@@ -202,7 +202,6 @@ router.delete('/:id', auth, (req, res) => {
  * @returns 500 if the query executed unsuccessfully
  * @returns 404 if the id was wrong
  * TODO: apply operations logging
- * TODO: apply auth middleware
  */
 router.post('/role', auth, (req, res) => {
     const id = req.body.id;
@@ -225,5 +224,51 @@ router.post('/role', auth, (req, res) => {
             }
         });
 
-})
+});
+/**
+ * reset agent password with random one
+ */
+router.get('/reset/:id', (req, res) => {
+    console.log(req.params.id);
+    //! test if id is defined
+    if (req.params.id) {
+        const id = req.params.id;
+        // generate password
+        controller.generateString()
+            .then((generated) => {
+                // hash password
+                // console.log(generated);
+                bcrypt.hash(generated, 10)
+                    .then((hashed) => {
+                        // store the new password
+                        controller.updateAgentPassword(hashed, id)
+                            .then(() => {
+                                res.send({
+                                    success: "Information updated successfully",
+                                    password: generated
+                                })
+                            }).catch((error) => {
+                                res.status(500).send({
+                                    failure: 'An error occurred while updating information, try again',
+                                    error: error
+                                });
+                            });
+                    }).catch((error) => {
+                        res.status(500).send({
+                            failure: 'An error occurred while hashing password',
+                            error
+                        });
+                    });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: 'Internal error occurred, try again!',
+                    error
+                });
+            });
+    } else {
+        res.status(400).send({
+            failure: 'Bad Request, No id was specified!'
+        });
+    }
+});
 module.exports = router;

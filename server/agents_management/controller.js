@@ -1,4 +1,5 @@
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const dbConfigPath = path.join('..', 'config', 'database');
 const database = require(dbConfigPath);
@@ -205,8 +206,7 @@ module.exports = {
      * TODO: apply operations logging
      */
     updateAgentPassword: (hashed, id) => {
-        console.log(hashed, id);
-
+        // console.log(hashed, id);
         return new Promise((resolve, reject) => {
             connection.query('UPDATE agents SET password=? WHERE id=?',
                 [hashed, id],
@@ -222,6 +222,10 @@ module.exports = {
             );
         });
     },
+    /**
+     * Check if the user with the given id is an admin or an agent
+     * 
+     */
     isAdmin: (id) => {
         console.log(id);
         return new Promise((resolve, reject) => {
@@ -241,5 +245,21 @@ module.exports = {
                 }
             );
         });
-    }
-}
+    },
+    /**
+     * generate a string of 8 characters 
+     */
+    generateString: () => {
+        let generated = "";
+        let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        return new Promise((resolve, reject) => {
+            try {
+                for (let i = 0; i < 8; i++)
+                    generated += possible.charAt(Math.floor(Math.random() * possible.length));
+                resolve(generated);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    },
+};
