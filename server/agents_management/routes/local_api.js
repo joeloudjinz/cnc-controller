@@ -234,7 +234,7 @@ router.post('/role', auth, (req, res) => {
  * @returns 200 if it's successful
  * TODO: apply operations logging
  */
-router.get('/reset/:id', (req, res) => {
+router.get('/reset/:id', auth, (req, res) => {
     console.log(req.params.id);
     //! test if id is defined
     if (req.params.id) {
