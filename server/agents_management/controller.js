@@ -231,14 +231,14 @@ module.exports = {
      * TODO: apply operations logging
      */
     isAdmin: (id) => {
-        console.log(id);
+        // console.log(id);
         return new Promise((resolve, reject) => {
             connection.query('SELECT * FROM agents WHERE id=?', [id],
                 (error, results, fields) => {
                     if (error) {
                         reject(error);
                     } else {
-                        console.log(results);
+                        // console.log(results);
                         if (results.length > 0)
                             resolve(results[0].is_admin == 1);
                         else

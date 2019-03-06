@@ -203,9 +203,11 @@ router.delete('/:id', auth, (req, res) => {
  * @returns 404 if the id was wrong
  * TODO: apply operations logging
  */
-router.get('/role/:id', auth, (req, res) => {
+router.get('/role/:id', (req, res) => {
+    // console.log(req.params.id);
     if (req.params.id) {
         const id = req.params.id;
+        console.log(id);
         controller.isAdmin(id)
             .then((result) => {
                 res.send({
