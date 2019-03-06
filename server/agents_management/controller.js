@@ -227,7 +227,7 @@ module.exports = {
      * @params agent id
      * @returns promise: reject(error) if there was an error while executing the query
      * @returns promise: reject(no id) if there is no matching id value
-     * @returns promise: resolve(result) if the execution was successful
+     * @returns promise: resolve(true | false) if the execution was successful
      * TODO: apply operations logging
      */
     isAdmin: (id) => {
