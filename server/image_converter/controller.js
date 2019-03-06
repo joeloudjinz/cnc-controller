@@ -67,8 +67,8 @@ module.exports = {
     const query =
       "INSERT INTO conversions " +
       "(`image`,`gcode`,`too_diameter`,`sensitivity`,`scale_axes`,`deep_step`," +
-      "`white_z`,`black_z`,`safe_z`,`feed_rate`,`time`,`error_per`,`image_size`,`date`) " +
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      "`white_z`,`black_z`,`safe_z`,`feed_rate`,`time`,`error_per`,`image_size`) " +
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
     // console.log("Data in storeConversionDetails => " + data);
     return new Promise((resolve, reject) => {
       try {
@@ -76,7 +76,7 @@ module.exports = {
           [
             data.image, data.gcode, data.toolDiameter, data.sensitivity, data.scaleAxes,
             data.deepStep, data.whiteZ, data.blackZ, data.safeZ, JSON.stringify(data.feedrate), data.time,
-            data.errBlackPixel, data.imgSize, Date.now()
+            data.errBlackPixel, data.imgSize
           ], (error, results, fields) => {
             if (error) {
               console.log(error);
