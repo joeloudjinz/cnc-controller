@@ -203,26 +203,32 @@ router.delete('/:id', auth, (req, res) => {
  * @returns 404 if the id was wrong
  * TODO: apply operations logging
  */
-router.post('/role', auth, (req, res) => {
-    const id = req.body.id;
-    controller.isAdmin(id)
-        .then((result) => {
-            res.send({
-                success: 'Operation completed successfully',
-                result
-            })
-        }).catch((error) => {
-            if (error === 'No Such ID') {
-                res.status(404).send({
-                    failure: 'No Such ID found!',
-                });
-            } else {
-                res.status(500).send({
-                    failure: 'An error occurred while retrieving data',
-                    error: error
-                });
-            }
+router.get('/role/:id', auth, (req, res) => {
+    if (req.params.id) {
+        const id = req.params.id;
+        controller.isAdmin(id)
+            .then((result) => {
+                res.send({
+                    success: 'Operation completed successfully',
+                    result
+                })
+            }).catch((error) => {
+                if (error === 'No Such ID') {
+                    res.status(404).send({
+                        failure: 'No Such ID found!',
+                    });
+                } else {
+                    res.status(500).send({
+                        failure: 'An error occurred while retrieving data',
+                        error: error
+                    });
+                }
+            });
+    } else {
+        res.status(400).send({
+            failure: 'Bad Request, No id was specified!'
         });
+    }
 
 });
 /**
