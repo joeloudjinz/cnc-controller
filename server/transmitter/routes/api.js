@@ -25,29 +25,51 @@ const portName = '/dev/ttyACM0';
 //     console.log(error);
 // });
 
-// controller.openPort(portName).then((result) => {
-//     console.log('openPort result :', result);
-//     controller.initializeDelimiterParser(portName).then((result) => {
-//         console.log('initializeDelimiterParser result :', result);
-//         controller.registerOnDataEvent(portName).then(() => {
-//             console.log('registerOnDataEvent result : ok');
-//             setTimeout(() => {
-//                 controller.writeDataAndDrain(portName, 'G01 X8.5008 Y-218.1008 Z-0.4015\r').then((result) => {
-//                     console.log('writeDataToPort result :', result);
 
-//                 }).catch((err) => {
-//                     console.log(err);
-//                 });
-//             }, 2000);
-//         }).catch((err) => {
-//             console.log(err);
-//         });
+//* testing writeDataAndDrain
+// setTimeout(() => {
+//     controller.writeDataAndDrain(portName, 'G01 X8.5008 Y-218.1008 Z-0.4015\r').then((result) => {
+//         console.log('writeDataToPort result :', result);
+
 //     }).catch((err) => {
 //         console.log(err);
 //     });
-// }).catch((err) => {
-//     console.log(err);
-// });
+// }, 2000);
+
+controller.openPort(portName).then((result) => {
+    console.log('openPort result :', result);
+    controller.initializeDelimiterParser(portName).then((result) => {
+        console.log('initializeDelimiterParser result :', result);
+        controller.registerOnDataEvent(portName).then(() => {
+            console.log('registerOnDataEvent result : ok');
+            filesHandler.addOutputDirectory("" + Date.now()).then((dirPath) => {
+                console.log('addOutputDirectory result :', dirPath);
+                filesHandler.getGcodeFile(fileName).then((filePath) => {
+                    console.log('getGcodeFile result :', result);
+                    controller.readGcodeFileLines(dirPath, filePath, fileName).then((result) => {
+                        console.log('readGcodeFileLines result :', result);
+                        const t = Date.now();
+                        filesHandler.logMessage(dirPath, t, "Starting Gcode Transmission ");
+                        filesHandler.logMessage(dirPath, t, "file: " + filePath);
+                        controller.startSendingProcess(portName, dirPath, t);
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }).catch((error) => {
+                console.log(error);
+            });
+        }).catch((error) => {
+            console.log(error);
+        });
+    }).catch((error) => {
+        console.log(error);
+    });
+}).catch((error) => {
+    console.log(error);
+});
 
 //TODO: create full draw api endpoint
 //TODO: create open port api endpoint

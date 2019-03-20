@@ -211,6 +211,8 @@ module.exports = {
    * @Note don't use await, it does not work
    * TODO: add pusher to push new data to the frontend
    * TODO: test is with 500ms timeout
+   * TODO: add resume sending data after there is more room in serial receiver buffer
+   * TODO: add logging operation when receiving data
    */
   registerOnDataEvent: name => {
     return new Promise((resolve, reject) => {
@@ -450,17 +452,18 @@ module.exports = {
       });
     });
   },
-  //TODO: add test for empty maps
   /**
    ** Sends a number of lines that don't pass 127 characters combined, 
    ** it can be used to resume sending data on Data event is emitted
    * @param dirName name of the directory where the log file of send process reside
    * TODO: NOT tested
    * TODO: test it with writeAndDrain()
+   * TODO: add test for empty maps
    */
-  startSendingProcess: async (dirName) => {
+  startSendingProcess: async (portName, dirName, logFileName) => {
     if (stoppedIn != null) {
       let b = true;
+      let isNew = true;
       while (b) {
         //? testing if the current line number is not over the last line of code
         if (stoppedIn <= codeLinesNbr) {
@@ -473,38 +476,38 @@ module.exports = {
                 //? ensuring that it is safe to subtract the number of characters of the current line from restToSend value
                 if (restToSend - chars.get(stoppedIn) >= 0) {
                   //? performing send operation and wait for it to end
-                  await writeData(codeLines.get(stoppedIn))
+                  await writeData(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
-                      filesHandler.logMessage(dirName, "Line [N° " + stoppedIn + "] was sent");
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent");
                       //? deduct the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
-                      filesHandler.logMessage(dirName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend);
+                      filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend);
                       //? increment for the next line
                       stoppedIn++;
                     })
                     //* when the send operation is completed with an error indicating the line was not sent!
                     .catch(error => {
-                      filesHandler.logMessage(dirName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]");
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]");
                     });
                 } else {
-                  filesHandler.logMessage(dirName, "Unsafe to deduct number of chars for line [N° " + stoppedIn + "]");
+                  filesHandler.logMessage(dirName, logFileName, "Unsafe to deduct number of chars for line [N° " + stoppedIn + "]");
                 }
               } else {
-                filesHandler.logMessage(dirName, "Number of chars of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend);
+                filesHandler.logMessage(dirName, logFileName, "Number of chars of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend);
                 isFull = true;
                 b = false;
               }
             } else {
-              filesHandler.logMessage(dirName, "There is no such line [N° " + stoppedIn + "] in code lines map");
+              filesHandler.logMessage(dirName, logFileName, "There is no such line [N° " + stoppedIn + "] in code lines map");
               stoppedIn++;
             }
           } else {
-            filesHandler.logMessage(dirName, "Max characters is reached, rest to send is: " + restToSend);
+            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend);
             b = false;
           }
         } else {
-          filesHandler.logMessage(dirName, "All line has been sent, rest to send is: " + restToSend);
+          filesHandler.logMessage(dirName, logFileName, "All line has been sent, rest to send is: " + restToSend);
           b = false;
         }
       }

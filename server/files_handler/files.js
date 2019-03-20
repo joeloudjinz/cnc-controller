@@ -188,8 +188,8 @@ module.exports = {
      * @returns [String] the path of the log file
      * @returns [false] if there was an error while appending data to file
      */
-    logMessage: (dirName, content) => {
-        const logPath = path.join(dirName, t.getTime + ".log");
+    logMessage: (dirName, fileName, content) => {
+        const logPath = path.join(dirName, fileName + ".log");
         try {
             const t = new Date();
             fs.appendFileSync(
