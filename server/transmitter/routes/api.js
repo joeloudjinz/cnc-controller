@@ -36,7 +36,7 @@ const portName = '/dev/ttyACM0';
 //     });
 // }, 2000);
 
-
+const router = express.Router();
 
 controller.openPort(portName).then((result) => {
     console.log('openPort result :', result);
@@ -74,6 +74,9 @@ controller.openPort(portName).then((result) => {
 });
 
 //TODO: create full draw api endpoint
+
 //TODO: create open port api endpoint
 //TODO: create close port api endpoint
 //TODO: create write to port api endpoint
+
+module.exports = router;
