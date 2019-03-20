@@ -106,13 +106,14 @@ module.exports = {
         if (ports.has(name)) {
           reject(
             "Port: " +
-            name +
-            " is initialized already, open status: " +
-            ports.get(name).isOpen
+              name +
+              " is initialized already, open status: " +
+              ports.get(name).isOpen
           );
         } else {
           const port = new SerialPort(
-            name, {
+            name,
+            {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
@@ -232,9 +233,9 @@ module.exports = {
               setTimeout(() => {
                 console.log(
                   "listening for data started with parser, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
+                    name +
+                    ", open status: " +
+                    ports.get(name).isOpen
                 );
                 parsers.get(name).on("data", data => {
                   console.log("Data is: " + data);
@@ -248,9 +249,9 @@ module.exports = {
                   setTimeout(() => {
                     console.log(
                       "listening for data started with parser, port: " +
-                      name +
-                      ", open status: " +
-                      ports.get(name).isOpen
+                        name +
+                        ", open status: " +
+                        ports.get(name).isOpen
                     );
                     parsers.get(name).on("data", data => {
                       console.log("Data is: " + data);
@@ -289,9 +290,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                name +
-                ", open status: " +
-                ports.get(name).isOpen
+                  name +
+                  ", open status: " +
+                  ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -310,7 +311,7 @@ module.exports = {
     });
   },
   /**
-   *? Uses the function writeData(name, data) 
+   *? Uses the function writeData(name, data)
    ** writes string data only to a given port without waiting for the serial port to be drained
    ** the promise is rejected when name is undefined, or there is no such port name,
    ** or when the port is not opened, or when an error occurs
@@ -319,7 +320,7 @@ module.exports = {
    */
   writeDataToPort: writeData,
   /**
-   *? Uses the function writeAndDrain(name, data) 
+   *? Uses the function writeAndDrain(name, data)
    ** writes string data only to a given port until serial port is drained
    ** the promise is rejected when name is undefined, or there is no such port name,
    ** or when the port is not opened, or when an error occurs
@@ -466,20 +467,37 @@ module.exports = {
     });
   },
   /**
-   ** Sends a number of lines that don't pass 127 characters combined, 
+   ** Sends a number of lines that don't pass 127 characters combined,
    ** it can be used to resume sending data on Data event is emitted
    * @param dirName name of the directory where the log file of send process reside
-   * TODO: add test for empty maps
    * TODO: empty the maps and initialize variables
    */
-  startSendingProcess: async (portName, dirName, logFileName) => {
-    logName = logFileName;
-    outputDirName = dirName;
+  startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
     if (stoppedIn != null) {
-      filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]");
-      filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]");
-      filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]");
-      filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName);
+      logName = logFileName;
+      outputDirName = dirName;
+      if (isNewCall) {
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number: [" + codeLinesNbr + "]"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number of code: [" + codeLines.size + "]"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number of comments: [" + comments.size + "]"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Transmitting to port: " + portName
+        );
+      }
       let b = true;
       while (b) {
         //? testing if the current line number is not over the last line of code
@@ -496,41 +514,91 @@ module.exports = {
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent");
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "Line [N° " + stoppedIn + "] was sent"
+                      );
                       //? deduct the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
-                      filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend);
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "The rest to send after line [N° " +
+                          stoppedIn +
+                          "] is: " +
+                          restToSend
+                      );
                       //? increment for the next line
                       stoppedIn++;
                     })
                     //* when the send operation is completed with an error indicating the line was not sent!
                     .catch(error => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]");
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "Line [N° " +
+                          stoppedIn +
+                          "] was NOT sent, error is [" +
+                          error +
+                          "]"
+                      );
                     });
                 } else {
-                  filesHandler.logMessage(dirName, logFileName, "Unsafe to deduct number of chars for line [N° " + stoppedIn + "]");
+                  filesHandler.logMessage(
+                    dirName,
+                    logFileName,
+                    "Unsafe to deduct number of chars for line [N° " +
+                      stoppedIn +
+                      "]"
+                  );
                 }
               } else {
-                filesHandler.logMessage(dirName, logFileName, "Number of chars of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend);
+                filesHandler.logMessage(
+                  dirName,
+                  logFileName,
+                  "Number of chars of the line [N° " +
+                    stoppedIn +
+                    "] => [" +
+                    chars.get(stoppedIn) +
+                    "] is more then the rest to send " +
+                    restToSend
+                );
                 isFull = true;
                 b = false;
               }
             } else {
-              filesHandler.logMessage(dirName, logFileName, "There is no such line [N° " + stoppedIn + "] in code lines map");
+              filesHandler.logMessage(
+                dirName,
+                logFileName,
+                "There is no such line [N° " + stoppedIn + "] in code lines map"
+              );
               stoppedIn++;
             }
           } else {
-            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend);
+            filesHandler.logMessage(
+              dirName,
+              logFileName,
+              "Max characters is reached, rest to send is: " + restToSend
+            );
+            isFull = true;
             b = false;
           }
         } else {
-          filesHandler.logMessage(dirName, logFileName, "All line has been sent, rest to send is: " + restToSend);
+          filesHandler.logMessage(
+            dirName,
+            logFileName,
+            "All lines has been sent, rest to send is: " + restToSend
+          );
           codeLines.clear();
           chars.clear();
           comments.clear();
           codeLinesNbr = 0;
           stoppedIn = 0;
           restToSend = 127;
+          isFull = false;
+          // logName = null;
+          // outputDirName = null;
           b = false;
         }
       }
@@ -539,7 +607,13 @@ module.exports = {
     }
   }
 };
-
+/**
+ ** Incoming data treatment from a specific port
+ ** this function can resume sending gcode lines when ok response is sent from grbl,
+ ** which indicates that there is room for more lines in serial receiver buffer
+ * @param data: incoming data value
+ * @param portName: name of the port that the data came from
+ */
 treatData = (data, portName) => {
   if (data !== "") {
     const splitted = data.split(":");
@@ -562,7 +636,12 @@ treatData = (data, portName) => {
     //? but the 'ok' response for some old sent lines was not received
     //? so this code will re-start the sending process after receiving the response from the card
     if (isFull) {
-      module.exports.startSendingProcess(portName, outputDirName, logName);
+      module.exports.startSendingProcess(
+        portName,
+        outputDirName,
+        logName,
+        false
+      );
       isFull = false;
     }
   } else {

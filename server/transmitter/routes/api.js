@@ -36,6 +36,8 @@ const portName = '/dev/ttyACM0';
 //     });
 // }, 2000);
 
+
+
 controller.openPort(portName).then((result) => {
     console.log('openPort result :', result);
     controller.initializeDelimiterParser(portName).then((result) => {
@@ -46,7 +48,7 @@ controller.openPort(portName).then((result) => {
                 console.log('addOutputDirectory result :', dirPath);
                 filesHandler.getGcodeFile(fileName).then((filePath) => {
                     console.log('getGcodeFile result :', result);
-                    controller.readGcodeFileLines(dirPath, filePath, fileName).then((result) => {
+                    controller.readGcodeFileLines(dirPath, filePath, fileName, true).then((result) => {
                         console.log('readGcodeFileLines result :', result);
                         const t = Date.now();
                         filesHandler.logMessage(dirPath, t, "Starting Gcode Transmission ");
