@@ -1,5 +1,9 @@
 const SerialPort = require("serialport");
+//? this is used by the seerial port object to use delimiter parser
 const Readline = require("@serialport/parser-readline");
+//? this is used by readGcodeFileLines()
+const readline = require("readline");
+
 const path = require("path");
 
 const fileHandlerPath = path.join('..', 'files_handler', 'files');
@@ -11,6 +15,18 @@ const defaultBaudRate = 115200; //! used for grbl v0.9+
 let ports = new Map();
 //? holds data parsers for each port
 let parsers = new Map();
+
+//! these variables for readGcodeFileLines()
+//? this map holds all lines of code in a given gcode file, the key is the line number in the file
+let codeLines = new Map();
+//? this map holds all the comments lines
+let comments = new Map();
+//? this map holds characters number of each line, without counting characters of the comment in the middle of the line
+let chars = new Map();
+//? this variable represent the lines number in the original file, including the comments lines
+let codeLinesNbr = 0;
+//? the line where the send process stopped in, in the real file, not the in map object
+let stoppedIn = null;
 
 module.exports = {
   /**
@@ -362,7 +378,67 @@ module.exports = {
       }
     });
   },
-  //TODO: create readGcodeFileLines functions
-
+  /**
+   ** Reads each line in a given gcode file and keeps it in 'codeLines' map if it's a code line, 
+   ** along with counting the number of characters of current line and keeping the count in 'chars' map,
+   ** or in comments map if it's a comment, this function also counts the number of all the lines in it.
+   ** All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory, 
+   ** and the comments in '.txt' file
+   * @param dirName: name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module 
+   * @param fileName: name of gcode file without extension
+   * @resolve with [true] if successful execution
+   * @reject with [error] if an error occurred while reading lines
+   * TODO: NOT tested
+   */
+  readGcodeFileLines: (dirName, fileName) => {
+    return new Promise((resolve, reject) => {
+      const gcodeLinesReader = readline.createInterface({
+        // input: fs.createReadStream(fileName),
+        input: filesHandler.createGcodeFileReadStream(fileName + ".gcode"),
+        console: false
+      });
+      gcodeLinesReader.on("line", line => {
+        if (line.charAt(0) === ";") {
+          comments.set(codeLinesNbr, line);
+          // writeCommentToFile(line);
+          filesHandler.writeGcodeCommentLine(dirName, fileName);
+        } else {
+          //? temp variable to hold the gcode characters of a line
+          let temp = "";
+          //? counting the number of characters of a gcode line without the comment chars
+          let charsCount = 0;
+          for (const i in line) {
+            if (line[i] === ";") {
+              break;
+            } else {
+              temp += line[i];
+            }
+            charsCount++;
+          }
+          // fs.appendFileSync(
+          //   cleanCodePath,
+          //   `${temp} ;| chars count is ${charsCount}\n`
+          // );
+          //? plus one is for '\r' char that will be added after
+          filesHandler.writeCleanGcodeLine(dirName, fileName, temp, charsCount + 1);
+          //! this char is necessary for gcode parser to distinct between each line
+          temp += "\r";
+          charsCount++;
+          chars.set(codeLinesNbr, charsCount);
+          codeLines.set(codeLinesNbr, temp);
+        }
+        codeLinesNbr++;
+      });
+      gcodeLinesReader.on("close", () => {
+        //? assigning the first line number to start send operation from it
+        stoppedIn = codeLines.keys().next().value;
+        // console.log(stoppedIn);
+        resolve(true);
+      });
+      gcodeLinesReader.on("error", error => {
+        reject(error);
+      });
+    });
+  }
   //TODO: create startDrawingProcess functions
 };
