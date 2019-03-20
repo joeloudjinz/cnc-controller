@@ -2,6 +2,9 @@ const SerialPort = require("serialport");
 const Readline = require("@serialport/parser-readline");
 const path = require("path");
 
+const fileHandlerPath = path.join('..', 'files_handler', 'files');
+const filesHandler = require(fileHandlerPath);
+
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
 //? holds all the registered ports of the server
@@ -22,14 +25,13 @@ module.exports = {
         if (ports.has(name)) {
           reject(
             "Port: " +
-              name +
-              " is initialized already, open status: " +
-              ports.get(name).isOpen
+            name +
+            " is initialized already, open status: " +
+            ports.get(name).isOpen
           );
         } else {
           const port = new SerialPort(
-            name,
-            {
+            name, {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
@@ -49,28 +51,31 @@ module.exports = {
    ** Initialize a delimiter parser for a given port,
    ** the promise is rejected when the port does not exist, or when the port is not opened, or when an error occurs
    * @param name: of the port
-   * TODO: test is name undefined!
    */
   initializeDelimiterParser: name => {
     return new Promise((resolve, reject) => {
-      if (ports.has(name)) {
-        if (ports.get(name).isOpen) {
-          try {
-            const parser = ports.get(name).pipe(
-              new Readline({
-                delimiter: "\r\n"
-              })
-            );
-            parsers.set(name, parser);
-            resolve(true);
-          } catch (error) {
-            reject(error);
+      if (name) {
+        if (ports.has(name)) {
+          if (ports.get(name).isOpen) {
+            try {
+              const parser = ports.get(name).pipe(
+                new Readline({
+                  delimiter: "\r\n"
+                })
+              );
+              parsers.set(name, parser);
+              resolve(true);
+            } catch (error) {
+              reject(error);
+            }
+          } else {
+            reject("Port " + name + "is closed!");
           }
         } else {
-          reject("Port " + name + "is closed!");
+          reject("There is no such port named:" + name);
         }
       } else {
-        reject("There is no such port named:" + name);
+        reject("Name is Undefined");
       }
     });
   },
@@ -142,9 +147,9 @@ module.exports = {
               setTimeout(() => {
                 console.log(
                   "listening for data started with parser, port: " +
-                    name +
-                    ", open status: " +
-                    ports.get(name).isOpen
+                  name +
+                  ", open status: " +
+                  ports.get(name).isOpen
                 );
                 parsers.get(name).on("data", data => {
                   console.log("Data is: " + data);
@@ -156,9 +161,9 @@ module.exports = {
                   setTimeout(() => {
                     console.log(
                       "listening for data started with parser, port: " +
-                        name +
-                        ", open status: " +
-                        ports.get(name).isOpen
+                      name +
+                      ", open status: " +
+                      ports.get(name).isOpen
                     );
                     parsers.get(name).on("data", data => {
                       console.log("Data is: " + data);
@@ -195,9 +200,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
+                name +
+                ", open status: " +
+                ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -356,5 +361,8 @@ module.exports = {
         reject("Name is Undefined");
       }
     });
-  }
+  },
+  //TODO: create readGcodeFileLines functions
+
+  //TODO: create startDrawingProcess functions
 };
