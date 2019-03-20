@@ -38,10 +38,12 @@ writeData = (name, data) => {
       if (ports.has(name)) {
         if (ports.get(name).isOpen) {
           if (typeof data === "string") {
-            ports.get(name).write(data, error => {
-              if (error) reject(error);
-              resolve(true);
-            });
+            setTimeout(() => {
+              ports.get(name).write(data, error => {
+                if (error) reject(error);
+                resolve(true);
+              });
+            }, 1000);
           } else {
             reject("Data should be of type String");
           }
