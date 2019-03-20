@@ -243,16 +243,17 @@ module.exports = {
 
     },
     /**
-     * Used only for readline function is transmitter controller
+     * get the full path of gcode file in resources/gcodes directory
+     * @param fileName: gcode file name
+     * @returns [String] full path to file
      */
-    createGcodeFileReadStream: async (fileName) => {
-        const filePath = path.join(gcodeDir, fileName);
-        await gCodeFileExist(filePath)
-            .then((result) => {
-                return fs.createReadStream(filePath);
-            }).catch((error) => {
-                console.log("createGcodeFileReadStream error: " + error);
-                return error;
-            });
+    getGcodeFile: (fileName) => {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(path.join(gcodeDir, fileName + ".gcode"));
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 };

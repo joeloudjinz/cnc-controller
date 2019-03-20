@@ -3,10 +3,10 @@ const SerialPort = require("serialport");
 const Readline = require("@serialport/parser-readline");
 //? this is used by readGcodeFileLines()
 const readline = require("readline");
-
 const path = require("path");
+const fs = require("fs");
 
-const fileHandlerPath = path.join('..', 'files_handler', 'files');
+const fileHandlerPath = path.join('..', 'files_handler', 'files.js');
 const filesHandler = require(fileHandlerPath);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
@@ -390,16 +390,16 @@ module.exports = {
    * @reject with [error] if an error occurred while reading lines
    * TODO: NOT tested
    */
-  readGcodeFileLines: (dirName, fileName) => {
+  readGcodeFileLines: (dirName, filePath, fileName) => {
     return new Promise((resolve, reject) => {
       const gcodeLinesReader = readline.createInterface({
-        input: filesHandler.createGcodeFileReadStream(fileName + ".gcode"),
+        input: fs.createReadStream(filePath),
         console: false
       });
       gcodeLinesReader.on("line", line => {
         if (line.charAt(0) === ";") {
           comments.set(codeLinesNbr, line);
-          filesHandler.writeGcodeCommentLine(dirName, fileName);
+          filesHandler.writeGcodeCommentLine(dirName, fileName, line);
         } else {
           //? temp variable to hold the gcode characters of a line
           let temp = "";
