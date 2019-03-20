@@ -31,6 +31,11 @@ let stoppedIn = null;
 let restToSend = 127;
 //? used to stop sending loop when there is no more room for new line characters in the serial receiver buffer
 let isFull = false;
+let okCount = 0;
+let errorsCount = 0;
+
+let logName;
+let outputDirName;
 
 writeData = (name, data) => {
   return new Promise((resolve, reject) => {
@@ -233,6 +238,8 @@ module.exports = {
                 );
                 parsers.get(name).on("data", data => {
                   console.log("Data is: " + data);
+                  //! add here
+                  treatData(data, name);
                 });
               }, 1000);
             } else {
@@ -247,6 +254,8 @@ module.exports = {
                     );
                     parsers.get(name).on("data", data => {
                       console.log("Data is: " + data);
+                      //! add here
+                      treatData();
                     });
                   }, 1000);
                 })
@@ -460,11 +469,17 @@ module.exports = {
    ** Sends a number of lines that don't pass 127 characters combined, 
    ** it can be used to resume sending data on Data event is emitted
    * @param dirName name of the directory where the log file of send process reside
-   * TODO: test it with writeAndDrain()
    * TODO: add test for empty maps
+   * TODO: empty the maps and initialize variables
    */
   startSendingProcess: async (portName, dirName, logFileName) => {
+    logName = logFileName;
+    outputDirName = dirName;
     if (stoppedIn != null) {
+      filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]");
+      filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]");
+      filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]");
+      filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName);
       let b = true;
       while (b) {
         //? testing if the current line number is not over the last line of code
@@ -510,11 +525,48 @@ module.exports = {
           }
         } else {
           filesHandler.logMessage(dirName, logFileName, "All line has been sent, rest to send is: " + restToSend);
+          codeLines.clear();
+          chars.clear();
+          comments.clear();
+          codeLinesNbr = 0;
+          stoppedIn = 0;
+          restToSend = 127;
           b = false;
         }
       }
     } else {
       console.error("stoppedIn is UNDEFINED");
     }
+  }
+};
+
+treatData = (data, portName) => {
+  if (data !== "") {
+    const splitted = data.split(":");
+    if (data === "ok") {
+      okCount++;
+      content = `-> Ok is received from port: [${portName}], The count is [${okCount}] `;
+    } else if (splitted[0] === "error") {
+      errorsCount++;
+      content = `-> An error is received from port: [${portName}], The count is [${errorsCount}] `;
+      // errors.set(stoppedIn, data);
+    } else {
+      content = `-> Data is received from port: [${portName}], Raw data is [${data}] `;
+    }
+    filesHandler.logMessage(outputDirName, logName, content);
+    //? add the number of chars of the sent line to rest to send
+    if (chars.has(stoppedIn - 1)) {
+      restToSend += chars.get(stoppedIn - 1);
+    }
+    //? after assigning true to isFull, that means there is some subtraction is needed to make room for new lines to be sent
+    //? but the 'ok' response for some old sent lines was not received
+    //? so this code will re-start the sending process after receiving the response from the card
+    if (isFull) {
+      module.exports.startSendingProcess(portName, outputDirName, logName);
+      isFull = false;
+    }
+  } else {
+    content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
+    filesHandler.logMessage(outputDirName, logName, content);
   }
 };
