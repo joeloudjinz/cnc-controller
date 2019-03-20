@@ -178,6 +178,9 @@ module.exports = {
             });
         });
     },
+    // createLogFile: (dirName) => {
+    //     await fs.writeFileSync(logPath, "");
+    // },
     /**
      * Synchronously, logging a message into a log file
      * @param dirName: directory name to create a logging file
@@ -186,14 +189,14 @@ module.exports = {
      * @returns [false] if there was an error while appending data to file
      */
     logMessage: (dirName, content) => {
-        const t = new Date();
         const logPath = path.join(dirName, t.getTime + ".log");
         try {
+            const t = new Date();
             fs.appendFileSync(
                 logPath,
                 "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] : " + content + "\n"
             );
-            return logPath;
+            return true;
         } catch (error) {
             console.log('logMessage error :', error);
             return false;

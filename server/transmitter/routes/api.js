@@ -9,21 +9,45 @@ const controllerPath = path.join('..', 'controller');
 const controller = require(controllerPath);
 
 const fileName = "sm-sample";
-filesHandler.addOutputDirectory("" + Date.now()).then((dirPath) => {
-    // console.log(dirPath);
-    // console.log('controller :', controller);
-    filesHandler.getGcodeFile(fileName).then((filePath) => {
-        controller.readGcodeFileLines(dirPath, filePath, fileName).then((result) => {
-            console.log('result :', result);
-        }).catch((error) => {
-            console.log(error);
-        });
-    }).catch((error) => {
-        console.log(error);
-    });
-}).catch((error) => {
-    console.log(error);
-});
+const portName = '/dev/ttyACM0';
+
+// filesHandler.addOutputDirectory("" + Date.now()).then((dirPath) => {
+//     filesHandler.getGcodeFile(fileName).then((filePath) => {
+//         controller.readGcodeFileLines(dirPath, filePath, fileName).then((result) => {
+//             console.log('result :', result);
+//         }).catch((error) => {
+//             console.log(error);
+//         });
+//     }).catch((error) => {
+//         console.log(error);
+//     });
+// }).catch((error) => {
+//     console.log(error);
+// });
+
+// controller.openPort(portName).then((result) => {
+//     console.log('openPort result :', result);
+//     controller.initializeDelimiterParser(portName).then((result) => {
+//         console.log('initializeDelimiterParser result :', result);
+//         controller.registerOnDataEvent(portName).then(() => {
+//             console.log('registerOnDataEvent result : ok');
+//             setTimeout(() => {
+//                 controller.writeDataAndDrain(portName, 'G01 X8.5008 Y-218.1008 Z-0.4015\r').then((result) => {
+//                     console.log('writeDataToPort result :', result);
+
+//                 }).catch((err) => {
+//                     console.log(err);
+//                 });
+//             }, 2000);
+//         }).catch((err) => {
+//             console.log(err);
+//         });
+//     }).catch((err) => {
+//         console.log(err);
+//     });
+// }).catch((err) => {
+//     console.log(err);
+// });
 
 //TODO: create full draw api endpoint
 //TODO: create open port api endpoint

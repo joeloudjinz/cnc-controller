@@ -6,7 +6,7 @@ const readline = require("readline");
 const path = require("path");
 const fs = require("fs");
 
-const fileHandlerPath = path.join('..', 'files_handler', 'files.js');
+const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
@@ -27,6 +27,62 @@ let chars = new Map();
 let codeLinesNbr = 0;
 //? the line where the send process stopped in, in the real file, not the in map object
 let stoppedIn = null;
+//? this variable represent the rest of the chars to be sent to the card
+let restToSend = 127;
+//? used to stop sending loop when there is no more room for new line characters in the serial receiver buffer
+let isFull = false;
+
+writeData = (name, data) => {
+  return new Promise((resolve, reject) => {
+    if (name) {
+      if (ports.has(name)) {
+        if (ports.get(name).isOpen) {
+          if (typeof data === "string") {
+            ports.get(name).write(data, error => {
+              if (error) reject(error);
+              resolve(true);
+            });
+          } else {
+            reject("Data should be of type String");
+          }
+        } else {
+          reject("Port " + name + "is closed!");
+        }
+      } else {
+        reject("There is no such port named:" + name);
+      }
+    } else {
+      reject("Name is Undefined");
+    }
+  });
+};
+
+writeAndDrain = (name, data) => {
+  return new Promise((resolve, reject) => {
+    if (name) {
+      if (ports.has(name)) {
+        if (ports.get(name).isOpen) {
+          if (typeof data === "string") {
+            console.log("Writing data ...");
+            ports.get(name).write(data);
+            ports.get(name).drain(error => {
+              if (error) reject(error);
+              resolve(true);
+            });
+          } else {
+            reject("Data should be of type String");
+          }
+        } else {
+          reject("Port " + name + "is closed!");
+        }
+      } else {
+        reject("There is no such port named:" + name);
+      }
+    } else {
+      reject("Name is Undefined");
+    }
+  });
+};
 
 module.exports = {
   /**
@@ -152,7 +208,9 @@ module.exports = {
    ** Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it
    ** the promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
    * @param name: of the port
+   * @Note don't use await, it does not work
    * TODO: add pusher to push new data to the frontend
+   * TODO: test is with 500ms timeout
    */
   registerOnDataEvent: name => {
     return new Promise((resolve, reject) => {
@@ -237,69 +295,23 @@ module.exports = {
     });
   },
   /**
+   *? Uses the function writeData(name, data) 
    ** writes string data only to a given port without waiting for the serial port to be drained
    ** the promise is rejected when name is undefined, or there is no such port name,
    ** or when the port is not opened, or when an error occurs
    * @param name: port name
    * @param data: string type data to be written to port
    */
-  writeDataToPort: (name, data) => {
-    return new Promise((resolve, reject) => {
-      if (name) {
-        if (ports.has(name)) {
-          if (ports.get(name).isOpen) {
-            if (typeof data === "string") {
-              ports.get(name).write(data, error => {
-                if (error) reject(error);
-                resolve(true);
-              });
-            } else {
-              reject("Data should be of type String");
-            }
-          } else {
-            reject("Port " + name + "is closed!");
-          }
-        } else {
-          reject("There is no such port named:" + name);
-        }
-      } else {
-        reject("Name is Undefined");
-      }
-    });
-  },
+  writeDataToPort: writeData,
   /**
+   *? Uses the function writeAndDrain(name, data) 
    ** writes string data only to a given port until serial port is drained
    ** the promise is rejected when name is undefined, or there is no such port name,
    ** or when the port is not opened, or when an error occurs
    * @param name: port name
    * @param data: string type data to be written to port
    */
-  writeDataAndDrain: (name, data) => {
-    return new Promise((resolve, reject) => {
-      if (name) {
-        if (ports.has(name)) {
-          if (ports.get(name).isOpen) {
-            if (typeof data === "string") {
-              console.log("Writing data ...");
-              ports.get(name).write(data);
-              ports.get(name).drain(error => {
-                if (error) reject(error);
-                resolve(true);
-              });
-            } else {
-              reject("Data should be of type String");
-            }
-          } else {
-            reject("Port " + name + "is closed!");
-          }
-        } else {
-          reject("There is no such port named:" + name);
-        }
-      } else {
-        reject("Name is Undefined");
-      }
-    });
-  },
+  writeDataAndDrain: writeAndDrain,
   /**
    ** discards data received but not read, and written but not transmitted by the operating system.
    ** the promise is rejected when name is undefined, or there is no such port name,
@@ -379,16 +391,15 @@ module.exports = {
     });
   },
   /**
-   ** Reads each line in a given gcode file and keeps it in 'codeLines' map if it's a code line, 
+   ** Reads each line in a given gcode file and keeps it in 'codeLines' map if it's a code line,
    ** along with counting the number of characters of current line and keeping the count in 'chars' map,
    ** or in comments map if it's a comment, this function also counts the number of all the lines in it.
-   ** All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory, 
+   ** All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory,
    ** and the comments in '.txt' file
-   * @param dirName: name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module 
+   * @param dirName: name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module
    * @param fileName: name of gcode file without extension
    * @resolve with [true] if successful execution
    * @reject with [error] if an error occurred while reading lines
-   * TODO: NOT tested
    */
   readGcodeFileLines: (dirName, filePath, fileName) => {
     return new Promise((resolve, reject) => {
@@ -414,7 +425,12 @@ module.exports = {
             charsCount++;
           }
           //? plus one is for '\r' char that will be added after
-          filesHandler.writeCleanGcodeLine(dirName, fileName, temp, charsCount + 1);
+          filesHandler.writeCleanGcodeLine(
+            dirName,
+            fileName,
+            temp,
+            charsCount + 1
+          );
           //! this char is necessary for gcode parser to distinct between each line
           temp += "\r";
           charsCount++;
@@ -433,6 +449,67 @@ module.exports = {
         reject(error);
       });
     });
+  },
+  //TODO: add test for empty maps
+  /**
+   ** Sends a number of lines that don't pass 127 characters combined, 
+   ** it can be used to resume sending data on Data event is emitted
+   * @param dirName name of the directory where the log file of send process reside
+   * TODO: NOT tested
+   * TODO: test it with writeAndDrain()
+   */
+  startSendingProcess: async (dirName) => {
+    if (stoppedIn != null) {
+      let b = true;
+      while (b) {
+        //? testing if the current line number is not over the last line of code
+        if (stoppedIn <= codeLinesNbr) {
+          //? ensuring that the rest of chars to be sent is not equal to zero
+          if (restToSend != 0) {
+            //? ensuring that there is a line with key equal to the current value of stoppedIn
+            if (codeLines.has(stoppedIn)) {
+              //? ensuring that there is room for current line characters to be sent, in the Serial Receiver buffer
+              if (restToSend > chars.get(stoppedIn)) {
+                //? ensuring that it is safe to subtract the number of characters of the current line from restToSend value
+                if (restToSend - chars.get(stoppedIn) >= 0) {
+                  //? performing send operation and wait for it to end
+                  await writeData(codeLines.get(stoppedIn))
+                    //* when the send operation is completed
+                    .then(result => {
+                      filesHandler.logMessage(dirName, "Line [N° " + stoppedIn + "] was sent");
+                      //? deduct the number of chars of the sent line from the restToSend
+                      restToSend -= chars.get(stoppedIn);
+                      filesHandler.logMessage(dirName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend);
+                      //? increment for the next line
+                      stoppedIn++;
+                    })
+                    //* when the send operation is completed with an error indicating the line was not sent!
+                    .catch(error => {
+                      filesHandler.logMessage(dirName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]");
+                    });
+                } else {
+                  filesHandler.logMessage(dirName, "Unsafe to deduct number of chars for line [N° " + stoppedIn + "]");
+                }
+              } else {
+                filesHandler.logMessage(dirName, "Number of chars of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend);
+                isFull = true;
+                b = false;
+              }
+            } else {
+              filesHandler.logMessage(dirName, "There is no such line [N° " + stoppedIn + "] in code lines map");
+              stoppedIn++;
+            }
+          } else {
+            filesHandler.logMessage(dirName, "Max characters is reached, rest to send is: " + restToSend);
+            b = false;
+          }
+        } else {
+          filesHandler.logMessage(dirName, "All line has been sent, rest to send is: " + restToSend);
+          b = false;
+        }
+      }
+    } else {
+      console.error("stoppedIn is UNDEFINED");
+    }
   }
-  //TODO: create startDrawingProcess functions
 };
