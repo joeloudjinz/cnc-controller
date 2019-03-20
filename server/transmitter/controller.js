@@ -66,11 +66,13 @@ writeAndDrain = (name, data) => {
         if (ports.get(name).isOpen) {
           if (typeof data === "string") {
             console.log("Writing data ...");
-            ports.get(name).write(data);
-            ports.get(name).drain(error => {
-              if (error) reject(error);
-              resolve(true);
-            });
+            setTimeout(() => {
+              ports.get(name).write(data);
+              ports.get(name).drain(error => {
+                if (error) reject(error);
+                resolve(true);
+              });
+            }, 1000);
           } else {
             reject("Data should be of type String");
           }
@@ -458,14 +460,12 @@ module.exports = {
    ** Sends a number of lines that don't pass 127 characters combined, 
    ** it can be used to resume sending data on Data event is emitted
    * @param dirName name of the directory where the log file of send process reside
-   * TODO: NOT tested
    * TODO: test it with writeAndDrain()
    * TODO: add test for empty maps
    */
   startSendingProcess: async (portName, dirName, logFileName) => {
     if (stoppedIn != null) {
       let b = true;
-      let isNew = true;
       while (b) {
         //? testing if the current line number is not over the last line of code
         if (stoppedIn <= codeLinesNbr) {
@@ -478,7 +478,7 @@ module.exports = {
                 //? ensuring that it is safe to subtract the number of characters of the current line from restToSend value
                 if (restToSend - chars.get(stoppedIn) >= 0) {
                   //? performing send operation and wait for it to end
-                  await writeData(portName, codeLines.get(stoppedIn))
+                  await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
                       filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent");
