@@ -151,17 +151,23 @@ module.exports = {
     /**
      * Synchronously, Create a new output directory for send operation.
      * @param dirName: the name of the new directory
-     * @returns newPath: [String] path to new directory
+     * @returns [String] path to new directory
+     * @returns [false] if there was an error while creating directory
      */
     addOutputDirectorySync: (dirName) => {
         const newPath = path.join(outputsDir, dirName);
-        fs.mkdirSync(newPath);
-        return newPath;
+        try {
+            fs.mkdirSync(newPath);
+            return newPath;
+        } catch (error) {
+            console.log('addOutputDirectorySync error :', error);
+            return false;
+        }
     },
     /**
      * Asynchronously, Create a new output directory for send operation.
      * @param dirName: the name of the new directory
-     * @returns newPath: [String] path to new directory
+     * @returns [String] path to new directory
      */
     addOutputDirectory: (dirName) => {
         const newPath = path.join(outputsDir, dirName);
@@ -245,7 +251,7 @@ module.exports = {
             .then((result) => {
                 return fs.createReadStream(filePath);
             }).catch((error) => {
-                console.log("createGcodeFileReadStream error: "+error);
+                console.log("createGcodeFileReadStream error: " + error);
                 return error;
             });
     }

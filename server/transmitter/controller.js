@@ -393,14 +393,12 @@ module.exports = {
   readGcodeFileLines: (dirName, fileName) => {
     return new Promise((resolve, reject) => {
       const gcodeLinesReader = readline.createInterface({
-        // input: fs.createReadStream(fileName),
         input: filesHandler.createGcodeFileReadStream(fileName + ".gcode"),
         console: false
       });
       gcodeLinesReader.on("line", line => {
         if (line.charAt(0) === ";") {
           comments.set(codeLinesNbr, line);
-          // writeCommentToFile(line);
           filesHandler.writeGcodeCommentLine(dirName, fileName);
         } else {
           //? temp variable to hold the gcode characters of a line
@@ -415,10 +413,6 @@ module.exports = {
             }
             charsCount++;
           }
-          // fs.appendFileSync(
-          //   cleanCodePath,
-          //   `${temp} ;| chars count is ${charsCount}\n`
-          // );
           //? plus one is for '\r' char that will be added after
           filesHandler.writeCleanGcodeLine(dirName, fileName, temp, charsCount + 1);
           //! this char is necessary for gcode parser to distinct between each line
