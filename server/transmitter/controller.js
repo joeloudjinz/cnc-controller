@@ -104,16 +104,16 @@ module.exports = {
     return new Promise((resolve, reject) => {
       if (name) {
         if (ports.has(name)) {
-          reject(
-            "Port: " +
-              name +
-              " is initialized already, open status: " +
-              ports.get(name).isOpen
-          );
+          if (ports.get(name).isOpen) {
+            resolve("Port: " + name + " is already opened");
+          } else {
+            ports.get(name).open(() => {
+              resolve(true);
+            });
+          }
         } else {
           const port = new SerialPort(
-            name,
-            {
+            name, {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
@@ -185,7 +185,7 @@ module.exports = {
    ** closes a port and remove it from 'ports' map along with it's parser from 'parsers' map.
    ** the promise is rejected when name is undefined, or there is no such port name, or when the port is already closed,
    ** or when an error occurs
-   * @param name: port name
+   * @param name port name
    */
   closePort: name => {
     return new Promise((resolve, reject) => {
@@ -196,7 +196,7 @@ module.exports = {
             console.log("closing port: " + name);
             ports.get(name).close(error => {
               if (error) {
-                reject(false);
+                reject(error);
               }
               parsers.delete(name);
               ports.delete(name);
@@ -233,9 +233,9 @@ module.exports = {
               setTimeout(() => {
                 console.log(
                   "listening for data started with parser, port: " +
-                    name +
-                    ", open status: " +
-                    ports.get(name).isOpen
+                  name +
+                  ", open status: " +
+                  ports.get(name).isOpen
                 );
                 parsers.get(name).on("data", data => {
                   console.log("Data is: " + data);
@@ -249,9 +249,9 @@ module.exports = {
                   setTimeout(() => {
                     console.log(
                       "listening for data started with parser, port: " +
-                        name +
-                        ", open status: " +
-                        ports.get(name).isOpen
+                      name +
+                      ", open status: " +
+                      ports.get(name).isOpen
                     );
                     parsers.get(name).on("data", data => {
                       console.log("Data is: " + data);
@@ -290,9 +290,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
+                name +
+                ", open status: " +
+                ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -525,9 +525,9 @@ module.exports = {
                         dirName,
                         logFileName,
                         "The rest to send after line [N° " +
-                          stoppedIn +
-                          "] is: " +
-                          restToSend
+                        stoppedIn +
+                        "] is: " +
+                        restToSend
                       );
                       //? increment for the next line
                       stoppedIn++;
@@ -538,10 +538,10 @@ module.exports = {
                         dirName,
                         logFileName,
                         "Line [N° " +
-                          stoppedIn +
-                          "] was NOT sent, error is [" +
-                          error +
-                          "]"
+                        stoppedIn +
+                        "] was NOT sent, error is [" +
+                        error +
+                        "]"
                       );
                     });
                 } else {
@@ -549,8 +549,8 @@ module.exports = {
                     dirName,
                     logFileName,
                     "Unsafe to deduct number of chars for line [N° " +
-                      stoppedIn +
-                      "]"
+                    stoppedIn +
+                    "]"
                   );
                 }
               } else {
@@ -558,11 +558,11 @@ module.exports = {
                   dirName,
                   logFileName,
                   "Number of chars of the line [N° " +
-                    stoppedIn +
-                    "] => [" +
-                    chars.get(stoppedIn) +
-                    "] is more then the rest to send " +
-                    restToSend
+                  stoppedIn +
+                  "] => [" +
+                  chars.get(stoppedIn) +
+                  "] is more then the rest to send " +
+                  restToSend
                 );
                 isFull = true;
                 b = false;

@@ -38,7 +38,7 @@ app.use('/api/local/files', filesHandlerAPI);
 //TODO: test api!
 const transmitterPath = path.join(__dirname, 'transmitter', 'routes', 'api');
 const transmitterAPI = require(transmitterPath);
-app.use('api/local/transmit', transmitterAPI);
+app.use('/api/local/transmit', transmitterAPI);
 
 const port = server.PORT;
 
