@@ -117,10 +117,14 @@ module.exports = {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
-              if (error) reject(error);
-              console.log("Port: " + name + " is opened");
-              ports.set(name, port);
-              resolve(true);
+              if (error) {
+                console.log('in openPort of controller error :', error);
+                reject(error);
+              } else {
+                console.log("Port: " + name + " is opened");
+                ports.set(name, port);
+                resolve(true);
+              }
             }
           );
         }
@@ -148,7 +152,7 @@ module.exports = {
               parsers.set(name, parser);
               resolve(true);
             } catch (error) {
-              reject(error);
+              reject(error.message);
             }
           } else {
             reject("Port " + name + "is closed!");
@@ -196,11 +200,12 @@ module.exports = {
             console.log("closing port: " + name);
             ports.get(name).close(error => {
               if (error) {
-                reject(error);
+                reject(error.message);
+              } else {
+                parsers.delete(name);
+                ports.delete(name);
+                resolve(true);
               }
-              parsers.delete(name);
-              ports.delete(name);
-              resolve(true);
             });
           } else {
             //? if it is not opened, reject
@@ -231,24 +236,14 @@ module.exports = {
           if (ports.get(name).isOpen) {
             if (parsers.has(name)) {
               setTimeout(() => {
-                console.log(
-                  "listening for data started with parser, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
-                );
-                parsers.get(name).on("data", data => {
-                  console.log("Data is: " + data);
-                  //! add here
-                  treatData(data, name);
-                });
-              }, 1000);
+                listenToIncomingData(name);
+              }, 500);
             } else {
-              initializeDelimiterParser(portName)
+              initializeDelimiterParser(name)
                 .then(result => {
                   setTimeout(() => {
                     console.log(
-                      "listening for data started with parser, port: " +
+                      "listening for data started, port: " +
                       name +
                       ", open status: " +
                       ports.get(name).isOpen
@@ -256,9 +251,9 @@ module.exports = {
                     parsers.get(name).on("data", data => {
                       console.log("Data is: " + data);
                       //! add here
-                      treatData();
+                      treatData(data, name);
                     });
-                  }, 1000);
+                  }, 500);
                 })
                 .catch(error => {
                   console.log(error);
@@ -474,8 +469,10 @@ module.exports = {
    */
   startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
     if (stoppedIn != null) {
+      //? for global use in the controller
       logName = logFileName;
       outputDirName = dirName;
+      //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
         filesHandler.logMessage(
           dirName,
@@ -647,5 +644,30 @@ treatData = (data, portName) => {
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
     filesHandler.logMessage(outputDirName, logName, content);
+  }
+};
+
+listenToIncomingData = (name) => {
+  if (name) {
+    if (ports.has(name)) {
+      if (ports.get(name).isOpen) {
+        console.log(
+          "listening for data started, port: " +
+          name +
+          ", open status: " +
+          ports.get(name).isOpen
+        );
+        parsers.get(name).on("data", data => {
+          console.log("Data is: " + data);
+          treatData(data, name);
+        });
+      } else {
+        console.error("listenToIncomingData: Port " + name + "is closed!");
+      }
+    } else {
+      console.error("listenToIncomingData: There is no such port named:" + name);
+    }
+  } else {
+    console.error("listenToIncomingData: Name is Undefined");
   }
 };

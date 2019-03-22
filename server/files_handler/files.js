@@ -170,12 +170,16 @@ module.exports = {
      * @returns [String] path to new directory
      */
     addOutputDirectory: (dirName) => {
-        const newPath = path.join(outputsDir, dirName);
         return new Promise((resolve, reject) => {
-            fs.mkdir(newPath, (error) => {
-                if (error) reject(error);
-                resolve(newPath);
-            });
+            if (dirName) {
+                const newPath = path.join(outputsDir, dirName);
+                fs.mkdir(newPath, (error) => {
+                    if (error) reject(error);
+                    resolve(newPath);
+                });
+            } else {
+                reject("Directory name is undefined");
+            }
         });
     },
     // createLogFile: (dirName) => {
@@ -189,19 +193,26 @@ module.exports = {
      * @returns [false] if there was an error while appending data to file
      */
     logMessage: (dirName, fileName, content) => {
-        const logPath = path.join(dirName, fileName + ".log");
-        try {
-            const t = new Date();
-            fs.appendFileSync(
-                logPath,
-                "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] : " + content + "\n"
-            );
-            return true;
-        } catch (error) {
-            console.log('logMessage error :', error);
-            return false;
+        if (dirName) {
+            if (fileName) {
+                const logPath = path.join(dirName, fileName + ".log");
+                try {
+                    const t = new Date();
+                    fs.appendFileSync(
+                        logPath,
+                        "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] : " + content + "\n"
+                    );
+                    return true;
+                } catch (error) {
+                    console.log('logMessage error :', error);
+                    return false;
+                }
+            } else {
+                return "Log file name is undefined in logMessage";
+            }
+        } else {
+            return "Directory name is undefined in logMessage";
         }
-
     },
     /**
      * Synchronously, write a line of comment to comments file of a specific gcode file
@@ -252,10 +263,20 @@ module.exports = {
      */
     getGcodeFile: (fileName) => {
         return new Promise((resolve, reject) => {
-            try {
-                resolve(path.join(gcodeDir, fileName + ".gcode"));
-            } catch (error) {
-                reject(error);
+            if (fileName) {
+                try {
+                    const filePath = path.join(gcodeDir, fileName + ".gcode");
+                    fs.access(filePath, fs.constants.F_OK, (error) => {
+                        if (error) reject(error.message);
+                        else {
+                            resolve(filePath);
+                        }
+                    });
+                } catch (error) {
+                    reject(error.message);
+                }
+            } else {
+                reject("File name is undefined");
             }
         });
     }
