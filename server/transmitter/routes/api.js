@@ -178,7 +178,32 @@ router.post('/open', (req, res) => {
     }
 });
 
-//TODO: create close port api endpoint
+/**
+ * Endpoint for closing a given port
+ * @param portName name of the port
+ * @returns success response if operation completed successfully, or the port is already closed
+ * @returns [500] with a failure response if an error occurs
+ * @returns [404] if port name is undefined
+ * @Note tested in postman
+ */
+router.post('/close', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller.closePort(portName).then((result) => {
+            res.status(500).send({
+                success: 'Port ' + portName + ' is closed',
+            });
+        }).catch((error) => {
+            res.status(500).send({
+                failure: error,
+            });
+        });
+    } else {
+        res.status(404).send({
+            failure: 'Port name is undefined',
+        });
+    }
+});
 //TODO: create write to port api endpoint
 
 module.exports = router;

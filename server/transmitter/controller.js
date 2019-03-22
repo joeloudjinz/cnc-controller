@@ -209,7 +209,7 @@ module.exports = {
             });
           } else {
             //? if it is not opened, reject
-            reject("Port: " + name + " is already closed!");
+            resolved("Port: " + name + " is already closed!");
           }
         } else {
           reject("There is no such port named:" + name);
