@@ -171,6 +171,9 @@ router.post('/draw', (req, res) => {
  * @returns [500] with a failure response an error occurs
  * @returns [404] if port name is undefined
  * @Note tested in postman
+ * TODO: add auth middleware 
+ * TODO: add initialize a parser for port
+ * TODO: add register on Data event to port
  */
 router.post('/open', (req, res) => {
     const portName = req.body.portName;
@@ -205,6 +208,7 @@ router.post('/open', (req, res) => {
  * @returns [500] with a failure response if an error occurs
  * @returns [404] if port name is undefined
  * @Note tested in postman
+ * TODO: add auth middleware 
  */
 router.post('/close', (req, res) => {
     const portName = req.body.portName;
@@ -225,7 +229,45 @@ router.post('/close', (req, res) => {
     }
 });
 
-//TODO: create write to port api endpoint
-
+/**
+ * Endpoint for writing data into a given port
+ * @param portName name of the port
+ * @param data string value to be sent to port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs, or the operation resolved with false!
+ * @returns [404] if one of the params is undefined
+ * @Note NOT tested in postman
+ * TODO: add auth middleware
+ */
+router.post('/write', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        if (data) {
+            controller.writeDataToPort(portName, data).then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'Data has been written successfully'
+                    });
+                } else {
+                    res.status(500).send({
+                        failure: 'Something went wrong while writing data to port ' + portName
+                    });
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+        } else {
+            res.status(404).send({
+                failure: 'Data to be written is undefined',
+            });
+        }
+    } else {
+        res.status(404).send({
+            failure: 'Port name is undefined',
+        });
+    }
+});
 
 module.exports = router;

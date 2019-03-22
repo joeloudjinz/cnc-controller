@@ -45,7 +45,7 @@ writeData = (name, data) => {
           if (typeof data === "string") {
             setTimeout(() => {
               ports.get(name).write(data, error => {
-                if (error) reject(error);
+                if (error) reject(error.message);
                 resolve(true);
               });
             }, 1000);
