@@ -173,15 +173,20 @@ module.exports = {
     return new Promise((resolve, reject) => {
       SerialPort.list().then(
         ports => {
-          let validPorts = [];
-          ports.forEach(element => {
-            if (element.productId) {
-              validPorts += element;
+          let obj = {};
+          let count = 0;
+          for (var i = 0, len = ports.length; i < len; i++) {
+            if (ports[i].productId) {
+              obj['port' + (i + 1)] = ports[i];
+              count++;
             }
+          }
+          resolve({
+            obj,
+            count
           });
-          resolve(validPorts);
         },
-        error => reject(error)
+        error => reject(error.message)
       );
     });
   },

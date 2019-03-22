@@ -12,6 +12,26 @@ const controller = require(controllerPath);
 const router = express.Router();
 
 /**
+ * Endpoint for connected ports list in the server
+ * @returns success message, connected ports count and list in response if operation executed successfully
+ * @returns [500] with a failure response if an error occurs
+ * @note tested in postman
+ */
+router.get('/', (req, res) => {
+    controller.portsList().then((result) => {
+        res.send({
+            success: "Operation completed successfully",
+            count: result.count,
+            ports: result.obj
+        });
+    }).catch((error) => {
+        res.status(500).send({
+            failure: error
+        });
+    });
+});
+
+/**
  * Endpoint for full draw operation, including opening a given port and registering onData event alogn with initializing a parser,
  * creating output directory and logging file, and at last, launching gcode send process
  * @param portName name of the port
@@ -204,7 +224,8 @@ router.post('/close', (req, res) => {
         });
     }
 });
-//TODO: create get list of connected ports
+
 //TODO: create write to port api endpoint
+
 
 module.exports = router;
