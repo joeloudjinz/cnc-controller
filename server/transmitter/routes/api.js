@@ -22,7 +22,7 @@ const router = express.Router();
  * TODO: store transmission data into transmission table
  * TODO: add auth middleware 
  */
-router.post('/draw/complete', (req, res) => {
+router.post('/draw', (req, res) => {
     const {
         portName,
         fileName
@@ -204,6 +204,7 @@ router.post('/close', (req, res) => {
         });
     }
 });
+//TODO: create get list of connected ports
 //TODO: create write to port api endpoint
 
 module.exports = router;
