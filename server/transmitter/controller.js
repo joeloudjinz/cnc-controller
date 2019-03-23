@@ -96,9 +96,9 @@ writeAndDrain = (name, data) => {
 module.exports = {
   /**
    ** Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined.
-   ** put the port object into ports map.
-   * @param name: of the port
-   * @param buadRate: the baud rate for the port
+   ** puts the port object into ports map.
+   * @param name of the port
+   * @param buadRate the baud rate for the port
    */
   openPort: (name, baudRate) => {
     return new Promise((resolve, reject) => {
