@@ -1,4 +1,3 @@
-//TODO: prepare work space
 const express = require("express");
 const path = require("path");
 
