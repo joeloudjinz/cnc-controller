@@ -235,10 +235,6 @@ module.exports = {
    ** the promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
    * @param name of the port
    * @Note don't use await, it does not work
-   * TODO: add pusher to push new data to the frontend
-   * TODO: test is with 500ms timeout
-   * TODO: add resume sending data after there is more room in serial receiver buffer
-   * TODO: add logging operation when receiving data
    */
   registerOnDataEvent: name => {
     return new Promise((resolve, reject) => {
