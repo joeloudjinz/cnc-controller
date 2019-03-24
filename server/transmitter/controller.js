@@ -5,7 +5,7 @@ const Readline = require("@serialport/parser-readline");
 const readline = require("readline");
 const path = require("path");
 const fs = require("fs");
-const pusher = require("pusher");
+const Pusher = require("pusher");
 
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
@@ -664,7 +664,7 @@ listenToIncomingData = name => {
           treatData(data, name);
         });
       } else {
-        console.error("listenToIncomingData: Port " + name + "is closed!");
+        console.error("listenToIncomingData: Port " + name + " is closed!");
       }
     } else {
       console.error(
