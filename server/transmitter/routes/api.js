@@ -222,18 +222,21 @@ router.post("/open", (req, res) => {
         controller
             .openPort(portName)
             .then(result => {
-                if (result) {
+                if (result === true) {
                     controller
                         .initializeDelimiterParser(portName)
                         .then(result => {
+                            console.log("initializeDelimiterParser is done");
                             controller
                                 .registerOnDataEvent(portName)
                                 .then(() => {
+                                    console.log("registerOnDataEvent is done");
                                     res.send({
                                         success: "Port " + portName + " was opened successfully"
                                     });
                                 })
                                 .catch(error => {
+                                    console.log("error in registerOnDataEvent");
                                     const preError = error;
                                     controller
                                         .closePort(portName)
@@ -254,6 +257,7 @@ router.post("/open", (req, res) => {
                                 });
                         })
                         .catch(error => {
+                            console.log("error in initializeDelimiterParser");
                             const preError = error;
                             controller
                                 .closePort()
@@ -274,14 +278,18 @@ router.post("/open", (req, res) => {
                         });
                 } else {
                     res.send({
-                        success: result
+                        success: "Port: " + portName + " is already opened"
                     });
                 }
             })
             .catch(error => {
+                console.log("outer catch");
+                console.log('error :', error);
                 res.status(500).send({
                     operation: "Opening port",
-                    failure: error.message
+                    failure: error.message,
+                    fileName: error.fileName || 'none',
+                    lineNumber: error.lineNumber || 'none',
                 });
             });
     } else {

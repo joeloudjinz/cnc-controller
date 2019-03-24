@@ -5,8 +5,8 @@ const pusherConfigPath = path.join("..", "config", "pusher.js");
 const pusherConfiguration = require(pusherConfigPath);
 const pusherObj = new Pusher(pusherConfiguration);
 
-module.exports = {
-    triggerOnPortData: (portName, content) => {
+const exported = class {
+    static triggerOnPortData(portName, content) {
         if (portName) {
             if (content) {
                 pusherObj.trigger("ports", "on-data", {
@@ -14,12 +14,14 @@ module.exports = {
                     data: content
                 });
             } else {
-                console.log("triggerOnPortData(), content is undefined");
+                console.log("triggerOnPortData(), [content] is undefined");
                 return false;
             }
         } else {
-            console.log("triggerOnPortData(), portName is undefined");
+            console.log("triggerOnPortData(), [portName] is undefined");
             return false;
         }
     }
 };
+
+module.exports = exported;

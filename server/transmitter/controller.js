@@ -12,7 +12,6 @@ const filesHandler = require(fileHandlerPath);
 
 const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
 const pusherManager = require(pusherManagerPath);
-// const pusherObj = new Pusher(pusherConfiguration);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -108,9 +107,13 @@ module.exports = {
   openPort: (name, baudRate) => {
     return new Promise((resolve, reject) => {
       if (name) {
+        // ports.forEach((value, key) => {
+        //   console.log("value is: " + value.isOpen);
+        //   console.log("key is: " + key);
+        // });
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
-            resolve("Port: " + name + " is already opened");
+            resolve(false);
           } else {
             ports.get(name).open(() => {
               resolve(true);
@@ -615,13 +618,13 @@ treatData = (data, portName) => {
     const splitted = data.split(":");
     if (data === "ok") {
       okCount++;
-      content = `-> Ok is received from port: [${portName}], The count is [${okCount}] `;
+      content = `-> Ok is received from port: [${portName}], The count: [${okCount}]`;
     } else if (splitted[0] === "error") {
       errorsCount++;
-      content = `-> An error is received from port: [${portName}], The count is [${errorsCount}] `;
+      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${data}]`;
       // errors.set(stoppedIn, data);
     } else {
-      content = `-> Data is received from port: [${portName}], Raw data is [${data}] `;
+      content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
     filesHandler.logMessage(outputDirName, logName, content);
     //? add the number of chars of the sent line to rest to send
