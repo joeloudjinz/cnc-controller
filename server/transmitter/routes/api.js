@@ -283,13 +283,11 @@ router.post("/open", (req, res) => {
                 }
             })
             .catch(error => {
-                console.log("outer catch");
-                console.log('error :', error);
+                // console.log("outer catch");
+                // console.log('error :', error);
                 res.status(500).send({
                     operation: "Opening port",
-                    failure: error.message,
-                    fileName: error.fileName || 'none',
-                    lineNumber: error.lineNumber || 'none',
+                    failure: error.message
                 });
             });
     } else {

@@ -626,7 +626,7 @@ treatData = (data, portName) => {
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
-    filesHandler.logMessage(outputDirName, logName, content);
+    pusherManager.triggerOnPortData(portName, content);
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
       restToSend += chars.get(stoppedIn - 1);
@@ -645,9 +645,11 @@ treatData = (data, portName) => {
     }
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    filesHandler.logMessage(outputDirName, logName, content);
+    // filesHandler.logMessage(outputDirName, logName, content);
+    pusherManager.triggerOnPortData(portName, content);
   }
-  pusherManager.triggerOnPortData(portName, content);
+  filesHandler.logMessage(outputDirName, logName, content);
+
 };
 
 listenToIncomingData = name => {
