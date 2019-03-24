@@ -5,14 +5,14 @@ const Readline = require("@serialport/parser-readline");
 const readline = require("readline");
 const path = require("path");
 const fs = require("fs");
-const Pusher = require("pusher");
+// const Pusher = require("pusher");
 
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
-const pusherConfigPath = path.join("..", "config", "pusher.js");
-const pusherConfiguration = require(pusherConfigPath);
-const pusherObj = new Pusher(pusherConfiguration);
+const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
+const pusherManager = require(pusherManagerPath);
+// const pusherObj = new Pusher(pusherConfiguration);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -118,8 +118,7 @@ module.exports = {
           }
         } else {
           const port = new SerialPort(
-            name,
-            {
+            name, {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
@@ -282,9 +281,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
+                name +
+                ", open status: " +
+                ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -519,9 +518,9 @@ module.exports = {
                         dirName,
                         logFileName,
                         "The rest to send after line [N° " +
-                          stoppedIn +
-                          "] is: " +
-                          restToSend
+                        stoppedIn +
+                        "] is: " +
+                        restToSend
                       );
                       //? increment for the next line
                       stoppedIn++;
@@ -532,10 +531,10 @@ module.exports = {
                         dirName,
                         logFileName,
                         "Line [N° " +
-                          stoppedIn +
-                          "] was NOT sent, error is [" +
-                          error +
-                          "]"
+                        stoppedIn +
+                        "] was NOT sent, error is [" +
+                        error +
+                        "]"
                       );
                     });
                 } else {
@@ -543,8 +542,8 @@ module.exports = {
                     dirName,
                     logFileName,
                     "Unsafe to deduct number of chars for line [N° " +
-                      stoppedIn +
-                      "]"
+                    stoppedIn +
+                    "]"
                   );
                 }
               } else {
@@ -552,11 +551,11 @@ module.exports = {
                   dirName,
                   logFileName,
                   "Number of chars of the line [N° " +
-                    stoppedIn +
-                    "] => [" +
-                    chars.get(stoppedIn) +
-                    "] is more then the rest to send " +
-                    restToSend
+                  stoppedIn +
+                  "] => [" +
+                  chars.get(stoppedIn) +
+                  "] is more then the rest to send " +
+                  restToSend
                 );
                 isFull = true;
                 b = false;
@@ -645,10 +644,7 @@ treatData = (data, portName) => {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
     filesHandler.logMessage(outputDirName, logName, content);
   }
-  pusherObj.trigger("ports", "on-data", {
-    port: portName,
-    data: content
-  });
+  pusherManager.triggerOnPortData(portName, content);
 };
 
 listenToIncomingData = name => {
@@ -657,9 +653,9 @@ listenToIncomingData = name => {
       if (ports.get(name).isOpen) {
         console.log(
           "listening for data started, port: " +
-            name +
-            ", open status: " +
-            ports.get(name).isOpen
+          name +
+          ", open status: " +
+          ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
           console.log("Data is: " + data);
