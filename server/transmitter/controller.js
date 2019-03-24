@@ -5,9 +5,14 @@ const Readline = require("@serialport/parser-readline");
 const readline = require("readline");
 const path = require("path");
 const fs = require("fs");
+const pusher = require("pusher");
 
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
+
+const pusherConfigPath = path.join("..", "config", "pusher.js");
+const pusherConfiguration = require(pusherConfigPath);
+const pusherObj = new Pusher(pusherConfiguration);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -113,12 +118,13 @@ module.exports = {
           }
         } else {
           const port = new SerialPort(
-            name, {
+            name,
+            {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
               if (error) {
-                console.log('in openPort of controller error :', error);
+                console.log("in openPort of controller error :", error);
                 reject(error);
               } else {
                 console.log("Port: " + name + " is opened");
@@ -177,7 +183,7 @@ module.exports = {
           let count = 0;
           for (var i = 0, len = ports.length; i < len; i++) {
             if (ports[i].productId) {
-              obj['port' + (i + 1)] = ports[i];
+              obj["port" + (i + 1)] = ports[i];
               count++;
             }
           }
@@ -227,7 +233,7 @@ module.exports = {
   /**
    ** Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it
    ** the promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
-   * @param name: of the port
+   * @param name of the port
    * @Note don't use await, it does not work
    * TODO: add pusher to push new data to the frontend
    * TODO: test is with 500ms timeout
@@ -247,17 +253,7 @@ module.exports = {
               initializeDelimiterParser(name)
                 .then(result => {
                   setTimeout(() => {
-                    console.log(
-                      "listening for data started, port: " +
-                      name +
-                      ", open status: " +
-                      ports.get(name).isOpen
-                    );
-                    parsers.get(name).on("data", data => {
-                      console.log("Data is: " + data);
-                      //! add here
-                      treatData(data, name);
-                    });
+                    listenToIncomingData(name);
                   }, 500);
                 })
                 .catch(error => {
@@ -290,9 +286,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                name +
-                ", open status: " +
-                ports.get(name).isOpen
+                  name +
+                  ", open status: " +
+                  ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -527,9 +523,9 @@ module.exports = {
                         dirName,
                         logFileName,
                         "The rest to send after line [N° " +
-                        stoppedIn +
-                        "] is: " +
-                        restToSend
+                          stoppedIn +
+                          "] is: " +
+                          restToSend
                       );
                       //? increment for the next line
                       stoppedIn++;
@@ -540,10 +536,10 @@ module.exports = {
                         dirName,
                         logFileName,
                         "Line [N° " +
-                        stoppedIn +
-                        "] was NOT sent, error is [" +
-                        error +
-                        "]"
+                          stoppedIn +
+                          "] was NOT sent, error is [" +
+                          error +
+                          "]"
                       );
                     });
                 } else {
@@ -551,8 +547,8 @@ module.exports = {
                     dirName,
                     logFileName,
                     "Unsafe to deduct number of chars for line [N° " +
-                    stoppedIn +
-                    "]"
+                      stoppedIn +
+                      "]"
                   );
                 }
               } else {
@@ -560,11 +556,11 @@ module.exports = {
                   dirName,
                   logFileName,
                   "Number of chars of the line [N° " +
-                  stoppedIn +
-                  "] => [" +
-                  chars.get(stoppedIn) +
-                  "] is more then the rest to send " +
-                  restToSend
+                    stoppedIn +
+                    "] => [" +
+                    chars.get(stoppedIn) +
+                    "] is more then the rest to send " +
+                    restToSend
                 );
                 isFull = true;
                 b = false;
@@ -613,8 +609,9 @@ module.exports = {
  ** Incoming data treatment from a specific port
  ** this function can resume sending gcode lines when ok response is sent from grbl,
  ** which indicates that there is room for more lines in serial receiver buffer
- * @param data: incoming data value
- * @param portName: name of the port that the data came from
+ * @param data incoming data value
+ * @param portName name of the port that the data came from
+ * TODO: move the log instruction below 1st if-else
  */
 treatData = (data, portName) => {
   if (data !== "") {
@@ -650,17 +647,21 @@ treatData = (data, portName) => {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
     filesHandler.logMessage(outputDirName, logName, content);
   }
+  pusherObj.trigger("ports", "on-data", {
+    port: portName,
+    data: content
+  });
 };
 
-listenToIncomingData = (name) => {
+listenToIncomingData = name => {
   if (name) {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
         console.log(
           "listening for data started, port: " +
-          name +
-          ", open status: " +
-          ports.get(name).isOpen
+            name +
+            ", open status: " +
+            ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
           console.log("Data is: " + data);
@@ -670,7 +671,9 @@ listenToIncomingData = (name) => {
         console.error("listenToIncomingData: Port " + name + "is closed!");
       }
     } else {
-      console.error("listenToIncomingData: There is no such port named:" + name);
+      console.error(
+        "listenToIncomingData: There is no such port named:" + name
+      );
     }
   } else {
     console.error("listenToIncomingData: Name is Undefined");
