@@ -10,6 +10,31 @@ const controller = require(controllerPath);
 const router = express.Router();
 
 /**
+ * Used by /draw endpoint to initialize a .log file with the first two lines.
+ * @param dirPath subdirectory in output directory that holds the files the current transmission output files
+ * @param filePath gcode file path
+ * @param fileName the name of .log file, it's the current timestamp
+ */
+initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName) => {
+    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission ");
+    filesHandler.logMessage(dirPath, fileName, "file: " + filePath);
+};
+
+/**
+ * Used by /draw endpoint to construct the returned object by res.send().
+ * @param operation name of the current operation
+ * @param failure the message of failure, the error message
+ * @param isPortClosed the status of closePort operation, either true if closed, or otherwise
+ */
+errorObject = (operation, failure, isPortClosed) => {
+    return {
+        operation,
+        failure,
+        isPortClosed
+    };
+};
+
+/**
  * Endpoint for connected ports list in the server
  * @returns success message, connected ports count and list in response if operation executed successfully
  * @returns [500] with a failure response if an error occurs
@@ -33,8 +58,8 @@ router.get("/", (req, res) => {
 });
 
 /**
- * Endpoint for full draw operation, including opening a given port and registering onData event alogn with initializing a parser,
- * creating output directory and logging file, and at last, launching gcode send process
+ * Endpoint for full draw operation, including opening a given port and registering onData event along with initializing a parser,
+ * creating output directory and logging file, and at last, launching gcode send process.
  * @param portName name of the port
  * @param fileName name of gcode file
  * @returns success response if operation started
@@ -43,20 +68,6 @@ router.get("/", (req, res) => {
  * TODO: store transmission data into transmission table
  * TODO: add auth middleware
  */
-
-initializeLogFileForTransmissionProcess = (dirPath, filePath, t) => {
-    filesHandler.logMessage(dirPath, t, "Starting Gcode Transmission ");
-    filesHandler.logMessage(dirPath, t, "file: " + filePath);
-};
-
-errorObject = (operation, failure, isPortClosed) => {
-    return {
-        operation,
-        failure,
-        isPortClosed
-    };
-};
-
 router.post("/draw", (req, res) => {
     const {
         portName,
@@ -64,10 +75,11 @@ router.post("/draw", (req, res) => {
     } = req.body;
     if (portName) {
         if (fileName) {
-            const directoryName = "" + Date.now();
+            const currentTS = "" + Date.now();
             controller
                 .openPort(portName)
                 .then(result => {
+                    //? true means if the port is opened by the call of operation openPort()
                     if (result === true) {
                         controller
                             .initializeDelimiterParser(portName)
@@ -76,17 +88,16 @@ router.post("/draw", (req, res) => {
                                     .registerOnDataEvent(portName)
                                     .then(() => {
                                         filesHandler
-                                            .addOutputDirectory(directoryName)
+                                            .addOutputDirectory(currentTS)
                                             .then(dirPath => {
                                                 filesHandler
                                                     .getGcodeFile(fileName)
                                                     .then(filePath => {
                                                         controller
-                                                            .readGcodeFileLines(dirPath, filePath, fileName, true)
+                                                            .readGcodeFileLines(dirPath, filePath, fileName)
                                                             .then(result => {
-                                                                const t = Date.now();
-                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, t);
-                                                                controller.startSendingProcess(portName, dirPath, t);
+                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS);
+                                                                controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                                 res.send({
                                                                     success: "GCode transmission has started successfully"
                                                                 });
@@ -149,16 +160,18 @@ router.post("/draw", (req, res) => {
                                     });
                             });
                     } else {
+                        //? false, means the port was already opened previously 
                         filesHandler
-                            .addOutputDirectory(directoryName)
+                            .addOutputDirectory(currentTS)
                             .then(dirPath => {
                                 filesHandler
                                     .getGcodeFile(fileName)
                                     .then(filePath => {
                                         controller
-                                            .readGcodeFileLines(dirPath, filePath, fileName, true)
+                                            .readGcodeFileLines(dirPath, filePath, fileName)
                                             .then(result => {
-                                                initializeLogFileForTransmissionProcess(dirPath, portName, Date.now());
+                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS);
+                                                controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                 res.send({
                                                     success: "GCode transmission has started successfully"
                                                 });

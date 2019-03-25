@@ -428,6 +428,7 @@ module.exports = {
    * All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory,
    * and the comments in '.txt' file.
    * @param dirName name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module
+   * @param filePath path of gcode file
    * @param fileName name of gcode file without extension
    * @resolve with [true] when successful execution
    * @reject with [error] if an error occurred while reading lines
@@ -484,7 +485,10 @@ module.exports = {
   /**
    * Sends a number of lines that don't pass 127 characters combined,
    * it can be used to resume sending data when 'on Data' event is emitted
-   * @param dirName name of the directory where the log file of send process reside
+   * @param portName name of the port
+   * @param dirName path of the directory where the log file of send process reside
+   * @param logFileName the name of .log file of the current process, WITHOUT extension 
+   * @param isNewCall boolean value to distinct between new or resumed call of the function
    */
   startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
     if (stoppedIn != null) {
@@ -629,7 +633,6 @@ module.exports = {
  * which indicates that there is room for more lines in the Serial Receiver Buffer.
  * @param data incoming data value
  * @param portName name of the port that the data came from
- * TODO: move the log instruction below 1st if-else
  */
 treatData = (data, portName) => {
   if (data !== "") {
