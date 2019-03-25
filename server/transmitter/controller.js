@@ -89,7 +89,6 @@ writeAndDrain = (name, data) => {
       if (ports.has(name)) {
         if (ports.get(name).isOpen) {
           if (typeof data === "string") {
-            console.log("Writing data ...");
             setTimeout(() => {
               ports.get(name).write(data);
               ports.get(name).drain(error => {
@@ -497,10 +496,10 @@ module.exports = {
       outputDirName = dirName;
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
-        await filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName);
-        await filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName);
-        await filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName);
-        await filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName);
+        filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName);
+        filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName);
+        filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName);
+        filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName);
       }
       let b = true;
       while (b) {
