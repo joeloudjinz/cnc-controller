@@ -40,6 +40,14 @@ let errorsCount = 0;
 let logName;
 let outputDirName;
 
+/**
+ * Used to write data after a timeout of 1s
+ * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
+ * if the data is not of type String, or when an error occurs.
+ * the promise is resolved when it executes successfully with a [true] value
+ * @param name the port name
+ * @param data the data to be written
+ */
 writeData = (name, data) => {
   return new Promise((resolve, reject) => {
     if (name) {
@@ -67,6 +75,14 @@ writeData = (name, data) => {
   });
 };
 
+/**
+ * Used to write data and wait for it to be sent, after a timeout of 1s
+ * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
+ * if the data is not of type String, or when an error occurs.
+ * the promise is resolved when it executes successfully with a [true] value
+ * @param name the port name
+ * @param data the data to be written
+ */
 writeAndDrain = (name, data) => {
   return new Promise((resolve, reject) => {
     if (name) {
@@ -85,10 +101,10 @@ writeAndDrain = (name, data) => {
             reject("Data should be of type String");
           }
         } else {
-          reject("Port " + name + "is closed!");
+          reject("Port " + name + " is closed!");
         }
       } else {
-        reject("There is no such port named:" + name);
+        reject("There is no such port named: " + name);
       }
     } else {
       reject("Name is Undefined");
@@ -98,18 +114,15 @@ writeAndDrain = (name, data) => {
 
 module.exports = {
   /**
-   ** Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined.
-   ** puts the port object into ports map.
+   * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined, 
+   * or when an error occurs.
+   * It will put the port object into ports map.
    * @param name of the port
-   * @param buadRate the baud rate for the port
+   * @param baudRate the baud rate for the port
    */
   openPort: (name, baudRate) => {
     return new Promise((resolve, reject) => {
       if (name) {
-        // ports.forEach((value, key) => {
-        //   console.log("value is: " + value.isOpen);
-        //   console.log("key is: " + key);
-        // });
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
             resolve(false);
@@ -125,7 +138,7 @@ module.exports = {
             },
             error => {
               if (error) {
-                console.log("in openPort of controller error :", error);
+                console.log("Can not open port: " + name + ", error :", error.message);
                 reject(error);
               } else {
                 console.log("Port: " + name + " is opened");
@@ -141,9 +154,11 @@ module.exports = {
     });
   },
   /**
-   ** Initialize a delimiter parser for a given port,
-   ** the promise is rejected when the port does not exist, or when the port is not opened, or when an error occurs
-   * @param name: of the port
+   * Initialize a delimiter parser for a given port.
+   * The promise is rejected when the port does not exist, when the port is not opened, when name of the port is undefined,
+   * or when an error occurs.
+   * The promise is resolved when its executed successfully with value of [true]
+   * @param name of the port
    */
   initializeDelimiterParser: name => {
     return new Promise((resolve, reject) => {
@@ -162,10 +177,10 @@ module.exports = {
               reject(error.message);
             }
           } else {
-            reject("Port " + name + "is closed!");
+            reject("Port " + name + " is closed!");
           }
         } else {
-          reject("There is no such port named:" + name);
+          reject("There is no such port named: " + name);
         }
       } else {
         reject("Name is Undefined");
@@ -173,8 +188,10 @@ module.exports = {
     });
   },
   /**
-   ** Return only the valid list of ports, NOT all of them
-   ** the promise is rejected when an error occurs
+   * Return only connected ports list, NOT all the available ports.
+   * The promise is rejected when an error occurs.
+   * The promise is resolved when its executed successfully with [object] holding list of ports and the count
+   * @return object with list of ports and the count.
    */
   portsList: () => {
     return new Promise((resolve, reject) => {
@@ -198,18 +215,18 @@ module.exports = {
     });
   },
   /**
-   ** closes a port and remove it from 'ports' map along with it's parser from 'parsers' map.
-   ** the promise is rejected when name is undefined, or there is no such port name, or when the port is already closed,
-   ** or when an error occurs
+   * Closes a port and remove it from 'ports' map along with it's parser from 'parsers' map.
+   * The promise is rejected when name is undefined, or there is no such port name, or when the port is already closed,
+   * or when an error occurs.
+   * The promise is resolved when its executed successfully with a value of [true].
    * @param name port name
    */
   closePort: name => {
     return new Promise((resolve, reject) => {
       if (name) {
         if (ports.has(name)) {
-          //? if it is open, close it
           if (ports.get(name).isOpen) {
-            console.log("closing port: " + name);
+            console.log("Closing port: " + name);
             ports.get(name).close(error => {
               if (error) {
                 reject(error.message);
@@ -220,11 +237,10 @@ module.exports = {
               }
             });
           } else {
-            //? if it is not opened, reject
             resolved("Port: " + name + " is already closed!");
           }
         } else {
-          reject("There is no such port named:" + name);
+          reject("There is no such port named: " + name);
         }
       } else {
         reject("Port Name is undefined");
@@ -232,8 +248,10 @@ module.exports = {
     });
   },
   /**
-   ** Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it
-   ** the promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
+   * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it, 
+   * it will register the event after a timeout of 500ms.
+   * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
+   * The promise is resolved when its executed successfully with a value of [true].
    * @param name of the port
    * @Note don't use await, it does not work
    */
@@ -257,12 +275,12 @@ module.exports = {
                   console.log(error);
                 });
             }
-            resolve();
+            resolve(true);
           } else {
-            reject("Port " + name + "is closed!");
+            reject("Port " + name + " is closed!");
           }
         } else {
-          reject("There is no such port named:" + name);
+          reject("There is no such port named: " + name);
         }
       } else {
         reject("Name is Undefined");
@@ -270,9 +288,10 @@ module.exports = {
     });
   },
   /**
-   ** Register "on Error" event for a given port
-   ** the promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
-   * @param name: of the port
+   * Register "on Error" event for a given port, after a timeout of 1s.
+   * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
+   * The promise is resolved when its executed successfully with a value of [true].
+   * @param name of the port
    * TODO: add pusher to push new data to the frontend
    */
   registerOnErrorEvent: name => {
@@ -304,27 +323,28 @@ module.exports = {
     });
   },
   /**
-   *? Uses the function writeData(name, data)
-   ** writes string data only to a given port without waiting for the serial port to be drained
-   ** the promise is rejected when name is undefined, or there is no such port name,
-   ** or when the port is not opened, or when an error occurs
+   * Writes string data only to a given port without waiting for the serial port to be drained.
+   * The promise is rejected when name is undefined, or there is no such port name,
+   * or when the port is not opened, or when an error occurs.
    * @param name: port name
    * @param data: string type data to be written to port
+   * @Note Uses the function writeData(name, data)
    */
   writeDataToPort: writeData,
   /**
-   *? Uses the function writeAndDrain(name, data)
-   ** writes string data only to a given port until serial port is drained
-   ** the promise is rejected when name is undefined, or there is no such port name,
-   ** or when the port is not opened, or when an error occurs
+   * Writes string data only to a given port until serial port is drained.
+   * The promise is rejected when name is undefined, or there is no such port name,
+   * or when the port is not opened, or when an error occurs.
    * @param name: port name
    * @param data: string type data to be written to port
+   * @Note Uses the function writeAndDrain(name, data)
    */
   writeDataAndDrain: writeAndDrain,
   /**
-   ** discards data received but not read, and written but not transmitted by the operating system.
-   ** the promise is rejected when name is undefined, or there is no such port name,
-   ** or when the port is not opened, or when an error occurs
+   * Discards data received but not read, and written but not transmitted by the operating system.
+   * The promise is rejected when name is undefined, or there is no such port name,
+   * or when the port is not opened, or when an error occurs.
+   * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
    *! NOT TESTED
    */
@@ -338,10 +358,10 @@ module.exports = {
               resolve(true);
             });
           } else {
-            reject("Port " + name + "is closed!");
+            reject("Port " + name + " is closed!");
           }
         } else {
-          reject("There is no such port named:" + name);
+          reject("There is no such port named: " + name);
         }
       } else {
         reject("Name is Undefined");
@@ -349,10 +369,11 @@ module.exports = {
     });
   },
   /**
-   ** causes a stream in flowing mode to stop emitting 'data' events,
-   ** switching out of flowing mode. Any data that becomes available remains in the internal buffer.
-   ** the promise is rejected when name is undefined, or there is no such port name,
-   ** or when the port is not opened, or when an error occurs
+   * Causes a stream in flowing mode to stop emitting 'data' events,
+   * switching out of flowing mode. Any data that becomes available remains in the internal buffer.
+   * The promise is rejected when name is undefined, or there is no such port name,
+   * or when the port is not opened, or when an error occurs.
+   * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
    *! NOT TESTED
    */
@@ -364,10 +385,10 @@ module.exports = {
             ports.get(name).pause();
             resolve(true);
           } else {
-            reject("Port " + name + "is closed!");
+            reject("Port " + name + " is closed!");
           }
         } else {
-          reject("There is no such port named:" + name);
+          reject("There is no such port named: " + name);
         }
       } else {
         reject("Name is Undefined");
@@ -375,9 +396,10 @@ module.exports = {
     });
   },
   /**
-   ** causes an explicitly paused, Readable stream to resume emitting 'data' events, switching the stream into flowing mode.
-   ** the promise is rejected when name is undefined, or there is no such port name,
-   ** or when the port is not opened, or when an error occurs
+   * Causes an explicitly paused, Readable stream to resume emitting 'data' events, switching the stream into flowing mode.
+   * The promise is rejected when name is undefined, or there is no such port name,
+   * or when the port is not opened, or when an error occurs.
+   * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
    *! NOT TESTED
    */
@@ -400,14 +422,14 @@ module.exports = {
     });
   },
   /**
-   ** Reads each line in a given gcode file and keeps it in 'codeLines' map if it's a code line,
-   ** along with counting the number of characters of current line and keeping the count in 'chars' map,
-   ** or in comments map if it's a comment, this function also counts the number of all the lines in it.
-   ** All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory,
-   ** and the comments in '.txt' file
-   * @param dirName: name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module
-   * @param fileName: name of gcode file without extension
-   * @resolve with [true] if successful execution
+   * Reads each line in a given gcode file and keeps it in 'codeLines' map if it's a code line,
+   * along with counting the number of characters of the current line and keeping the count in 'chars' map,
+   * or puts the line in comments map if it's a comment, this function also counts the number of all the lines in the file.
+   * All the code lines are stored in '.gcode' file in 'output' directory in a special sub-directory,
+   * and the comments in '.txt' file.
+   * @param dirName name of the sub-directory in 'output' directory, IT MUST be created otherwise it will throw an error, use 'addOutputDirectorySync' in files.js in 'files_handler' module
+   * @param fileName name of gcode file without extension
+   * @resolve with [true] when successful execution
    * @reject with [error] if an error occurred while reading lines
    */
   readGcodeFileLines: (dirName, filePath, fileName) => {
@@ -460,10 +482,9 @@ module.exports = {
     });
   },
   /**
-   ** Sends a number of lines that don't pass 127 characters combined,
-   ** it can be used to resume sending data on Data event is emitted
+   * Sends a number of lines that don't pass 127 characters combined,
+   * it can be used to resume sending data when 'on Data' event is emitted
    * @param dirName name of the directory where the log file of send process reside
-   * TODO: empty the maps and initialize variables
    */
   startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
     if (stoppedIn != null) {
@@ -543,7 +564,7 @@ module.exports = {
                   filesHandler.logMessage(
                     dirName,
                     logFileName,
-                    "Unsafe to deduct number of chars for line [N° " +
+                    "Unsafe to subtract number of characters for line [N° " +
                     stoppedIn +
                     "]"
                   );
@@ -552,7 +573,7 @@ module.exports = {
                 filesHandler.logMessage(
                   dirName,
                   logFileName,
-                  "Number of chars of the line [N° " +
+                  "Number of characters of the line [N° " +
                   stoppedIn +
                   "] => [" +
                   chars.get(stoppedIn) +
@@ -566,7 +587,7 @@ module.exports = {
               filesHandler.logMessage(
                 dirName,
                 logFileName,
-                "There is no such line [N° " + stoppedIn + "] in code lines map"
+                "There is no such line [N° " + stoppedIn + "]"
               );
               stoppedIn++;
             }
@@ -594,8 +615,6 @@ module.exports = {
           okCount = 0;
           errorsCount = 0;
           isFull = false;
-          // logName = null;
-          // outputDirName = null;
           b = false;
         }
       }
@@ -605,9 +624,9 @@ module.exports = {
   }
 };
 /**
- ** Incoming data treatment from a specific port
- ** this function can resume sending gcode lines when ok response is sent from grbl,
- ** which indicates that there is room for more lines in serial receiver buffer
+ * Treats incoming data from a specific port.
+ * this function will resume sending gcode lines when ok response is sent from grbl,
+ * which indicates that there is room for more lines in the Serial Receiver Buffer.
  * @param data incoming data value
  * @param portName name of the port that the data came from
  * TODO: move the log instruction below 1st if-else
@@ -620,8 +639,8 @@ treatData = (data, portName) => {
       content = `-> Ok is received from port: [${portName}], The count: [${okCount}]`;
     } else if (splitted[0] === "error") {
       errorsCount++;
-      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${data}]`;
-      // errors.set(stoppedIn, data);
+      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${splitted[1]}]`;
+      //! errors.set(stoppedIn, data);
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
@@ -644,13 +663,14 @@ treatData = (data, portName) => {
     }
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    // filesHandler.logMessage(outputDirName, logName, content);
     pusherManager.triggerOnPortData(portName, content);
   }
   filesHandler.logMessage(outputDirName, logName, content);
-
 };
 
+/**
+ * Called by registerOnDataEvent() method to register the event.
+ */
 listenToIncomingData = name => {
   if (name) {
     if (ports.has(name)) {
@@ -670,7 +690,7 @@ listenToIncomingData = name => {
       }
     } else {
       console.error(
-        "listenToIncomingData: There is no such port named:" + name
+        "listenToIncomingData: There is no such port named: " + name
       );
     }
   } else {
