@@ -9,8 +9,8 @@ const fs = require("fs");
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
-const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
-const pusherManager = require(pusherManagerPath);
+// const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
+// const pusherManager = require(pusherManagerPath);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -96,7 +96,7 @@ writeAndDrain = (name, data) => {
                 if (error) reject(error);
                 resolve(true);
               });
-            }, 1000);
+            }, 1500);
           } else {
             reject("Data should be of type String");
           }
@@ -497,26 +497,10 @@ module.exports = {
       outputDirName = dirName;
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number: [" + codeLinesNbr + "]"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number of code: [" + codeLines.size + "]"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number of comments: [" + comments.size + "]"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Transmitting to port: " + portName
-        );
+        await filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName);
+        await filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName);
+        await filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName);
+        await filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName);
       }
       let b = true;
       while (b) {
@@ -534,82 +518,36 @@ module.exports = {
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
-                      filesHandler.logMessage(
-                        dirName,
-                        logFileName,
-                        "Line [N° " + stoppedIn + "] was sent"
-                      );
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent", true, portName);
                       //? deduct the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
-                      filesHandler.logMessage(
-                        dirName,
-                        logFileName,
-                        "The rest to send after line [N° " +
-                        stoppedIn +
-                        "] is: " +
-                        restToSend
-                      );
+                      filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend, false);
                       //? increment for the next line
                       stoppedIn++;
                     })
                     //* when the send operation is completed with an error indicating the line was not sent!
                     .catch(error => {
-                      filesHandler.logMessage(
-                        dirName,
-                        logFileName,
-                        "Line [N° " +
-                        stoppedIn +
-                        "] was NOT sent, error is [" +
-                        error +
-                        "]"
-                      );
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]", true, portName);
                     });
                 } else {
-                  filesHandler.logMessage(
-                    dirName,
-                    logFileName,
-                    "Unsafe to subtract number of characters for line [N° " +
-                    stoppedIn +
-                    "]"
-                  );
+                  filesHandler.logMessage(dirName, logFileName, "Unsafe to subtract number of characters for line [N° " + stoppedIn + "]", false);
                 }
               } else {
-                filesHandler.logMessage(
-                  dirName,
-                  logFileName,
-                  "Number of characters of the line [N° " +
-                  stoppedIn +
-                  "] => [" +
-                  chars.get(stoppedIn) +
-                  "] is more then the rest to send " +
-                  restToSend
-                );
+                filesHandler.logMessage(dirName, logFileName, "Number of characters of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend, false);
                 isFull = true;
                 b = false;
               }
             } else {
-              filesHandler.logMessage(
-                dirName,
-                logFileName,
-                "There is no such line [N° " + stoppedIn + "]"
-              );
+              filesHandler.logMessage(dirName, logFileName, "There is no such line [N° " + stoppedIn + "]", false);
               stoppedIn++;
             }
           } else {
-            filesHandler.logMessage(
-              dirName,
-              logFileName,
-              "Max characters is reached, rest to send is: " + restToSend
-            );
+            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend, true, portName);
             isFull = true;
             b = false;
           }
         } else {
-          filesHandler.logMessage(
-            dirName,
-            logFileName,
-            "All lines has been sent, rest to send is: " + restToSend
-          );
+          filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName);
           codeLines.clear();
           chars.clear();
           comments.clear();
@@ -647,7 +585,7 @@ treatData = (data, portName) => {
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
-    pusherManager.triggerOnPortData(portName, content);
+    filesHandler.logMessage(outputDirName, logName, content, true, portName);
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
       restToSend += chars.get(stoppedIn - 1);
@@ -666,9 +604,8 @@ treatData = (data, portName) => {
     }
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    pusherManager.triggerOnPortData(portName, content);
+    filesHandler.logMessage(outputDirName, logName, content, true, portName);
   }
-  filesHandler.logMessage(outputDirName, logName, content);
 };
 
 /**

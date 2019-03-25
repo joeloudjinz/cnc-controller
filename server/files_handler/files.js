@@ -2,6 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const root_path = require("app-root-path").path;
 
+const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
+const pusherManager = require(pusherManagerPath);
+
 const imgDir = path.join(root_path, "server", "resources", "images");
 const gcodeDir = path.join(root_path, "server", "resources", "gcodes");
 const outputsDir = path.join(root_path, "server", "resources", "outputs");
@@ -187,12 +190,14 @@ module.exports = {
     // },
     /**
      * Synchronously, logging a message into a log file
-     * @param dirName: directory name to create a logging file
-     * @param content: the content of the logging message
+     * @param dirName directory name to create a logging file
+     * @param fileName the name of .log file
+     * @param content the content of the logging message
+     * @param doPush either to push data logged to frontend or not
      * @returns [String] the path of the log file
      * @returns [false] if there was an error while appending data to file
      */
-    logMessage: (dirName, fileName, content) => {
+    logMessage: (dirName, fileName, content, doPush, portName) => {
         if (dirName) {
             if (fileName) {
                 const logPath = path.join(dirName, fileName + ".log");
@@ -202,6 +207,11 @@ module.exports = {
                         logPath,
                         "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] : " + content + "\n"
                     );
+                    if (doPush)
+                        if (portName)
+                            pusherManager.triggerOnPortData(portName, content);
+                        else
+                            console.log("port name is undefined in logMessage()");
                     return true;
                 } catch (error) {
                     console.log('logMessage error :', error);

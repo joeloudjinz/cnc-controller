@@ -14,10 +14,11 @@ const router = express.Router();
  * @param dirPath subdirectory in output directory that holds the files the current transmission output files
  * @param filePath gcode file path
  * @param fileName the name of .log file, it's the current timestamp
+ * @param portName the name of the port
  */
-initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName) => {
-    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission ");
-    filesHandler.logMessage(dirPath, fileName, "file: " + filePath);
+initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName) => {
+    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission", true, portName);
+    filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName);
 };
 
 /**
@@ -96,7 +97,7 @@ router.post("/draw", (req, res) => {
                                                         controller
                                                             .readGcodeFileLines(dirPath, filePath, fileName)
                                                             .then(result => {
-                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS);
+                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName);
                                                                 controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                                 res.send({
                                                                     success: "GCode transmission has started successfully"
@@ -170,7 +171,7 @@ router.post("/draw", (req, res) => {
                                         controller
                                             .readGcodeFileLines(dirPath, filePath, fileName)
                                             .then(result => {
-                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS);
+                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName);
                                                 controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                 res.send({
                                                     success: "GCode transmission has started successfully"
