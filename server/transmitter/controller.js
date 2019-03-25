@@ -5,7 +5,6 @@ const Readline = require("@serialport/parser-readline");
 const readline = require("readline");
 const path = require("path");
 const fs = require("fs");
-// const Pusher = require("pusher");
 
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
@@ -57,10 +56,10 @@ writeData = (name, data) => {
             reject("Data should be of type String");
           }
         } else {
-          reject("Port " + name + "is closed!");
+          reject("Port " + name + " is closed!");
         }
       } else {
-        reject("There is no such port named:" + name);
+        reject("There is no such port named: " + name);
       }
     } else {
       reject("Name is Undefined");

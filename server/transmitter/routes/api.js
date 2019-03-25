@@ -43,6 +43,20 @@ router.get("/", (req, res) => {
  * TODO: store transmission data into transmission table
  * TODO: add auth middleware
  */
+
+initializeLogFileForTransmissionProcess = (dirPath, filePath, t) => {
+    filesHandler.logMessage(dirPath, t, "Starting Gcode Transmission ");
+    filesHandler.logMessage(dirPath, t, "file: " + filePath);
+};
+
+errorObject = (operation, failure, isPortClosed) => {
+    return {
+        operation,
+        failure,
+        isPortClosed
+    };
+};
+
 router.post("/draw", (req, res) => {
     const {
         portName,
@@ -50,144 +64,142 @@ router.post("/draw", (req, res) => {
     } = req.body;
     if (portName) {
         if (fileName) {
+            const directoryName = "" + Date.now();
             controller
                 .openPort(portName)
                 .then(result => {
-                    controller
-                        .initializeDelimiterParser(portName)
-                        .then(result => {
-                            controller
-                                .registerOnDataEvent(portName)
-                                .then(() => {
-                                    filesHandler
-                                        .addOutputDirectory("" + Date.now())
-                                        .then(dirPath => {
-                                            filesHandler
-                                                .getGcodeFile(fileName)
-                                                .then(filePath => {
-                                                    controller
-                                                        .readGcodeFileLines(dirPath, filePath, fileName, true)
-                                                        .then(result => {
-                                                            const t = Date.now();
-                                                            filesHandler.logMessage(
-                                                                dirPath,
-                                                                t,
-                                                                "Starting Gcode Transmission "
-                                                            );
-                                                            filesHandler.logMessage(
-                                                                dirPath,
-                                                                t,
-                                                                "file: " + filePath
-                                                            );
-                                                            controller.startSendingProcess(
-                                                                portName,
-                                                                dirPath,
-                                                                t
-                                                            );
-                                                            res.send({
-                                                                success: "GCode transmission has started successfully"
-                                                            });
-                                                        })
-                                                        .catch(error => {
-                                                            const preError = error;
-                                                            controller
-                                                                .closePort(portName)
-                                                                .then(result => {
-                                                                    res.status(500).send({
-                                                                        operation: "Reading file lines",
-                                                                        failure: preError,
-                                                                        isPortClosed: true
-                                                                    });
-                                                                })
-                                                                .catch(error => {
-                                                                    controller.closePort(portName).then(result => {
-                                                                        res.status(500).send({
-                                                                            operation: "Reading file lines",
-                                                                            failure: preError,
-                                                                            isPortClosed: false
+                    if (result === true) {
+                        controller
+                            .initializeDelimiterParser(portName)
+                            .then(result => {
+                                controller
+                                    .registerOnDataEvent(portName)
+                                    .then(() => {
+                                        filesHandler
+                                            .addOutputDirectory(directoryName)
+                                            .then(dirPath => {
+                                                filesHandler
+                                                    .getGcodeFile(fileName)
+                                                    .then(filePath => {
+                                                        controller
+                                                            .readGcodeFileLines(dirPath, filePath, fileName, true)
+                                                            .then(result => {
+                                                                const t = Date.now();
+                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, t);
+                                                                controller.startSendingProcess(portName, dirPath, t);
+                                                                res.send({
+                                                                    success: "GCode transmission has started successfully"
+                                                                });
+                                                            })
+                                                            .catch(error => {
+                                                                const preError = error;
+                                                                controller
+                                                                    .closePort(portName)
+                                                                    .then(result => {
+                                                                        res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                                    })
+                                                                    .catch(error => {
+                                                                        controller.closePort(portName).then(result => {
+                                                                            res.status(500).send(errorObject("Reading file lines", preError, false));
                                                                         });
                                                                     });
-                                                                });
+                                                            });
+                                                    }).catch(error => {
+                                                        const preError = error;
+                                                        controller
+                                                            .closePort(portName)
+                                                            .then(result => {
+                                                                res.status(500).send(errorObject("Getting gcode file", preError, true));
+                                                            })
+                                                            .catch(error => {
+                                                                res.status(500).send(errorObject("Getting gcode file", preError, false));
+                                                            });
+                                                    });
+                                            }).catch(error => {
+                                                const preError = error;
+                                                controller
+                                                    .closePort(portName)
+                                                    .then(result => {
+                                                        res.status(500).send(errorObject("Creating output directory", preError, true));
+                                                    })
+                                                    .catch(error => {
+                                                        res.status(500).send(errorObject("Creating output directory", preError, false));
+                                                    });
+                                            });
+                                    }).catch(error => {
+                                        const preError = error;
+                                        controller
+                                            .closePort(portName)
+                                            .then(result => {
+                                                res.status(500).send(errorObject("Registering on Data event for the port", preError, true));
+                                            })
+                                            .catch(error => {
+                                                res.status(500).send(errorObject("Registering on Data event for the port", preError, false));
+                                            });
+                                    });
+                            }).catch(error => {
+                                const preError = error;
+                                controller
+                                    .closePort()
+                                    .then(result => {
+                                        res.status(500).send(errorObject("Initializing delimiter parser for port", preError, true));
+                                    })
+                                    .catch(error => {
+                                        res.status(500).send(errorObject("Initializing delimiter parser for port", preError, false));
+                                    });
+                            });
+                    } else {
+                        filesHandler
+                            .addOutputDirectory(directoryName)
+                            .then(dirPath => {
+                                filesHandler
+                                    .getGcodeFile(fileName)
+                                    .then(filePath => {
+                                        controller
+                                            .readGcodeFileLines(dirPath, filePath, fileName, true)
+                                            .then(result => {
+                                                initializeLogFileForTransmissionProcess(dirPath, portName, Date.now());
+                                                res.send({
+                                                    success: "GCode transmission has started successfully"
+                                                });
+                                            })
+                                            .catch(error => {
+                                                const preError = error;
+                                                controller
+                                                    .closePort(portName)
+                                                    .then(result => {
+                                                        res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                    })
+                                                    .catch(error => {
+                                                        controller.closePort(portName).then(result => {
+                                                            res.status(500).send(errorObject("Reading file lines", preError, false));
                                                         });
+                                                    });
+                                            });
 
-                                                }).catch(error => {
-                                                    const preError = error;
-                                                    controller
-                                                        .closePort(portName)
-                                                        .then(result => {
-                                                            res.status(500).send({
-                                                                operation: "Getting gcode file",
-                                                                failure: preError,
-                                                                isPortClosed: true
-                                                            });
-                                                        })
-                                                        .catch(error => {
-                                                            res.status(500).send({
-                                                                operation: "Getting gcode file",
-                                                                failure: preError,
-                                                                isPortClosed: false
-                                                            });
-                                                        });
-                                                });
-                                        }).catch(error => {
-                                            // console.log('addOutputDirectory error :', error);
-                                            const preError = error;
-                                            controller
-                                                .closePort(portName)
-                                                .then(result => {
-                                                    res.status(500).send({
-                                                        operation: "Creating output directory",
-                                                        failure: preError,
-                                                        isPortClosed: true
-                                                    });
-                                                })
-                                                .catch(error => {
-                                                    // console.log('closePort in addOutputDirectory catch, error :', error);
-                                                    res.status(500).send({
-                                                        operation: "Creating output directory",
-                                                        failure: preError,
-                                                        isPortClosed: false
-                                                    });
-                                                });
-                                        });
-                                }).catch(error => {
-                                    const preError = error;
-                                    controller
-                                        .closePort(portName)
-                                        .then(result => {
-                                            res.status(500).send({
-                                                operation: "Registering on Data event for the port",
-                                                failure: preError,
-                                                isPortClosed: true
+                                    }).catch(error => {
+                                        const preError = error;
+                                        controller
+                                            .closePort(portName)
+                                            .then(result => {
+                                                res.status(500).send(errorObject("Getting gcode file", preError, true));
+                                            })
+                                            .catch(error => {
+                                                res.status(500).send(errorObject("Getting gcode file", preError, false));
                                             });
-                                        })
-                                        .catch(error => {
-                                            res.status(500).send({
-                                                operation: "Initializing delimiter parser for port",
-                                                failure: preError,
-                                                isPortClosed: false
-                                            });
-                                        });
-                                });
-                        }).catch(error => {
-                            const preError = error;
-                            controller
-                                .closePort()
-                                .then(result => {
-                                    res.status(500).send({
-                                        operation: "Initializing delimiter parser for port",
-                                        failure: preError,
-                                        isPortClosed: true
                                     });
-                                })
-                                .catch(error => {
-                                    res.status(500).send({
-                                        operation: "Initializing delimiter parser for port",
-                                        failure: preError,
-                                        isPortClosed: false
+                            }).catch(error => {
+                                const preError = error;
+                                controller
+                                    .closePort(portName)
+                                    .then(result => {
+                                        res.status(500).send(errorObject("Creating output directory", preError, true));
+                                    })
+                                    .catch(error => {
+                                        res.status(500).send(errorObject("Creating output directory", preError, false));
                                     });
-                                });
-                        });
+                            });
+                    }
                 }).catch(error => {
                     res.status(500).send({
                         operation: "Opening port",
