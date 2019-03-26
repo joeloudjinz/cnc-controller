@@ -76,7 +76,7 @@ writeData = (name, data) => {
 };
 
 /**
- * Used to write data and wait for it to be sent, after a timeout of 1s
+ * Used to write data and wait for it to be sent, after a timeout of 1.5s
  * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
  * if the data is not of type String, or when an error occurs.
  * the promise is resolved when it executes successfully with a [true] value
@@ -353,7 +353,7 @@ module.exports = {
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
             ports.get(name).flush(error => {
-              if (error) reject(error);
+              if (error) reject(error.message);
               resolve(true);
             });
           } else {
@@ -546,15 +546,18 @@ module.exports = {
             b = false;
           }
         } else {
-          filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName);
-          codeLines.clear();
-          chars.clear();
-          comments.clear();
-          codeLinesNbr = 0;
-          stoppedIn = 0;
-          restToSend = 127;
-          okCount = 0;
-          errorsCount = 0;
+          //? Using timeout to make sure to get the last 'ok' and then initialize the variables
+          setTimeout(() => {
+            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName);
+            codeLines.clear();
+            chars.clear();
+            comments.clear();
+            codeLinesNbr = 0;
+            stoppedIn = 0;
+            restToSend = 127;
+            okCount = 0;
+            errorsCount = 0;
+          }, 1500);
           isFull = false;
           b = false;
         }

@@ -248,69 +248,46 @@ router.post("/open", (req, res) => {
         controller
             .openPort(portName)
             .then(result => {
+                //? true means if the port is opened by the call of operation openPort()
                 if (result === true) {
                     controller
                         .initializeDelimiterParser(portName)
                         .then(result => {
-                            console.log("initializeDelimiterParser is done");
                             controller
                                 .registerOnDataEvent(portName)
                                 .then(() => {
-                                    console.log("registerOnDataEvent is done");
                                     res.send({
-                                        success: "Port " + portName + " was opened successfully"
+                                        success: 'Port ' + portName + ' was opened successfully'
                                     });
-                                })
-                                .catch(error => {
-                                    console.log("error in registerOnDataEvent");
+                                }).catch(error => {
                                     const preError = error;
                                     controller
                                         .closePort(portName)
                                         .then(result => {
-                                            res.status(500).send({
-                                                operation: "Registering on Data event for the port" + portName,
-                                                failure: preError,
-                                                isPortClosed: true
-                                            });
+                                            res.status(500).send(errorObject("Registering on Data event for the port", preError, true));
                                         })
                                         .catch(error => {
-                                            res.status(500).send({
-                                                operation: "Initializing delimiter parser for port" + portName,
-                                                failure: preError,
-                                                isPortClosed: false
-                                            });
+                                            res.status(500).send(errorObject("Registering on Data event for the port", preError, false));
                                         });
                                 });
-                        })
-                        .catch(error => {
-                            console.log("error in initializeDelimiterParser");
+                        }).catch(error => {
                             const preError = error;
                             controller
                                 .closePort()
                                 .then(result => {
-                                    res.status(500).send({
-                                        operation: "Initializing delimiter parser for port" + portName,
-                                        failure: preError,
-                                        isPortClosed: true
-                                    });
+                                    res.status(500).send(errorObject("Initializing delimiter parser for port", preError, true));
                                 })
                                 .catch(error => {
-                                    res.status(500).send({
-                                        operation: "Initializing delimiter parser for port" + portName,
-                                        failure: preError,
-                                        isPortClosed: false
-                                    });
+                                    res.status(500).send(errorObject("Initializing delimiter parser for port", preError, false));
                                 });
                         });
                 } else {
+                    //? false, means the port was already opened previously 
                     res.send({
                         success: "Port: " + portName + " is already opened"
                     });
                 }
-            })
-            .catch(error => {
-                // console.log("outer catch");
-                // console.log('error :', error);
+            }).catch(error => {
                 res.status(500).send({
                     operation: "Opening port",
                     failure: error.message
@@ -394,6 +371,35 @@ router.post("/write", (req, res) => {
                 failure: "Data to be written is undefined"
             });
         }
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+
+router.post('/flush', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .flushSerialPort(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'Data on port ' + portName + ' flushed successfully'
+                    });
+                } else {
+                    res.send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /flush is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
     } else {
         res.status(404).send({
             failure: "Port name is undefined"
