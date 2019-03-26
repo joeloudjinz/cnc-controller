@@ -378,6 +378,14 @@ router.post("/write", (req, res) => {
     }
 });
 
+/**
+ * Endpoint for flushing data of a given port
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/flush', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -389,7 +397,7 @@ router.post('/flush', (req, res) => {
                         success: 'Data on port ' + portName + ' flushed successfully'
                     });
                 } else {
-                    res.send({
+                    res.status(500).send({
                         failure: 'Something is wrong!',
                         result
                     });
@@ -407,6 +415,14 @@ router.post('/flush', (req, res) => {
     }
 });
 
+/**
+ * Endpoint to resume emitting data of a given port
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/resume', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -418,7 +434,7 @@ router.post('/resume', (req, res) => {
                         success: 'Resume emitting data on port ' + portName + ' ended successfully'
                     });
                 } else {
-                    res.send({
+                    res.status(500).send({
                         failure: 'Something is wrong!',
                         result
                     });
@@ -436,6 +452,14 @@ router.post('/resume', (req, res) => {
     }
 });
 
+/**
+ * Endpoint to pause emitting data of a given port
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/pause', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -447,7 +471,7 @@ router.post('/pause', (req, res) => {
                         success: 'Pause emitting data on port ' + portName + ' ended successfully'
                     });
                 } else {
-                    res.send({
+                    res.status(500).send({
                         failure: 'Something is wrong!',
                         result
                     });
