@@ -345,7 +345,6 @@ module.exports = {
    * or when the port is not opened, or when an error occurs.
    * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
-   *! NOT TESTED
    */
   flushSerialPort: name => {
     return new Promise((resolve, reject) => {
@@ -374,7 +373,6 @@ module.exports = {
    * or when the port is not opened, or when an error occurs.
    * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
-   *! NOT TESTED
    */
   pauseEmittingDataEvent: name => {
     return new Promise((resolve, reject) => {
@@ -400,7 +398,6 @@ module.exports = {
    * or when the port is not opened, or when an error occurs.
    * The promise is resolved when its executed successfully with a value of [true].
    * @param name: port name
-   *! NOT TESTED
    */
   resumeEmittingDataEvent: name => {
     return new Promise((resolve, reject) => {
@@ -496,10 +493,10 @@ module.exports = {
       outputDirName = dirName;
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
-        filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName);
-        filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName);
-        filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName);
-        filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName);
+        filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName, "onLog");
+        filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName, "onLog");
+        filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName, "onLog");
+        filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName, "onLog");
       }
       let b = true;
       while (b) {
@@ -517,7 +514,7 @@ module.exports = {
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent", true, portName);
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent", true, portName, "onLog");
                       //? deduct the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
                       filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend, false);
@@ -526,7 +523,7 @@ module.exports = {
                     })
                     //* when the send operation is completed with an error indicating the line was not sent!
                     .catch(error => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]", true, portName);
+                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]", true, portName, "onLog");
                     });
                 } else {
                   filesHandler.logMessage(dirName, logFileName, "Unsafe to subtract number of characters for line [N° " + stoppedIn + "]", false);
@@ -541,14 +538,14 @@ module.exports = {
               stoppedIn++;
             }
           } else {
-            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend, true, portName);
+            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend, true, portName, "onLog");
             isFull = true;
             b = false;
           }
         } else {
           //? Using timeout to make sure to get the last 'ok' and then initialize the variables
           setTimeout(() => {
-            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName);
+            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName, "onLog");
             codeLines.clear();
             chars.clear();
             comments.clear();
@@ -587,7 +584,7 @@ treatData = (data, portName) => {
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
-    filesHandler.logMessage(outputDirName, logName, content, true, portName);
+    filesHandler.logMessage(outputDirName, logName, content, true, portName, "onData");
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
       restToSend += chars.get(stoppedIn - 1);
@@ -606,7 +603,7 @@ treatData = (data, portName) => {
     }
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    filesHandler.logMessage(outputDirName, logName, content, true, portName);
+    filesHandler.logMessage(outputDirName, logName, content, true, portName, "onData");
   }
 };
 

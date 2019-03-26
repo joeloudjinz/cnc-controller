@@ -22,6 +22,22 @@ const exported = class {
             return false;
         }
     }
+    static triggerOnLog(portName, content) {
+        if (portName) {
+            if (content) {
+                pusherObj.trigger("logs", "on-log", {
+                    // port: portName,
+                    data: content
+                });
+            } else {
+                console.log("triggerLogMessages(), [content] is undefined");
+                return false;
+            }
+        } else {
+            console.log("triggerLogMessages(), [portName] is undefined");
+            return false;
+        }
+    }
 };
 
 module.exports = exported;

@@ -194,25 +194,41 @@ module.exports = {
      * @param fileName the name of .log file
      * @param content the content of the logging message
      * @param doPush either to push data logged to frontend or not
+     * @param type of the operation to trigger push content to front-end
      * @returns [true] if executed successfully
      * @returns [false] if there was an error while appending data to file
      */
-    logMessage: (dirName, fileName, content, doPush, portName) => {
+    logMessage: (dirName, fileName, content, doPush, portName, type) => {
         if (dirName) {
             if (fileName) {
                 const logPath = path.join(dirName, fileName + ".log");
                 try {
                     const t = new Date();
-                    const newContent = "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] : " + content;
+                    const newContent = "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] | " + content;
                     fs.appendFileSync(
                         logPath,
                         newContent + "\n"
                     );
-                    if (doPush)
-                        if (portName)
-                            pusherManager.triggerOnPortData(portName, newContent);
-                        else
-                            console.log("Port name is undefined in logMessage()");
+                    if (doPush) {
+                        if (type) {
+                            switch (type) {
+                                case "onData":
+                                    if (portName)
+                                        pusherManager.triggerOnPortData(portName, newContent);
+                                    else
+                                        console.log("Port name is undefined in logMessage()");
+                                    break;
+                                case "onLog":
+                                    pusherManager.triggerOnLog(portName, newContent);
+                                    break;
+                                default:
+                                    console.log("something is wrong in logMessage(), default case!");
+                                    break;
+                            }
+                        } else {
+                            console.log("Operation type is undefined in logMessage()");
+                        }
+                    }
                     return true;
                 } catch (error) {
                     console.log('logMessage error :', error);
