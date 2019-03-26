@@ -407,4 +407,62 @@ router.post('/flush', (req, res) => {
     }
 });
 
+router.post('/resume', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .resumeEmittingDataEvent(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'Resume emitting data on port ' + portName + ' ended successfully'
+                    });
+                } else {
+                    res.send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /resume is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+
+router.post('/pause', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .pauseEmittingDataEvent(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'Pause emitting data on port ' + portName + ' ended successfully'
+                    });
+                } else {
+                    res.send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /pause is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+
 module.exports = router;
