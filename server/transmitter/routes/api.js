@@ -432,7 +432,7 @@ router.post('/resume', (req, res) => {
             .then((result) => {
                 if (result) {
                     res.send({
-                        success: 'Resume emitting data on port ' + portName + ' ended successfully'
+                        success: 'Emitting data on port ' + portName + ' is resumed'
                     });
                 } else {
                     res.status(500).send({
@@ -462,7 +462,7 @@ router.post('/resume', (req, res) => {
  * TODO: add auth middleware
  */
 
- router.post('/pause', (req, res) => {
+router.post('/pause', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
         controller
@@ -470,7 +470,7 @@ router.post('/resume', (req, res) => {
             .then((result) => {
                 if (result) {
                     res.send({
-                        success: 'Pause emitting data on port ' + portName + ' ended successfully'
+                        success: 'Emitting data on port ' + portName + ' is paused successfully'
                     });
                 } else {
                     res.status(500).send({
@@ -491,8 +491,89 @@ router.post('/resume', (req, res) => {
     }
 });
 
-router.post('/darw/pause', (req, res) => {
-
+router.post('/draw/pause', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .pauseSendingProcess(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'GCode lines send process to port: ' + portName + ' is paused'
+                    });
+                } else {
+                    res.status(500).send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /draw/pause is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+router.post('/draw/resume', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .resumeSendingProcess(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'GCode lines send process to port: ' + portName + ' is resumed'
+                    });
+                } else {
+                    res.status(500).send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /draw/resume is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+router.post('/draw/stop', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .stopSendingProcess(portName)
+            .then((result) => {
+                if (result) {
+                    res.send({
+                        success: 'GCode lines send process to port: ' + portName + ' is stopped'
+                    });
+                } else {
+                    res.status(500).send({
+                        failure: 'Something is wrong!',
+                        result
+                    });
+                    console.log('result in /draw/stop is :', result);
+                }
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
 });
 
 module.exports = router;
