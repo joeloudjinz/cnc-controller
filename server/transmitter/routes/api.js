@@ -17,8 +17,8 @@ const router = express.Router();
  * @param portName the name of the port
  */
 initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName) => {
-    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission", true, portName);
-    filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName);
+    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission", true, portName, "onLog");
+    filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName, "onLog");
 };
 
 /**
@@ -63,7 +63,7 @@ router.get("/", (req, res) => {
  * creating output directory and logging file, and at last, launching gcode send process.
  * @param portName name of the port
  * @param fileName name of gcode file
- * @returns success response if operation started
+ * @returns success response if operation started, with the estimated time to end the process
  * @returns [500] with a failure response if one operation didn't executed successfully and closes the port if opned
  * @returns [404] if one of the params is undefined, along with a failure message
  * TODO: store transmission data into transmission table
@@ -100,7 +100,8 @@ router.post("/draw", (req, res) => {
                                                                 initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName);
                                                                 controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                                 res.send({
-                                                                    success: "GCode transmission has started successfully"
+                                                                    success: "GCode transmission has started successfully",
+                                                                    estimated: controller.getEstimatedTimeToSendCode() / 3600   //! in minutes
                                                                 });
                                                             })
                                                             .catch(error => {

@@ -40,6 +40,9 @@ let errorsCount = 0;
 let logName;
 let outputDirName;
 
+//? represents the duration of the timeout to send one line of code
+const lineSendDuration = 1500;
+
 /**
  * Used to write data after a timeout of 1s
  * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
@@ -59,7 +62,7 @@ writeData = (name, data) => {
                 if (error) reject(error.message);
                 resolve(true);
               });
-            }, 1000);
+            }, lineSendDuration);
           } else {
             reject("Data should be of type String");
           }
@@ -95,7 +98,7 @@ writeAndDrain = (name, data) => {
                 if (error) reject(error);
                 resolve(true);
               });
-            }, 1500);
+            }, lineSendDuration);
           } else {
             reject("Data should be of type String");
           }
@@ -112,6 +115,13 @@ writeAndDrain = (name, data) => {
 };
 
 module.exports = {
+  /**
+   * Calculate the estimated time to send all lines of code in a file to the machine
+   * @returns [integer] the number of milliseconds estimated
+   */
+  getEstimatedTimeToSendCode: () => {
+    return codeLines.size * lineSendDuration;
+  },
   /**
    * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined, 
    * or when an error occurs.
