@@ -41,7 +41,7 @@ let logName;
 let outputDirName;
 
 //? represents the duration of the timeout to send one line of code
-const lineSendDuration = 1500;
+const lineSendDuration = 700;
 
 /**
  * Used to write data after a timeout of 1s
@@ -95,7 +95,7 @@ writeAndDrain = (name, data) => {
             setTimeout(() => {
               ports.get(name).write(data);
               ports.get(name).drain(error => {
-                if (error) reject(error);
+                if (error) reject(error.message);
                 resolve(true);
               });
             }, lineSendDuration);
@@ -120,7 +120,13 @@ module.exports = {
    * @returns [integer] the number of minutes estimated
    */
   getEstimatedTimeToSendCode: () => {
-    return (codeLines.size * lineSendDuration) / 3600;
+    const a = ((codeLines.size * lineSendDuration) / 1000 / 60).toFixed(2);
+    const splitted = a.split('.');
+    if (a < 1) {
+      return splitted[1] + " seconds";
+    } else {
+      return splitted[0] + " minute & " + splitted[1] + " seconds";
+    }
   },
   /**
    * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined, 
@@ -507,8 +513,10 @@ module.exports = {
         filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName, "onLog");
+        filesHandler.logMessage(dirName, logFileName, "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(), true, portName, "onLog");
       }
       let b = true;
+      const start = Date.now();
       while (b) {
         //? testing if the current line number is not over the last line of code
         if (stoppedIn <= codeLinesNbr) {
@@ -525,7 +533,7 @@ module.exports = {
                     //* when the send operation is completed
                     .then(result => {
                       filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent", true, portName, "onLog");
-                      //? deduct the number of chars of the sent line from the restToSend
+                      //? subtract the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
                       filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend, false);
                       //? increment for the next line
@@ -555,7 +563,18 @@ module.exports = {
         } else {
           //? Using timeout to make sure to get the last 'ok' and then initialize the variables
           setTimeout(() => {
-            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, rest to send is: " + restToSend, true, portName, "onLog");
+            const end = Date.now();
+            const time = (((end - start) / 1000) / 60).toFixed(2);
+            const splitted = time.split(".");
+            let t;
+            if (time < 1) {
+              t = splitted[1] + " seconds";
+            } else {
+              t = splitted[0] + " minute & " + splitted[1] + " seconds";
+            }
+            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, in: " + t, true, portName, "onLog");
+            filesHandler.logMessage(dirName, logFileName, "Total of 'Ok' messages received: [" + okCount + "]", true, portName, "onLog");
+            filesHandler.logMessage(dirName, logFileName, "Total of 'error' messages received: [" + errorsCount + "]", true, portName, "onLog");
             codeLines.clear();
             chars.clear();
             comments.clear();
