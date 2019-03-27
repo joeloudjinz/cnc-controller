@@ -117,10 +117,10 @@ writeAndDrain = (name, data) => {
 module.exports = {
   /**
    * Calculate the estimated time to send all lines of code in a file to the machine
-   * @returns [integer] the number of milliseconds estimated
+   * @returns [integer] the number of minutes estimated
    */
   getEstimatedTimeToSendCode: () => {
-    return codeLines.size * lineSendDuration;
+    return (codeLines.size * lineSendDuration) / 3600;
   },
   /**
    * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined, 

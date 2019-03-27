@@ -101,7 +101,7 @@ router.post("/draw", (req, res) => {
                                                                 controller.startSendingProcess(portName, dirPath, currentTS, true);
                                                                 res.send({
                                                                     success: "GCode transmission has started successfully",
-                                                                    estimated: controller.getEstimatedTimeToSendCode() / 3600   //! in minutes
+                                                                    estimated: controller.getEstimatedTimeToSendCode()
                                                                 });
                                                             })
                                                             .catch(error => {
