@@ -40,8 +40,38 @@ let errorsCount = 0;
 let logName;
 let outputDirName;
 
+//? used to stop, resume or pause gcode lines transmission
+let doLoop = false;
+
 //? represents the duration of the timeout to send one line of code
 const lineSendDuration = 700;
+
+let start, end;
+
+initializeProcessVariables = () => {
+  codeLines.clear();
+  chars.clear();
+  comments.clear();
+  codeLinesNbr = 0;
+  stoppedIn = 0;
+  restToSend = 127;
+  okCount = 0;
+  errorsCount = 0;
+  // logName = undefined;
+  // outputDirName = undefined;
+};
+
+calculateProcessDuration = () => {
+  const time = (((end - start) / 1000) / 60).toFixed(2);
+  const splitted = time.split(".");
+  let t;
+  if (time < 1) {
+    t = splitted[1] + " seconds";
+  } else {
+    t = splitted[0] + " minute & " + splitted[1] + " seconds";
+  }
+  return t;
+};
 
 /**
  * Used to write data after a timeout of 1s
@@ -509,15 +539,16 @@ module.exports = {
       outputDirName = dirName;
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
+        start = Date.now();
         filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName, "onLog");
         filesHandler.logMessage(dirName, logFileName, "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(), true, portName, "onLog");
       }
-      let b = true;
-      const start = Date.now();
-      while (b) {
+      doLoop = true;
+      // const start = Date.now();
+      while (doLoop) {
         //? testing if the current line number is not over the last line of code
         if (stoppedIn <= codeLinesNbr) {
           //? ensuring that the rest of chars to be sent is not equal to zero
@@ -563,15 +594,8 @@ module.exports = {
         } else {
           //? Using timeout to make sure to get the last 'ok' and then initialize the variables
           setTimeout(() => {
-            const end = Date.now();
-            const time = (((end - start) / 1000) / 60).toFixed(2);
-            const splitted = time.split(".");
-            let t;
-            if (time < 1) {
-              t = splitted[1] + " seconds";
-            } else {
-              t = splitted[0] + " minute & " + splitted[1] + " seconds";
-            }
+            end = Date.now();
+            const t = calculateProcessDuration();
             filesHandler.logMessage(dirName, logFileName, "All lines has been sent, in: " + t, true, portName, "onLog");
             filesHandler.logMessage(dirName, logFileName, "Total of 'Ok' messages received: [" + okCount + "]", true, portName, "onLog");
             filesHandler.logMessage(dirName, logFileName, "Total of 'error' messages received: [" + errorsCount + "]", true, portName, "onLog");
@@ -583,7 +607,7 @@ module.exports = {
             restToSend = 127;
             okCount = 0;
             errorsCount = 0;
-          }, 1500);
+          }, lineSendDuration + 1000);
           isFull = false;
           b = false;
         }
@@ -591,6 +615,23 @@ module.exports = {
     } else {
       console.error("stoppedIn is UNDEFINED");
     }
+  },
+  pauseSendingProcess: () => {
+    doLoop = false;
+    filesHandler.logMessage(dirName, logFileName, "Pausing send operation, paused in line [N° " + stoppedIn + "]", true, portName, "onLog");
+  },
+  resumeSendingProcess: () => {
+    module.exports.startSendingProcess(portName, outputDirName, logName, false);
+    filesHandler.logMessage(dirName, logFileName, "Resuming send operation, resuming from line [N° " + stoppedIn + "]", true, portName, "onLog");
+  },
+  stopSendingProcess: () => {
+    doLoop = false;
+    filesHandler.logMessage(dirName, logFileName, "Stopping send operation, stopped in line [N° " + stoppedIn + "]", true, portName, "onLog");
+    end = Date.now();
+    const t = calculateProcessDuration();
+    filesHandler.logMessage(dirName, logFileName, (stoppedIn - comments.size)+
+      " lines has been sent, in: " + t, true, portName, "onLog");
+    initializeProcessVariables();
   }
 };
 /**
