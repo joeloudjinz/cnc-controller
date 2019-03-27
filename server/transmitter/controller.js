@@ -37,8 +37,8 @@ let isFull = false;
 let okCount = 0;
 let errorsCount = 0;
 
-let logName;
-let outputDirName;
+let globalLogFileName;
+let globalDirName;
 
 //? used to stop, resume or pause gcode lines transmission
 let doLoop = false;
@@ -57,8 +57,8 @@ initializeProcessVariables = () => {
   restToSend = 127;
   okCount = 0;
   errorsCount = 0;
-  // logName = undefined;
-  // outputDirName = undefined;
+  // globalLogFileName = undefined;
+  // globalDirName = undefined;
 };
 
 calculateProcessDuration = () => {
@@ -535,8 +535,8 @@ module.exports = {
   startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
     if (stoppedIn != null) {
       //? for global use in the controller
-      logName = logFileName;
-      outputDirName = dirName;
+      globalLogFileName = logFileName;
+      globalDirName = dirName;
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
         start = Date.now();
@@ -616,22 +616,104 @@ module.exports = {
       console.error("stoppedIn is UNDEFINED");
     }
   },
-  pauseSendingProcess: () => {
-    doLoop = false;
-    filesHandler.logMessage(dirName, logFileName, "Pausing send operation, paused in line [N° " + stoppedIn + "]", true, portName, "onLog");
+  pauseSendingProcess: (portName) => {
+    return new Promise((resolve, reject) => {
+      if (portName) {
+        if (ports.has(portName)) {
+          if (ports.get(portName).isOpen) {
+            if (globalDirName) {
+              if (globalLogFileName) {
+                try {
+                  doLoop = false;
+                  filesHandler.logMessage(globalDirName, globalLogFileName, "Pausing send operation, paused in line [N° " + stoppedIn + "]", true, portName, "onLog");
+                  resolve(true);
+                } catch (error) {
+                  reject(error);
+                }
+              } else {
+                console.log("resumeSendingProcess(), .log file name is undefined");
+                reject("log file name is undefined");
+              }
+            } else {
+              console.log("resumeSendingProcess(), Output directory is undefined");
+              reject("Output directory is undefined");
+            }
+          } else {
+            reject("Port " + portName + " is closed!");
+          }
+        } else {
+          reject("There is no such port named: " + portName);
+        }
+      } else {
+        console.log("resumeSendingProcess(), Port name is undefined");
+        reject("Port name is undefined");
+      }
+    });
   },
-  resumeSendingProcess: () => {
-    module.exports.startSendingProcess(portName, outputDirName, logName, false);
-    filesHandler.logMessage(dirName, logFileName, "Resuming send operation, resuming from line [N° " + stoppedIn + "]", true, portName, "onLog");
+  resumeSendingProcess: (portName) => {
+    return new Promise((resolve, reject) => {
+      if (portName) {
+        if (ports.has(portName)) {
+          if (ports.get(portName).isOpen) {
+            if (globalDirName) {
+              if (globalLogFileName) {
+                module.exports.startSendingProcess(portName, globalDirName, globalLogFileName, false);
+                filesHandler.logMessage(globalDirName, globalLogFileName, "Resuming send operation, resuming from line [N° " + stoppedIn + "]", true, portName, "onLog");
+                resolve(true);
+              } else {
+                console.log("resumeSendingProcess(), .log file name is undefined");
+                reject(".log file name is undefined");
+              }
+            } else {
+              console.log("resumeSendingProcess(), Output directory is undefined");
+              reject("Output directory is undefined");
+            }
+          } else {
+            reject("Port " + portName + " is closed!");
+          }
+        } else {
+          reject("There is no such port named: " + portName);
+        }
+      } else {
+        console.log("resumeSendingProcess(), Port name is undefined");
+        reject("Port name is undefined");
+      }
+    });
   },
-  stopSendingProcess: () => {
-    doLoop = false;
-    filesHandler.logMessage(dirName, logFileName, "Stopping send operation, stopped in line [N° " + stoppedIn + "]", true, portName, "onLog");
-    end = Date.now();
-    const t = calculateProcessDuration();
-    filesHandler.logMessage(dirName, logFileName, (stoppedIn - comments.size)+
-      " lines has been sent, in: " + t, true, portName, "onLog");
-    initializeProcessVariables();
+  stopSendingProcess: (portName) => {
+    return new Promise((resolve, reject) => {
+      if (portName) {
+        if (ports.has(portName)) {
+          if (ports.get(portName).isOpen) {
+            if (globalDirName) {
+              if (globalLogFileName) {
+                doLoop = false;
+                filesHandler.logMessage(globalDirName, globalLogFileName, "Stopping send operation, stopped in line [N° " + stoppedIn + "]", true, portName, "onLog");
+                end = Date.now();
+                const t = calculateProcessDuration();
+                filesHandler.logMessage(globalDirName, globalLogFileName, (stoppedIn - comments.size) +
+                  " lines has been sent, in: " + t, true, portName, "onLog");
+                initializeProcessVariables();
+                resolve(true);
+              } else {
+                console.log("resumeSendingProcess(), .log file name is undefined");
+                reject("log file name is undefined");
+              }
+            } else {
+              console.log("resumeSendingProcess(), Output directory is undefined");
+              reject("Output directory is undefined");
+            }
+          } else {
+            reject("Port " + portName + " is closed!");
+          }
+        } else {
+          reject("There is no such port named: " + portName);
+        }
+      } else {
+        console.log("resumeSendingProcess(), Port name is undefined");
+        reject("Port name is undefined");
+      }
+    });
   }
 };
 /**
@@ -654,7 +736,7 @@ treatData = (data, portName) => {
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
-    filesHandler.logMessage(outputDirName, logName, content, true, portName, "onData");
+    filesHandler.logMessage(globalDirName, globalLogFileName, content, true, portName, "onData");
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
       restToSend += chars.get(stoppedIn - 1);
@@ -665,15 +747,15 @@ treatData = (data, portName) => {
     if (isFull) {
       module.exports.startSendingProcess(
         portName,
-        outputDirName,
-        logName,
+        globalDirName,
+        globalLogFileName,
         false
       );
       isFull = false;
     }
   } else {
     content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    filesHandler.logMessage(outputDirName, logName, content, true, portName, "onData");
+    filesHandler.logMessage(globalDirName, globalLogFileName, content, true, portName, "onData");
   }
 };
 

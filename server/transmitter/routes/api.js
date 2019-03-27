@@ -461,7 +461,8 @@ router.post('/resume', (req, res) => {
  * @returns [404] if port name is undefined
  * TODO: add auth middleware
  */
-router.post('/pause', (req, res) => {
+
+ router.post('/pause', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
         controller
@@ -488,6 +489,10 @@ router.post('/pause', (req, res) => {
             failure: "Port name is undefined"
         });
     }
+});
+
+router.post('/darw/pause', (req, res) => {
+
 });
 
 module.exports = router;
