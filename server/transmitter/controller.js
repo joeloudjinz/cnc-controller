@@ -62,7 +62,7 @@ initializeProcessVariables = () => {
 };
 
 calculateProcessDuration = () => {
-  const time = (((end - start) / 1000) / 60).toFixed(2);
+  const time = ((end - start) / 1000 / 60).toFixed(2);
   const splitted = time.split(".");
   let t;
   if (time < 1) {
@@ -74,7 +74,7 @@ calculateProcessDuration = () => {
 };
 
 /**
- * Used to write data after a timeout of 1s
+ * Used to write data after a timeout of the value of 'lineSendDuration'
  * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
  * if the data is not of type String, or when an error occurs.
  * the promise is resolved when it executes successfully with a [true] value
@@ -109,7 +109,7 @@ writeData = (name, data) => {
 };
 
 /**
- * Used to write data and wait for it to be sent, after a timeout of 1.5s
+ * Used to write data and wait for it to be sent, after a timeout of the value of 'lineSendDuration'.
  * the promise is rejected when name of the port is undefined, if there is no port name in the ports list, if the given port is closed,
  * if the data is not of type String, or when an error occurs.
  * the promise is resolved when it executes successfully with a [true] value
@@ -151,7 +151,7 @@ module.exports = {
    */
   getEstimatedTimeToSendCode: () => {
     const a = ((codeLines.size * lineSendDuration) / 1000 / 60).toFixed(2);
-    const splitted = a.split('.');
+    const splitted = a.split(".");
     if (a < 1) {
       return splitted[1] + " seconds";
     } else {
@@ -159,7 +159,7 @@ module.exports = {
     }
   },
   /**
-   * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined, 
+   * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined,
    * or when an error occurs.
    * It will put the port object into ports map.
    * @param name of the port
@@ -178,12 +178,16 @@ module.exports = {
           }
         } else {
           const port = new SerialPort(
-            name, {
+            name,
+            {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
               if (error) {
-                console.log("Can not open port: " + name + ", error :", error.message);
+                console.log(
+                  "Can not open port: " + name + ", error :",
+                  error.message
+                );
                 reject(error);
               } else {
                 console.log("Port: " + name + " is opened");
@@ -293,7 +297,7 @@ module.exports = {
     });
   },
   /**
-   * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it, 
+   * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it,
    * it will register the event after a timeout of 500ms.
    * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
    * The promise is resolved when its executed successfully with a value of [true].
@@ -347,9 +351,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                name +
-                ", open status: " +
-                ports.get(name).isOpen
+                  name +
+                  ", open status: " +
+                  ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -529,7 +533,7 @@ module.exports = {
    * it can be used to resume sending data when 'on Data' event is emitted
    * @param portName name of the port
    * @param dirName path of the directory where the log file of send process reside
-   * @param logFileName the name of .log file of the current process, WITHOUT extension 
+   * @param logFileName the name of .log file of the current process, WITHOUT extension
    * @param isNewCall boolean value to distinct between new or resumed call of the function
    */
   startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
@@ -540,11 +544,46 @@ module.exports = {
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
         start = Date.now();
-        filesHandler.logMessage(dirName, logFileName, "Total lines number: [" + codeLinesNbr + "]", true, portName, "onLog");
-        filesHandler.logMessage(dirName, logFileName, "Total lines number of code: [" + codeLines.size + "]", true, portName, "onLog");
-        filesHandler.logMessage(dirName, logFileName, "Total lines number of comments: [" + comments.size + "]", true, portName, "onLog");
-        filesHandler.logMessage(dirName, logFileName, "Transmitting to port: " + portName, true, portName, "onLog");
-        filesHandler.logMessage(dirName, logFileName, "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(), true, portName, "onLog");
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number: [" + codeLinesNbr + "]",
+          true,
+          portName,
+          "onLog"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number of code: [" + codeLines.size + "]",
+          true,
+          portName,
+          "onLog"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Total lines number of comments: [" + comments.size + "]",
+          true,
+          portName,
+          "onLog"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Transmitting to port: " + portName,
+          true,
+          portName,
+          "onLog"
+        );
+        filesHandler.logMessage(
+          dirName,
+          logFileName,
+          "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(),
+          true,
+          portName,
+          "onLog"
+        );
       }
       doLoop = true;
       // const start = Date.now();
@@ -563,42 +602,118 @@ module.exports = {
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was sent", true, portName, "onLog");
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "Line [N° " + stoppedIn + "] was sent",
+                        true,
+                        portName,
+                        "onLog"
+                      );
                       //? subtract the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
-                      filesHandler.logMessage(dirName, logFileName, "The rest to send after line [N° " + stoppedIn + "] is: " + restToSend, false);
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "The rest to send after line [N° " +
+                          stoppedIn +
+                          "] is: " +
+                          restToSend,
+                        false
+                      );
                       //? increment for the next line
                       stoppedIn++;
                     })
                     //* when the send operation is completed with an error indicating the line was not sent!
                     .catch(error => {
-                      filesHandler.logMessage(dirName, logFileName, "Line [N° " + stoppedIn + "] was NOT sent, error is [" + error + "]", true, portName, "onLog");
+                      filesHandler.logMessage(
+                        dirName,
+                        logFileName,
+                        "Line [N° " +
+                          stoppedIn +
+                          "] was NOT sent, error is [" +
+                          error +
+                          "]",
+                        true,
+                        portName,
+                        "onLog"
+                      );
                     });
                 } else {
-                  filesHandler.logMessage(dirName, logFileName, "Unsafe to subtract number of characters for line [N° " + stoppedIn + "]", false);
+                  filesHandler.logMessage(
+                    dirName,
+                    logFileName,
+                    "Unsafe to subtract number of characters for line [N° " +
+                      stoppedIn +
+                      "]",
+                    false
+                  );
                 }
               } else {
-                filesHandler.logMessage(dirName, logFileName, "Number of characters of the line [N° " + stoppedIn + "] => [" + chars.get(stoppedIn) + "] is more then the rest to send " + restToSend, false);
+                filesHandler.logMessage(
+                  dirName,
+                  logFileName,
+                  "Number of characters of the line [N° " +
+                    stoppedIn +
+                    "] => [" +
+                    chars.get(stoppedIn) +
+                    "] is more then the rest to send " +
+                    restToSend,
+                  false
+                );
                 isFull = true;
-                b = false;
+                doLoop = false;
               }
             } else {
-              filesHandler.logMessage(dirName, logFileName, "There is no such line [N° " + stoppedIn + "]", false);
+              filesHandler.logMessage(
+                dirName,
+                logFileName,
+                "There is no such line [N° " + stoppedIn + "]",
+                false
+              );
               stoppedIn++;
             }
           } else {
-            filesHandler.logMessage(dirName, logFileName, "Max characters is reached, rest to send is: " + restToSend, true, portName, "onLog");
+            filesHandler.logMessage(
+              dirName,
+              logFileName,
+              "Max characters is reached, rest to send is: " + restToSend,
+              true,
+              portName,
+              "onLog"
+            );
             isFull = true;
-            b = false;
+            doLoop = false;
           }
         } else {
           //? Using timeout to make sure to get the last 'ok' and then initialize the variables
           setTimeout(() => {
             end = Date.now();
             const t = calculateProcessDuration();
-            filesHandler.logMessage(dirName, logFileName, "All lines has been sent, in: " + t, true, portName, "onLog");
-            filesHandler.logMessage(dirName, logFileName, "Total of 'Ok' messages received: [" + okCount + "]", true, portName, "onLog");
-            filesHandler.logMessage(dirName, logFileName, "Total of 'error' messages received: [" + errorsCount + "]", true, portName, "onLog");
+            filesHandler.logMessage(
+              dirName,
+              logFileName,
+              "All lines has been sent, in: " + t,
+              true,
+              portName,
+              "onLog"
+            );
+            filesHandler.logMessage(
+              dirName,
+              logFileName,
+              "Total of 'Ok' messages received: [" + okCount + "]",
+              true,
+              portName,
+              "onLog"
+            );
+            filesHandler.logMessage(
+              dirName,
+              logFileName,
+              "Total of 'error' messages received: [" + errorsCount + "]",
+              true,
+              portName,
+              "onLog"
+            );
             codeLines.clear();
             chars.clear();
             comments.clear();
@@ -609,14 +724,14 @@ module.exports = {
             errorsCount = 0;
           }, lineSendDuration + 1000);
           isFull = false;
-          b = false;
+          doLoop = false;
         }
       }
     } else {
       console.error("stoppedIn is UNDEFINED");
     }
   },
-  pauseSendingProcess: (portName) => {
+  pauseSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
@@ -625,17 +740,30 @@ module.exports = {
               if (globalLogFileName) {
                 try {
                   doLoop = false;
-                  filesHandler.logMessage(globalDirName, globalLogFileName, "Pausing send operation, paused in line [N° " + stoppedIn + "]", true, portName, "onLog");
+                  filesHandler.logMessage(
+                    globalDirName,
+                    globalLogFileName,
+                    "Pausing send operation, paused in line [N° " +
+                      stoppedIn +
+                      "]",
+                    true,
+                    portName,
+                    "onLog"
+                  );
                   resolve(true);
                 } catch (error) {
                   reject(error);
                 }
               } else {
-                console.log("resumeSendingProcess(), .log file name is undefined");
+                console.log(
+                  "resumeSendingProcess(), .log file name is undefined"
+                );
                 reject("log file name is undefined");
               }
             } else {
-              console.log("resumeSendingProcess(), Output directory is undefined");
+              console.log(
+                "resumeSendingProcess(), Output directory is undefined"
+              );
               reject("Output directory is undefined");
             }
           } else {
@@ -650,22 +778,40 @@ module.exports = {
       }
     });
   },
-  resumeSendingProcess: (portName) => {
+  resumeSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
           if (ports.get(portName).isOpen) {
             if (globalDirName) {
               if (globalLogFileName) {
-                module.exports.startSendingProcess(portName, globalDirName, globalLogFileName, false);
-                filesHandler.logMessage(globalDirName, globalLogFileName, "Resuming send operation, resuming from line [N° " + stoppedIn + "]", true, portName, "onLog");
+                module.exports.startSendingProcess(
+                  portName,
+                  globalDirName,
+                  globalLogFileName,
+                  false
+                );
+                filesHandler.logMessage(
+                  globalDirName,
+                  globalLogFileName,
+                  "Resuming send operation, resuming from line [N° " +
+                    stoppedIn +
+                    "]",
+                  true,
+                  portName,
+                  "onLog"
+                );
                 resolve(true);
               } else {
-                console.log("resumeSendingProcess(), .log file name is undefined");
+                console.log(
+                  "resumeSendingProcess(), .log file name is undefined"
+                );
                 reject(".log file name is undefined");
               }
             } else {
-              console.log("resumeSendingProcess(), Output directory is undefined");
+              console.log(
+                "resumeSendingProcess(), Output directory is undefined"
+              );
               reject("Output directory is undefined");
             }
           } else {
@@ -680,7 +826,7 @@ module.exports = {
       }
     });
   },
-  stopSendingProcess: (portName) => {
+  stopSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
@@ -688,19 +834,43 @@ module.exports = {
             if (globalDirName) {
               if (globalLogFileName) {
                 doLoop = false;
-                filesHandler.logMessage(globalDirName, globalLogFileName, "Stopping send operation, stopped in line [N° " + stoppedIn + "]", true, portName, "onLog");
-                end = Date.now();
-                const t = calculateProcessDuration();
-                filesHandler.logMessage(globalDirName, globalLogFileName, (stoppedIn - comments.size) +
-                  " lines has been sent, in: " + t, true, portName, "onLog");
-                initializeProcessVariables();
-                resolve(true);
+                setTimeout(() => {
+                  filesHandler.logMessage(
+                    globalDirName,
+                    globalLogFileName,
+                    "Stopping send operation, stopped in line [N° " +
+                      stoppedIn +
+                      "]",
+                    true,
+                    portName,
+                    "onLog"
+                  );
+                  end = Date.now();
+                  const t = calculateProcessDuration();
+                  filesHandler.logMessage(
+                    globalDirName,
+                    globalLogFileName,
+                    stoppedIn -
+                      comments.size +
+                      " lines has been sent, in: " +
+                      t,
+                    true,
+                    portName,
+                    "onLog"
+                  );
+                  initializeProcessVariables();
+                  resolve(true);
+                }, lineSendDuration + 1000);
               } else {
-                console.log("resumeSendingProcess(), .log file name is undefined");
+                console.log(
+                  "resumeSendingProcess(), .log file name is undefined"
+                );
                 reject("log file name is undefined");
               }
             } else {
-              console.log("resumeSendingProcess(), Output directory is undefined");
+              console.log(
+                "resumeSendingProcess(), Output directory is undefined"
+              );
               reject("Output directory is undefined");
             }
           } else {
@@ -731,12 +901,21 @@ treatData = (data, portName) => {
       content = `-> Ok is received from port: [${portName}], The count: [${okCount}]`;
     } else if (splitted[0] === "error") {
       errorsCount++;
-      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${splitted[1]}]`;
+      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${
+        splitted[1]
+      }]`;
       //! errors.set(stoppedIn, data);
     } else {
       content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
     }
-    filesHandler.logMessage(globalDirName, globalLogFileName, content, true, portName, "onData");
+    filesHandler.logMessage(
+      globalDirName,
+      globalLogFileName,
+      content,
+      true,
+      portName,
+      "onData"
+    );
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
       restToSend += chars.get(stoppedIn - 1);
@@ -754,8 +933,15 @@ treatData = (data, portName) => {
       isFull = false;
     }
   } else {
-    content = `-> Data is received from port: [${portName}], but it's empty: [${data}] `;
-    filesHandler.logMessage(globalDirName, globalLogFileName, content, true, portName, "onData");
+    content = `-> Data is received from port: [${portName}], but it's empty: [${data}]`;
+    filesHandler.logMessage(
+      globalDirName,
+      globalLogFileName,
+      content,
+      true,
+      portName,
+      "onData"
+    );
   }
 };
 
@@ -768,9 +954,9 @@ listenToIncomingData = name => {
       if (ports.get(name).isOpen) {
         console.log(
           "listening for data started, port: " +
-          name +
-          ", open status: " +
-          ports.get(name).isOpen
+            name +
+            ", open status: " +
+            ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
           console.log("Data is: " + data);
