@@ -9,8 +9,8 @@ const fs = require("fs");
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
-// const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
-// const pusherManager = require(pusherManagerPath);
+const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
+const pusherManager = require(pusherManagerPath);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -18,6 +18,9 @@ const defaultBaudRate = 115200; //! used for grbl v0.9+
 let ports = new Map();
 //? holds data parsers for each port
 let parsers = new Map();
+
+//? to know the count of the active ports
+let portsCount = 0;
 
 //! these variables for readGcodeFileLines()
 //? this map holds all lines of code in a given gcode file, the key is the line number in the file
@@ -46,6 +49,7 @@ let doLoop = false;
 //? represents the duration of the timeout to send one line of code
 const lineSendDuration = 700;
 
+//? time when draw operation started and ended
 let start, end;
 
 initializeProcessVariables = () => {
@@ -146,6 +150,36 @@ writeAndDrain = (name, data) => {
 
 module.exports = {
   /**
+   * Check for the connected devices, which means the active ports in the server every 2.5s.
+   * It will push the new list to frontend.
+   */
+  listenToActivePorts: () => {
+    setInterval(() => {
+      console.log("Checking active ports list!");
+      SerialPort
+        .list()
+        .then(ports => {
+            let obj = {};
+            let count = 0;
+            for (var i = 0, len = ports.length; i < len; i++) {
+              if (ports[i].productId) {
+                obj[i + 1] = ports[i];
+                // activePorts.set(ports[i].comName, ports[i]);
+                count++;
+              }
+            }
+            if (count != portsCount) {
+              // console.log("Active ports list has changed, new count is: " + count + ", updating it ...");
+              // console.log(obj);
+              pusherManager.triggerOnPortActive(obj);
+              portsCount = count;
+            }
+          },
+          error => console.log(error.message)
+        );
+    }, 2500);
+  },
+  /**
    * Calculate the estimated time to send all lines of code in a file to the machine
    * @returns [integer] the number of minutes estimated
    */
@@ -178,8 +212,7 @@ module.exports = {
           }
         } else {
           const port = new SerialPort(
-            name,
-            {
+            name, {
               baudRate: baudRate || defaultBaudRate
             },
             error => {
@@ -351,9 +384,9 @@ module.exports = {
             setTimeout(() => {
               console.log(
                 "listening for errors started, port: " +
-                  name +
-                  ", open status: " +
-                  ports.get(name).isOpen
+                name +
+                ", open status: " +
+                ports.get(name).isOpen
               );
               ports.get(name).on("error", error => {
                 resolve(true);
@@ -616,9 +649,9 @@ module.exports = {
                         dirName,
                         logFileName,
                         "The rest to send after line [N° " +
-                          stoppedIn +
-                          "] is: " +
-                          restToSend,
+                        stoppedIn +
+                        "] is: " +
+                        restToSend,
                         false
                       );
                       //? increment for the next line
@@ -630,10 +663,10 @@ module.exports = {
                         dirName,
                         logFileName,
                         "Line [N° " +
-                          stoppedIn +
-                          "] was NOT sent, error is [" +
-                          error +
-                          "]",
+                        stoppedIn +
+                        "] was NOT sent, error is [" +
+                        error +
+                        "]",
                         true,
                         portName,
                         "onLog"
@@ -644,8 +677,8 @@ module.exports = {
                     dirName,
                     logFileName,
                     "Unsafe to subtract number of characters for line [N° " +
-                      stoppedIn +
-                      "]",
+                    stoppedIn +
+                    "]",
                     false
                   );
                 }
@@ -654,11 +687,11 @@ module.exports = {
                   dirName,
                   logFileName,
                   "Number of characters of the line [N° " +
-                    stoppedIn +
-                    "] => [" +
-                    chars.get(stoppedIn) +
-                    "] is more then the rest to send " +
-                    restToSend,
+                  stoppedIn +
+                  "] => [" +
+                  chars.get(stoppedIn) +
+                  "] is more then the rest to send " +
+                  restToSend,
                   false
                 );
                 isFull = true;
@@ -744,8 +777,8 @@ module.exports = {
                     globalDirName,
                     globalLogFileName,
                     "Pausing send operation, paused in line [N° " +
-                      stoppedIn +
-                      "]",
+                    stoppedIn +
+                    "]",
                     true,
                     portName,
                     "onLog"
@@ -795,8 +828,8 @@ module.exports = {
                   globalDirName,
                   globalLogFileName,
                   "Resuming send operation, resuming from line [N° " +
-                    stoppedIn +
-                    "]",
+                  stoppedIn +
+                  "]",
                   true,
                   portName,
                   "onLog"
@@ -839,8 +872,8 @@ module.exports = {
                     globalDirName,
                     globalLogFileName,
                     "Stopping send operation, stopped in line [N° " +
-                      stoppedIn +
-                      "]",
+                    stoppedIn +
+                    "]",
                     true,
                     portName,
                     "onLog"
@@ -851,9 +884,9 @@ module.exports = {
                     globalDirName,
                     globalLogFileName,
                     stoppedIn -
-                      comments.size +
-                      " lines has been sent, in: " +
-                      t,
+                    comments.size +
+                    " lines has been sent, in: " +
+                    t,
                     true,
                     portName,
                     "onLog"
@@ -954,9 +987,9 @@ listenToIncomingData = name => {
       if (ports.get(name).isOpen) {
         console.log(
           "listening for data started, port: " +
-            name +
-            ", open status: " +
-            ports.get(name).isOpen
+          name +
+          ", open status: " +
+          ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
           console.log("Data is: " + data);

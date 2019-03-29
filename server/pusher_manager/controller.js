@@ -38,6 +38,16 @@ const exported = class {
             return false;
         }
     }
+    static triggerOnPortActive(portsList){
+        if(portsList){
+            pusherObj.trigger("ports", "on-active", {
+                portsList
+            });
+        }else{
+            console.log("triggerOnPortActive(), [portsList] is undefined");
+            return false;
+        }
+    }
 };
 
 module.exports = exported;
