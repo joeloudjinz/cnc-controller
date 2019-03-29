@@ -461,7 +461,6 @@ router.post('/resume', (req, res) => {
  * @returns [404] if port name is undefined
  * TODO: add auth middleware
  */
-
 router.post('/pause', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -491,6 +490,14 @@ router.post('/pause', (req, res) => {
     }
 });
 
+/**
+ * Endpoint to pause current gcode transmission process
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/draw/pause', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -519,6 +526,15 @@ router.post('/draw/pause', (req, res) => {
         });
     }
 });
+
+/**
+ * Endpoint to resume current gcode transmission process
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/draw/resume', (req, res) => {
     const portName = req.body.portName;
     if (portName) {
@@ -547,6 +563,14 @@ router.post('/draw/resume', (req, res) => {
         });
     }
 });
+/**
+ * Endpoint to stop current gcode transmission process
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.post('/draw/stop', (req, res) => {
     const portName = req.body.portName;
     if (portName) {

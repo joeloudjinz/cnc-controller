@@ -185,9 +185,6 @@ module.exports = {
             }
         });
     },
-    // createLogFile: (dirName) => {
-    //     await fs.writeFileSync(logPath, "");
-    // },
     /**
      * Synchronously, logging a message into a log file
      * @param dirName directory name to create a logging file

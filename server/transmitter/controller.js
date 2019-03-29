@@ -1007,3 +1007,5 @@ listenToIncomingData = name => {
     console.error("listenToIncomingData: Name is Undefined");
   }
 };
+
+//TODO: create new listenToIncomingData() function that returns non treated data of an opened port, this will be used when opening a port from it's panel in the FE
