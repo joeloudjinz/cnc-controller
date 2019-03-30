@@ -155,7 +155,6 @@ module.exports = {
    */
   listenToActivePorts: () => {
     setInterval(() => {
-      console.log("Checking active ports list!");
       SerialPort
         .list()
         .then(ports => {
@@ -169,7 +168,7 @@ module.exports = {
               }
             }
             if (count != portsCount) {
-              // console.log("Active ports list has changed, new count is: " + count + ", updating it ...");
+              console.log("Active ports list has changed, new count is: " + count + ", updating it ...");
               // console.log(obj);
               pusherManager.triggerOnPortActive(obj);
               portsCount = count;
@@ -336,6 +335,7 @@ module.exports = {
    * The promise is resolved when its executed successfully with a value of [true].
    * @param name of the port
    * @Note don't use await, it does not work
+   * @Note used by /draw endpoint
    */
   registerOnDataEvent: name => {
     return new Promise((resolve, reject) => {
@@ -351,6 +351,46 @@ module.exports = {
                 .then(result => {
                   setTimeout(() => {
                     listenToIncomingData(name);
+                  }, 500);
+                })
+                .catch(error => {
+                  console.log(error);
+                });
+            }
+            resolve(true);
+          } else {
+            reject("Port " + name + " is closed!");
+          }
+        } else {
+          reject("There is no such port named: " + name);
+        }
+      } else {
+        reject("Name is Undefined");
+      }
+    });
+  },
+  /**
+   * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it,
+   * it will register the event after a timeout of 500ms.
+   * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
+   * The promise is resolved when its executed successfully with a value of [true].
+   * @param name of the port
+   * @Note Used by /open endpoint
+   */
+  registerOnDataEventForSinglePort: name => {
+    return new Promise((resolve, reject) => {
+      if (name) {
+        if (ports.has(name)) {
+          if (ports.get(name).isOpen) {
+            if (parsers.has(name)) {
+              setTimeout(() => {
+                listenToIncomingDataForSinglePort(name);
+              }, 500);
+            } else {
+              initializeDelimiterParser(name)
+                .then(result => {
+                  setTimeout(() => {
+                    listenToIncomingDataForSinglePort(name);
                   }, 500);
                 })
                 .catch(error => {
@@ -917,7 +957,7 @@ module.exports = {
         reject("Port name is undefined");
       }
     });
-  }
+  },
 };
 /**
  * Treats incoming data from a specific port.
@@ -979,7 +1019,7 @@ treatData = (data, portName) => {
 };
 
 /**
- * Called by registerOnDataEvent() method to register the event.
+ * Called by registerOnDataEvent() method to register the event after opening a port by /draw operation.
  */
 listenToIncomingData = name => {
   if (name) {
@@ -992,7 +1032,7 @@ listenToIncomingData = name => {
           ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
-          console.log("Data is: " + data);
+          // console.log("Data is: " + data);
           treatData(data, name);
         });
       } else {
@@ -1009,3 +1049,32 @@ listenToIncomingData = name => {
 };
 
 //TODO: create new listenToIncomingData() function that returns non treated data of an opened port, this will be used when opening a port from it's panel in the FE
+/**
+ * Called by registerOnDataEventForSinglePort() method to register the event after opening a specific port by /open endpoint.
+ */
+listenToIncomingDataForSinglePort = (name) => {
+  if (name) {
+    if (ports.has(name)) {
+      if (ports.get(name).isOpen) {
+        console.log(
+          "listening for data started, port: " +
+          name +
+          ", open status: " +
+          ports.get(name).isOpen
+        );
+        parsers.get(name).on("data", data => {
+          // console.log("Data is: " + data);
+          pusherManager.triggerOnSinglePortData(name, data);
+        });
+      } else {
+        console.error("listenToIncomingData: Port " + name + " is closed!");
+      }
+    } else {
+      console.error(
+        "listenToIncomingData: There is no such port named: " + name
+      );
+    }
+  } else {
+    console.error("listenToIncomingData: Name is Undefined");
+  }
+};

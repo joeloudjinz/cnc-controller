@@ -255,7 +255,7 @@ router.post("/open", (req, res) => {
                         .initializeDelimiterParser(portName)
                         .then(result => {
                             controller
-                                .registerOnDataEvent(portName)
+                                .registerOnDataEventForSinglePort(portName)
                                 .then(() => {
                                     res.send({
                                         success: 'Port ' + portName + ' was opened successfully'
@@ -316,7 +316,7 @@ router.post("/close", (req, res) => {
         controller
             .closePort(portName)
             .then(result => {
-                res.status(500).send({
+                res.send({
                     success: "Port " + portName + " is closed"
                 });
             })
