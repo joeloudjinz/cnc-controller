@@ -374,7 +374,6 @@ module.exports = {
    * it will register the event after a timeout of 500ms.
    * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
    * The promise is resolved when its executed successfully with a value of [true].
-   * @param name of the port
    * @Note Used by /open endpoint
    */
   registerOnDataEventForSinglePort: name => {
@@ -958,6 +957,37 @@ module.exports = {
       }
     });
   },
+  /**
+   * TODO: not completed
+   */
+  registerOnCloseEvent: (name) => {
+    return new Promise((resolve, reject) => {
+      if (name) {
+        if (ports.has(name)) {
+          if (ports.get(name).isOpen) {
+            console.log("Closing port: " + name);
+            ports.get(name).on("close", error => {
+              console.log("in close event -----");
+              if (error) {
+                console.log("message: " + error.message);
+                if (error.disconnected)
+                  console.log("Port: " + name + " is disconnected");
+              }
+              parsers.delete(name);
+              ports.delete(name);
+            });
+            resolve(true);
+          } else {
+            resolved("Port: " + name + " is already closed!");
+          }
+        } else {
+          reject("There is no such port named: " + name);
+        }
+      } else {
+        reject("Port Name is undefined");
+      }
+    });
+  }
 };
 /**
  * Treats incoming data from a specific port.

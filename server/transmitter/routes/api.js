@@ -257,9 +257,23 @@ router.post("/open", (req, res) => {
                             controller
                                 .registerOnDataEventForSinglePort(portName)
                                 .then(() => {
-                                    res.send({
-                                        success: 'Port ' + portName + ' was opened successfully'
-                                    });
+                                    controller
+                                        .registerOnCloseEvent(portName)
+                                        .then((result) => {
+                                            res.send({
+                                                success: 'Port ' + portName + ' was opened successfully'
+                                            });
+                                        }).catch((error) => {
+                                            const preError = error;
+                                            controller
+                                                .closePort(portName)
+                                                .then(result => {
+                                                    res.status(500).send(errorObject("Registering on Close event for the port", preError, true));
+                                                })
+                                                .catch(error => {
+                                                    res.status(500).send(errorObject("Registering on Close event for the port", preError, false));
+                                                });
+                                        });
                                 }).catch(error => {
                                     const preError = error;
                                     controller
