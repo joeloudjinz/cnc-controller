@@ -47,5 +47,5 @@ const port = server.PORT;
 app.listen(port, () => {
     console.log('server started at port ' + port);
     database.openConnection();
-    transmitterController.listenToActivePorts();
+    // transmitterController.listenToActivePorts();
 });

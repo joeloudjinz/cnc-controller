@@ -73,13 +73,14 @@ module.exports = {
      */
     isUniqueEmailForUpdate: (email, id) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT COUNT(id) AS count FROM agents WHERE email=? AND id!=?',
-                [email, id],
+            connection.query('SELECT COUNT(id) AS count FROM agents WHERE id<>? AND email=?',
+                [id, email],
                 (error, results, fields) => {
                     if (error) {
-                        console.log(error);
+                        // console.log(error);
                         reject(error);
                     } else {
+                        console.log(results[0].count);
                         if (results[0].count > 0) {
                             reject(false);
                         } else {

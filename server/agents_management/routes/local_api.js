@@ -123,7 +123,6 @@ router.put('/:id', auth, (req, res) => {
                 last_name,
                 first_name,
                 email,
-                // hashed,
                 id
             }).then(() => {
                 res.send({

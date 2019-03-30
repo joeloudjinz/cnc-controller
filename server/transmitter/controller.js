@@ -965,7 +965,7 @@ module.exports = {
       if (name) {
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
-            console.log("Closing port: " + name);
+            // console.log("Closing port: " + name);
             ports.get(name).on("close", error => {
               console.log("in close event -----");
               if (error) {
