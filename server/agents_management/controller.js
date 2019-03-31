@@ -19,11 +19,12 @@ module.exports = {
             firstName,
             lastName,
             email,
-            password
+            password,
+            is_admin
         } = agent;
         return new Promise((resolve, reject) => {
-            connection.query('INSERT INTO `agents` (first_name, last_name, email, password) VALUES (?,?,?,?)',
-                [firstName, lastName, email, password],
+            connection.query('INSERT INTO `agents` (first_name, last_name, email, password, is_admin) VALUES (?,?,?,?,?)',
+                [firstName, lastName, email, password, is_admin],
                 (error, results, fields) => {
                     // error will be an Error if one occurred during the query
                     if (error) {
@@ -92,15 +93,15 @@ module.exports = {
         });
     },
     /**
-     * get the list of undeleted agents in the system, excluding the admin
+     * get the list of undeleted agents in the system, including the admins, excluding the current agent
      * @returns promise: reject if there was an error while executing the query
      * @returns promise: resolve(result) if the execution was successful
      * TODO: apply operations logging
      */
-    getNonDeletedAgents: () => {
+    getNonDeletedAgents: (id) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT id, first_name, last_name, email, is_active FROM agents WHERE is_deleted=0 AND is_admin=0',
-                [],
+            connection.query('SELECT id, first_name, last_name, email, is_active, is_admin FROM agents WHERE is_deleted=0 AND id!=?',
+                [id],
                 (error, results, fields) => {
                     if (error) {
                         console.log(error);
@@ -142,12 +143,14 @@ module.exports = {
      * TODO: apply operations logging
      */
     softDeleteAgent: (id) => {
+        // console.log('in softDeleteAgent, id :', id);
         return new Promise((resolve, reject) => {
             connection.query('UPDATE agents SET is_deleted=?, deleted_in=?, is_active=? WHERE id=?',
                 [true, new Date(), false, id],
                 (error, results, fields) => {
                     if (error) {
                         reject(error);
+                        // console.log('when softDeleteAgent, error :', error);
                     } else {
                         resolve(results);
                     }
@@ -216,7 +219,7 @@ module.exports = {
                     if (error) {
                         reject(error);
                     } else {
-                        console.log(results);
+                        // console.log(results);
                         resolve();
                     }
                 }

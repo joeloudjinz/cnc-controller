@@ -24,7 +24,8 @@ router.post('/create', auth, (req, res) => {
         firstName,
         lastName,
         email,
-        password
+        password,
+        is_admin
     } = req.body;
     controller.isUniqueEmail(email)
         .then(() => {
@@ -34,7 +35,8 @@ router.post('/create', auth, (req, res) => {
                             firstName,
                             lastName,
                             email,
-                            password: hashed
+                            password: hashed,
+                            is_admin
                         })
                         .then((results) => {
                             res.status(201).send({
@@ -70,18 +72,25 @@ router.post('/create', auth, (req, res) => {
  * @returns 200 if it's successful
  * TODO: apply operations logging
  */
-router.get('/', auth, (req, res) => {
-    controller.getNonDeletedAgents()
-        .then((result) => {
-            res.send({
-                data: result
+router.get('/:id', auth, (req, res) => {
+    const id = req.params.id;
+    if (id != undefined) {
+        controller.getNonDeletedAgents(id)
+            .then((result) => {
+                res.send({
+                    data: result
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: 'An error occurred while retrieving data',
+                    error: error
+                });
             });
-        }).catch((err) => {
-            res.status(500).send({
-                failure: 'An error occurred while retrieving data',
-                error: err
-            });
+    } else {
+        res.status(404).send({
+            failure: 'Current agent ID is undefined',
         });
+    }
 });
 /**
  * non deleted agent information endpoint
@@ -183,18 +192,26 @@ router.put('/password/:id', auth, (req, res) => {
  * TODO: apply operations logging
  */
 router.delete('/:id', auth, (req, res) => {
-    controller.softDeleteAgent(req.params.id)
-        .then((result) => {
-            res.send({
-                success: "Agent was deleted successfully",
-            })
-        }).catch((err) => {
-            res.status(500).send({
-                failure: 'An error occurred while updating data',
-                error: err
-            })
+    //! "req.params" to retrieve query parameters from the request
+    const id = req.params.id;
+    if (id !== undefined) {
+        controller.softDeleteAgent(id)
+            .then((result) => {
+                res.send({
+                    success: "Agent was deleted successfully",
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: 'An error occurred while updating data',
+                    error: error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: 'Agent ID is undefined',
         });
-})
+    }
+});
 /**
  * get the role (admin or agent) of a given agent id
  * @returns 200 true or false if the execution of the operation was successful
