@@ -66,7 +66,7 @@ router.post('/create', auth, (req, res) => {
         });
 });
 /**
- * non deleted agents list endpoint
+ * non deleted agents list endpoint, excluding the current user
  * @returns the list of the agents who aren't deleted and not admins
  * @returns 500 if the query executed unsuccessfully
  * @returns 200 if it's successful

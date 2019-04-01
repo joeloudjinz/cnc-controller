@@ -134,4 +134,22 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
         });
 });
 
+router.get('/count', auth, (req, res) => {
+    controller
+        .getConversionsCount()
+        .then((result) => {
+            // console.log('result :', result);
+            res.send({
+                success: 'Counted successfully',
+                count: result
+            });
+        }).catch((error) => {
+            console.log('in getConversionsCount(), error :', error);
+            res.status(500).send({
+                failure: "Couldn't count conversions counts!",
+                error
+            });
+        });
+});
+
 module.exports = router;

@@ -90,5 +90,17 @@ module.exports = {
         reject(error);
       }
     });
+  },
+  getConversionsCount: () => {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT COUNT(id) AS count FROM conversions WHERE is_deleted=0';
+      database.getConnection().query(query, [], (error, results, fields) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results[0].count);
+        }
+      });
+    });
   }
 };
