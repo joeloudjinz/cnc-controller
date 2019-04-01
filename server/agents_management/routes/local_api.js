@@ -301,4 +301,46 @@ router.get('/reset/:id', auth, (req, res) => {
         });
     }
 });
+/**
+ * get the count of agents only
+ * @Note post method is used because get is confused with another rout !!!!
+ */
+router.post('/count', (req, res) => {
+    controller
+        .getAgentsCount()
+        .then((result) => {
+            // console.log('result :', result);
+            res.send({
+                success: 'Counted successfully',
+                count: result
+            });
+        }).catch((error) => {
+            console.log('in getAgentsCount(), error :', error);
+            res.status(500).send({
+                failure: "Couldn't count agents counts!",
+                error
+            });
+        });
+});
+/**
+ * get count of admins only
+ */
+router.get('/admins/count', auth, (req, res) => {
+    controller
+        .getAdminsCount()
+        .then((result) => {
+            // console.log('result :', result);
+            res.send({
+                success: 'Counted successfully',
+                count: result
+            });
+        }).catch((error) => {
+            console.log('in getAdminsCount(), error :', error);
+            res.status(500).send({
+                failure: "Couldn't count admins counts!",
+                error
+            });
+        });
+});
+
 module.exports = router;

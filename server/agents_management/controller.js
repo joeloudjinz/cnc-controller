@@ -273,4 +273,31 @@ module.exports = {
             }
         });
     },
+    getAgentsCount: () => {
+        return new Promise((resolve, reject) => {
+            const query = 'SELECT COUNT(id) AS count FROM agents WHERE is_admin=0 AND is_deleted=0';
+            connection.query(query, [], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    // console.log(results);
+                    // console.log(results[0].count);
+                    resolve(results[0].count);
+                }
+            });
+        });
+    },
+    getAdminsCount: () => {
+        return new Promise((resolve, reject) => {
+            const query = 'SELECT COUNT(id) AS count FROM agents WHERE is_admin=1 AND is_deleted=0';
+            connection.query(query, [], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    // console.log(results);
+                    resolve(results[0].count);
+                }
+            });
+        });
+    }
 };

@@ -83,7 +83,7 @@ module.exports = {
     },
     compareRefreshTokens: (id, refresh_token) => {
         return new Promise((resolve, reject) => {
-            console.log(id, refresh_token);
+            // console.log(id, refresh_token);
             database.getConnection().query('SELECT COUNT(id) AS counts FROM agents WHERE id=? AND refresh_token=?',
                 [id, refresh_token],
                 (error, results, fields) => {
