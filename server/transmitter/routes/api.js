@@ -615,4 +615,27 @@ router.post('/draw/stop', (req, res) => {
     }
 });
 
+router.get('/isOpen', (req, res) => {
+    const portName = req.doby.portName;
+    if (portName) {
+        controller
+            .isPortOpen(portName)
+            .then((isOpen) => {
+                res.send({
+                    success: 'Operation completed successfully',
+                    isOpen
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: 'There was a problem executing the operation!',
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+});
+
 module.exports = router;

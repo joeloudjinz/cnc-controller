@@ -331,6 +331,24 @@ module.exports = {
     });
   },
   /**
+   * return the state of a given port, is open or closed.
+   * The promise is resolved when its executed successfully with a value of the property isOpen [boolean] of serialPot instance 
+   * @param name port name
+   */
+  isPortOpen: (name) => {
+    return new Promise((resolve, reject) => {
+      if (name) {
+        if (ports.has(name)) {
+          resolved(ports.get(name).isOpen);
+        } else {
+          reject("There is no such port named: " + name);
+        }
+      } else {
+        reject("Port Name is undefined");
+      }
+    });
+  },
+  /**
    * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it,
    * it will register the event after a timeout of 500ms.
    * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
