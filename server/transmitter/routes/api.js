@@ -68,6 +68,7 @@ router.get("/", (req, res) => {
  * @returns [404] if one of the params is undefined, along with a failure message
  * TODO: store transmission data into transmission table
  * TODO: add auth middleware
+ * TODO: add registerOnCloseEvent operation for the port
  */
 router.post("/draw", (req, res) => {
     const {

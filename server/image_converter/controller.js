@@ -44,9 +44,9 @@ module.exports = {
         .on("log", str => {
           console.log(str);
         })
-        .on("tick", prec => {
-          console.log(prec);
-        })
+        // .on("tick", prec => {
+        //   console.log(prec);
+        // })
         .on("error", err => {
           reject(err);
         })

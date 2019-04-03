@@ -1,5 +1,5 @@
 const SerialPort = require("serialport");
-//? this is used by the seerial port object to use delimiter parser
+//? this is used by the serial port object to use delimiter parser
 const Readline = require("@serialport/parser-readline");
 //? this is used by readGcodeFileLines()
 const readline = require("readline");
@@ -52,6 +52,10 @@ const lineSendDuration = 700;
 //? time when draw operation started and ended
 let start, end;
 
+/**
+ * Used to initialize some global variables of transmission process, by stopSendingProcess()
+ * Does not initialize globalDirName and globalLogFileName
+ */
 initializeProcessVariables = () => {
   codeLines.clear();
   chars.clear();
@@ -61,8 +65,6 @@ initializeProcessVariables = () => {
   restToSend = 127;
   okCount = 0;
   errorsCount = 0;
-  // globalLogFileName = undefined;
-  // globalDirName = undefined;
 };
 
 calculateProcessDuration = () => {
@@ -180,7 +182,7 @@ module.exports = {
   },
   /**
    * Calculate the estimated time to send all lines of code in a file to the machine
-   * @returns [integer] the number of minutes estimated
+   * @returns [String] the estimated time in format of seconds only or with minutes
    */
   getEstimatedTimeToSendCode: () => {
     const a = ((codeLines.size * lineSendDuration) / 1000 / 60).toFixed(2);
@@ -560,11 +562,11 @@ module.exports = {
       gcodeLinesReader.on("line", line => {
         if (line.charAt(0) === ";") {
           comments.set(codeLinesNbr, line);
-          filesHandler.writeGcodeCommentLine(dirName, fileName, line);
+          //! filesHandler.writeGcodeCommentLine(dirName, fileName, line);
         } else {
           //? temp variable to hold the gcode characters of a line
           let temp = "";
-          //? counting the number of characters of a gcode line without the comment chars
+          //? counting the number of characters of a gcode line without the comment chars, that if the line contain comment
           let charsCount = 0;
           for (const i in line) {
             if (line[i] === ";") {
@@ -602,7 +604,8 @@ module.exports = {
   },
   /**
    * Sends a number of lines that don't pass 127 characters combined,
-   * it can be used to resume sending data when 'on Data' event is emitted
+   * it can be used to resume sending data when there is more room for new line in Serial Receiver Buffer in treatData(), 
+   * and also in resumeSendingProcess() hen resuming the stopped process
    * @param portName name of the port
    * @param dirName path of the directory where the log file of send process reside
    * @param logFileName the name of .log file of the current process, WITHOUT extension
@@ -803,6 +806,10 @@ module.exports = {
       console.error("stoppedIn is UNDEFINED");
     }
   },
+  /**
+   * Pause send gcode lines operation
+   * @param portName name of the port
+   */
   pauseSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
@@ -845,11 +852,14 @@ module.exports = {
           reject("There is no such port named: " + portName);
         }
       } else {
-        console.log("resumeSendingProcess(), Port name is undefined");
         reject("Port name is undefined");
       }
     });
   },
+  /**
+   * Resume send gcode lines operation
+   * @param portName name of the port
+   */
   resumeSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
@@ -898,6 +908,10 @@ module.exports = {
       }
     });
   },
+  /**
+   * Stop send gcode lines operation
+   * @param portName name of the port
+   */
   stopSendingProcess: portName => {
     return new Promise((resolve, reject) => {
       if (portName) {
@@ -924,7 +938,7 @@ module.exports = {
                     globalLogFileName,
                     stoppedIn -
                     comments.size +
-                    " lines has been sent, in: " +
+                    " lines have been sent, in: " +
                     t,
                     true,
                     portName,
@@ -958,7 +972,9 @@ module.exports = {
     });
   },
   /**
-   * TODO: not completed
+   * Register on close event for a given port, it will remove the port instance from ports map 
+   * and it's corresponding parser from parsers when disconnected for this specific case
+   * @param name name of the port
    */
   registerOnCloseEvent: (name) => {
     return new Promise((resolve, reject) => {
@@ -967,7 +983,7 @@ module.exports = {
           if (ports.get(name).isOpen) {
             // console.log("Closing port: " + name);
             ports.get(name).on("close", error => {
-              console.log("in close event -----");
+              // console.log("in close event -----");
               if (error) {
                 console.log("message: " + error.message);
                 if (error.disconnected)
@@ -1049,7 +1065,7 @@ treatData = (data, portName) => {
 };
 
 /**
- * Called by registerOnDataEvent() method to register the event after opening a port by /draw operation.
+ * Called by registerOnDataEvent() method to register the event after opening a port by /draw endpoint.
  */
 listenToIncomingData = name => {
   if (name) {
@@ -1062,7 +1078,6 @@ listenToIncomingData = name => {
           ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
-          // console.log("Data is: " + data);
           treatData(data, name);
         });
       } else {
@@ -1078,7 +1093,6 @@ listenToIncomingData = name => {
   }
 };
 
-//TODO: create new listenToIncomingData() function that returns non treated data of an opened port, this will be used when opening a port from it's panel in the FE
 /**
  * Called by registerOnDataEventForSinglePort() method to register the event after opening a specific port by /open endpoint.
  */
@@ -1093,7 +1107,6 @@ listenToIncomingDataForSinglePort = (name) => {
           ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
-          // console.log("Data is: " + data);
           pusherManager.triggerOnSinglePortData(name, data);
         });
       } else {
