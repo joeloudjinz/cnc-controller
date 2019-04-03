@@ -347,9 +347,9 @@ module.exports = {
     return new Promise((resolve, reject) => {
       if (name) {
         if (ports.has(name)) {
-          resolved(ports.get(name).isOpen);
+          resolve(ports.get(name).isOpen);
         } else {
-          reject("There is no such port named: " + name);
+          resolve(false);
         }
       } else {
         reject("Port Name is undefined");
@@ -376,7 +376,8 @@ module.exports = {
               resolved(false);
             }
           } else {
-            reject("There is no such port named: " + name);
+            resolve(false);
+            // reject("There is no such port named: " + name);
           }
         } else {
           reject("Port Name is undefined");

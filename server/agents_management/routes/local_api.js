@@ -259,7 +259,7 @@ router.get('/role/:id', (req, res) => {
  * TODO: apply operations logging
  */
 router.get('/reset/:id', auth, (req, res) => {
-    console.log(req.params.id);
+    // console.log(req.params.id);
     //! test if id is defined
     if (req.params.id) {
         const id = req.params.id;

@@ -637,7 +637,9 @@ router.get('/draw/isActive', (req, res) => {
  * TODO: add auth middleware
  */
 router.get('/isOpen', (req, res) => {
-    const portName = req.body.portName;
+    const portName = req.query.portName;
+    // console.log('req.query :', req.query);
+    // console.log('portName :', portName);
     if (portName) {
         controller
             .isPortOpen(portName)
@@ -647,6 +649,7 @@ router.get('/isOpen', (req, res) => {
                     isOpen
                 });
             }).catch((error) => {
+                // console.log("error: " + error);
                 res.status(500).send({
                     failure: 'There was a problem executing the operation!',
                     error
@@ -667,7 +670,7 @@ router.get('/isOpen', (req, res) => {
  * TODO: add auth middleware
  */
 router.get('/isActive', (req, res) => {
-    const portName = req.body.portName;
+    const portName = req.query.portName;
     if (portName) {
         controller
             .isPortActive(portName)
