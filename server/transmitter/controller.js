@@ -298,7 +298,7 @@ module.exports = {
           resolve({
             obj,
             count,
-            isServerActive: isActive
+            isActive
           });
         },
         error => reject(error.message)

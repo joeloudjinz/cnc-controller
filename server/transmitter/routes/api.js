@@ -48,7 +48,8 @@ router.get("/", (req, res) => {
             res.send({
                 success: "Operation completed successfully",
                 count: result.count,
-                ports: result.obj
+                ports: result.obj,
+                isServerActive: result.isActive
             });
         })
         .catch(error => {
