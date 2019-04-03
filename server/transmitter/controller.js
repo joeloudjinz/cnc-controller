@@ -384,7 +384,7 @@ module.exports = {
         }
       }else{
         //? resolving with true if currentPort = undefined which means it wasn't assigned by any function indicating that the port is not active
-        resolve(true);
+        resolve(false);
       }
     });
   },
