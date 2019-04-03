@@ -46,6 +46,11 @@ let globalDirName;
 //? used to stop, resume or pause gcode lines transmission
 let doLoop = false;
 
+//? used to know if the status of a port is active, means there is a transmission process going on that particular port
+let isActive = false;
+//? used to distinct if port is active or not when tested with the value of 'isActive'
+let currentPort;
+
 //? represents the duration of the timeout to send one line of code
 const lineSendDuration = 700;
 
@@ -65,6 +70,8 @@ initializeProcessVariables = () => {
   restToSend = 127;
   okCount = 0;
   errorsCount = 0;
+  isActive = false;
+  currentPort = undefined;
 };
 
 calculateProcessDuration = () => {
@@ -290,7 +297,8 @@ module.exports = {
           }
           resolve({
             obj,
-            count
+            count,
+            isServerActive: isActive
           });
         },
         error => reject(error.message)
@@ -347,6 +355,44 @@ module.exports = {
         reject("Port Name is undefined");
       }
     });
+  },
+  /**
+   * returns the state of a given port compared with the value of iActive.
+   * if the given port name is opened, matches the value of the current port and isActive is true, it will resolve with true.
+   * if port is closed, it will resolve with false.
+   * if current port value is undefined, it will resolve with false.
+   * @returns [boolean]
+   */
+  isPortActive: (name) => {
+    return new Promise((resolve, reject) => {
+      if(currentPort){
+        if (name) {
+          if (ports.has(name)) {
+            if (ports.get(name).isOpen) {
+              //? testing if the current port name equals name argument AND isActive is true
+              resolve(isActive && currentPort === name);
+            } else {
+              //? port is closed means it's not active
+              resolved(false);
+            }
+          } else {
+            reject("There is no such port named: " + name);
+          }
+        } else {
+          reject("Port Name is undefined");
+        }
+      }else{
+        //? resolving with true if currentPort = undefined which means it wasn't assigned by any function indicating that the port is not active
+        resolve(true);
+      }
+    });
+  },
+  /**
+   * returns the state of the server, if it's active with some port which is receiving gcode lines from the server, or not.
+   * @returns [boolean]
+   */
+  isActive: () => {
+    return isActive;
   },
   /**
    * Register "on Data" event for a given port, will initialize a parser for the port if no parser is associated with it,
@@ -679,6 +725,7 @@ module.exports = {
         );
       }
       doLoop = true;
+      currentPort = portName;
       // const start = Date.now();
       while (doLoop) {
         //? testing if the current line number is not over the last line of code
@@ -692,6 +739,7 @@ module.exports = {
                 //? ensuring that it is safe to subtract the number of characters of the current line from restToSend value
                 if (restToSend - chars.get(stoppedIn) >= 0) {
                   //? performing send operation and wait for it to end
+                  isActive = true;
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
@@ -807,14 +855,7 @@ module.exports = {
               portName,
               "onLog"
             );
-            codeLines.clear();
-            chars.clear();
-            comments.clear();
-            codeLinesNbr = 0;
-            stoppedIn = 0;
-            restToSend = 127;
-            okCount = 0;
-            errorsCount = 0;
+            initializeProcessVariables();
           }, lineSendDuration + 1000);
           isFull = false;
           doLoop = false;

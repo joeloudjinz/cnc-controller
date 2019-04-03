@@ -615,8 +615,28 @@ router.post('/draw/stop', (req, res) => {
     }
 });
 
+/**
+ * Endpoint to know if there is a transmission process active
+ * @returns success response if operation completed successfully
+ * TODO: add auth middleware
+ */
+router.get('/draw/isActive', (req, res) => {
+    const bool = controller.isActive();
+    res.send({
+        success: 'Operation completed successfully',
+        status: bool
+    });
+});
+/**
+ * Endpoint to know if a port is opened or not.
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
 router.get('/isOpen', (req, res) => {
-    const portName = req.doby.portName;
+    const portName = req.body.portName;
     if (portName) {
         controller
             .isPortOpen(portName)
@@ -636,6 +656,37 @@ router.get('/isOpen', (req, res) => {
             failure: "Port name is undefined"
         });
     }
+});
+/**
+ * Endpoint to know if a given port is active in a transmission process 
+ * @param portName name of the port
+ * @returns success response if operation completed successfully
+ * @returns [500] with a failure response if an error occurs.
+ * @returns [404] if port name is undefined
+ * TODO: add auth middleware
+ */
+router.get('/isActive', (req, res) => {
+    const portName = req.body.portName;
+    if (portName) {
+        controller
+            .isPortActive(portName)
+            .then((isPortActive) => {
+                res.send({
+                    success: 'Operation completed successfully',
+                    status: isPortActive
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: 'There was a problem executing the operation!',
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "Port name is undefined"
+        });
+    }
+
 });
 
 module.exports = router;
