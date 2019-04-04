@@ -9,6 +9,28 @@ const imgDir = path.join(root_path, "server", "resources", "images");
 const gcodeDir = path.join(root_path, "server", "resources", "gcodes");
 const outputsDir = path.join(root_path, "server", "resources", "outputs");
 
+/**
+ * used to get the content of a directory by readDirectoryContent promise when the current file is a directory.
+ * for outputs directory specifically.
+ */
+readSubDirectoryContent = dirPath => {
+    let obj = {};
+    const files = fs.readdirSync(dirPath);
+    let i = 0;
+    files.forEach(fileName => {
+        const filePath = path.join(dirPath, fileName);
+        const stats = fs.lstatSync(filePath);
+        obj["" + i] = {
+            name: fileName,
+            type: stats.isDirectory() ? "directory" : "file",
+            path: filePath,
+            size: stats.size
+        };
+        i++;
+    });
+    return obj;
+};
+
 module.exports = {
     moveDotGcode: (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
@@ -303,5 +325,78 @@ module.exports = {
                 reject("File name is undefined");
             }
         });
+    },
+    readDirectoryContent: dirCode => {
+        return new Promise((resolve, reject) => {
+            let dirPath;
+            if (dirCode == 1) {
+                dirPath = imgDir;
+            } else if (dirCode == 2) {
+                dirPath = gcodeDir;
+            } else if (dirCode == 3) {
+                dirPath = outputsDir;
+            } else {
+                console.log("Directory code is invalid!");
+                reject(new Error("Directory code is invalid!"));
+            }
+            if (dirPath != undefined) {
+                fs.readdir(dirPath, (error, files) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        let obj = {};
+                        let i = 0;
+                        files.forEach(async fileName => {
+                            const filePath = path.join(dirPath, fileName);
+                            const stats = fs.lstatSync(filePath);
+                            if (stats.isDirectory()) {
+                                const sub = await readSubDirectoryContent(filePath);
+                                obj["" + i] = {
+                                    name: fileName,
+                                    type: "directory",
+                                    content: sub
+                                };
+                            } else {
+                                obj["" + i] = {
+                                    name: fileName,
+                                    type: "file",
+                                    path: stats.isDirectory() ? filePath + "/" : filePath,
+                                    size: stats.size
+                                };
+                            }
+                            i++;
+                        });
+                        resolve(obj);
+                    }
+                });
+            } else {
+                console.log("Directory path is undefined");
+                reject(new Error("Directory code is undefined!"));
+            }
+        });
     }
 };
+
+// let tree = {};
+// module.exports
+//     .readDirectoryContent(1)
+//     .then((result) => {
+//         tree.Images = result;
+//         module.exports
+//             .readDirectoryContent(2)
+//             .then((result) => {
+//                 tree.Gcodes = result;
+//                 module.exports
+//                     .readDirectoryContent(3)
+//                     .then((result) => {
+//                         tree.Outputs = result;
+//                         console.log(tree);
+//                     }).catch((error) => {
+//                         console.log(error);
+//                     });
+//             }).catch((error) => {
+//                 console.log(error);
+//             });
+//     }).catch((error) => {
+//         console.log(error);
+//     });
