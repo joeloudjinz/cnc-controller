@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const root_path = require("app-root-path").path;
+const readline = require("readline");
 
 const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
 const pusherManager = require(pusherManagerPath);
@@ -374,29 +375,23 @@ module.exports = {
                 reject(new Error("Directory code is undefined!"));
             }
         });
+    },
+    readFileLinsIntoArray: (filePath) => {
+        return new Promise((resolve, reject) => {
+            let lines = [];
+            const gcodeLinesReader = readline.createInterface({
+                input: fs.createReadStream(filePath),
+                console: false
+            });
+            gcodeLinesReader.on("line", line => {
+                lines.push(line);
+            });
+            gcodeLinesReader.on("close", () => {
+                resolve(lines);
+            });
+            gcodeLinesReader.on("error", error => {
+                reject(error);
+            });
+        });
     }
 };
-
-// let tree = {};
-// module.exports
-//     .readDirectoryContent(1)
-//     .then((result) => {
-//         tree.Images = result;
-//         module.exports
-//             .readDirectoryContent(2)
-//             .then((result) => {
-//                 tree.Gcodes = result;
-//                 module.exports
-//                     .readDirectoryContent(3)
-//                     .then((result) => {
-//                         tree.Outputs = result;
-//                         console.log(tree);
-//                     }).catch((error) => {
-//                         console.log(error);
-//                     });
-//             }).catch((error) => {
-//                 console.log(error);
-//             });
-//     }).catch((error) => {
-//         console.log(error);
-//     });

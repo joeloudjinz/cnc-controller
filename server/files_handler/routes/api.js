@@ -7,24 +7,23 @@ const filesHandler = require(fileHandlerPath);
 const authPath = path.join('..', '..', 'middlewares', 'auth');
 const auth = require(authPath);
 
-router.post('/gcode/download', (req, res) => {
-    const fileName = req.body.name;
-    console.log(req.body);
-    console.log(req.body.name);
-    if (fileName) {
-        filesHandler.gCodeFileExist(fileName)
-            .then((filePath) => {
-                res.download(filePath);
-            })
-            .catch((error) => {
+router.get('/download', (req, res) => {
+    const filePath = req.query.path;
+    if (filePath) {
+        filesHandler.readFileLinsIntoArray(filePath)
+            .then((result) => {
+                res.send({
+                    fileLines: result
+                });
+            }).catch((error) => {
                 res.status(500).send({
-                    failure: "File Does Not Exist!",
+                    failure: "Couldn't read file lines!",
                     error
                 });
             });
     } else {
         res.status(500).send({
-            failure: "No file name was specified!",
+            failure: "File path is undefined!",
         });
     }
 });
@@ -65,7 +64,7 @@ router.get('/', (req, res) => {
 router.get('/images/', (req, res) => {
     let tree = {};
     filesHandler
-        .readDirectoryContent(2)
+        .readDirectoryContent(1)
         .then((result) => {
             tree.Images = result;
             res.send(tree);
