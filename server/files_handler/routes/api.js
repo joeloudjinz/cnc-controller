@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const path = require('path');
+const fs = require("fs");
+
 
 const fileHandlerPath = path.join('..', '..', 'files_handler', 'files');
 const filesHandler = require(fileHandlerPath);
@@ -23,6 +25,30 @@ router.get('/download', (req, res) => {
             });
     } else {
         res.status(500).send({
+            failure: "File path is undefined!",
+        });
+    }
+});
+
+router.get('/display', (req, res) => {
+    const imagePath = req.query.path;
+    if (imagePath) {
+        filesHandler
+            .encodeFileIntoBase64(imagePath)
+            .then((data) => {
+                const ext = imagePath.split(".").reverse()[0];
+                res.send({
+                    data,
+                    ext
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: "Couldn't read the file!",
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
             failure: "File path is undefined!",
         });
     }

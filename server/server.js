@@ -39,13 +39,13 @@ const transmitterPath = path.join(__dirname, 'transmitter', 'routes', 'api');
 const transmitterAPI = require(transmitterPath);
 app.use('/api/local/ports', transmitterAPI);
 
-// const transmitterControllerPath = path.join(__dirname, 'transmitter', 'controller.js');
-// const transmitterController = require(transmitterControllerPath);
+const transmitterControllerPath = path.join(__dirname, 'transmitter', 'controller.js');
+const transmitterController = require(transmitterControllerPath);
 
 const port = server.PORT;
 
 app.listen(port, () => {
     console.log('server started at port ' + port);
     database.openConnection();
-    // transmitterController.listenToActivePorts();
+    transmitterController.listenToActivePorts();
 });

@@ -393,5 +393,22 @@ module.exports = {
                 reject(error);
             });
         });
+    },
+    /**
+     * used to send images into frontend
+     * @param filePath to be read and converted into base64 buffer
+     * @returns [Buffer] of a file in base64 encode
+     */
+    encodeFileIntoBase64: (filePath) => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, {
+                encoding: 'base64'
+            }, function (error, data) {
+                if (error) reject(error);
+                else {
+                    resolve(data);
+                }
+            });
+        });
     }
 };

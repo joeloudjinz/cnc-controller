@@ -4,3 +4,4 @@ client
 resources
 .jshintrc
 server/test.js
+server/.eslintrc.js
