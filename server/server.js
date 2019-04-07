@@ -1,6 +1,4 @@
 const app = require('express')();
-// const http = require('http').Server(app);
-
 const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -50,11 +48,14 @@ const server = app.listen(port, () => {
     transmitterController.listenToActivePorts();
 });
 
-const io = require('socket.io')(server);
+const socketManagerPath = path.join(__dirname, 'socket_manager', 'controller.js');
+const socketManager = require(socketManagerPath);
 
-io.on('connection', function (socket) {
-    //? listening to user-connected event emitting from the client side
-    socket.on('user-connected', (data) => {
-        console.log('the user with id: ', data.id, ' is reconnected');
+socketManager
+    .initiateSocketIOInstance(server)
+    .then((status) => {
+        console.log('status :', status);
+        socketManager.startListening();
+    }).catch((error) => {
+        console.log(error);
     });
-});
