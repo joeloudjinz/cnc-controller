@@ -1,4 +1,5 @@
 const app = require('express')();
+const express = require('express');
 const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -12,6 +13,8 @@ const serverConfig = require(serverConfigPath);
 //? to parse body as json
 app.use(body_parser.json());
 app.use(cors());
+
+app.use(express.static(__dirname + '/public'));
 
 //? APIs of agent management
 const agentsManagementPath = path.join(__dirname, 'agents_management', 'routes', 'local_api');
