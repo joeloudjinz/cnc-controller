@@ -1,4 +1,6 @@
-const express = require('express');
+const app = require('express')();
+// const http = require('http').Server(app);
+
 const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -7,9 +9,7 @@ const dbConfigPath = path.join(__dirname, 'config', 'database');
 const database = require(dbConfigPath);
 
 const serverConfigPath = path.join(__dirname, 'config', 'server');
-const server = require(serverConfigPath);
-
-const app = express();
+const serverConfig = require(serverConfigPath);
 
 //? to parse body as json
 app.use(body_parser.json());
@@ -42,10 +42,19 @@ app.use('/api/local/ports', transmitterAPI);
 const transmitterControllerPath = path.join(__dirname, 'transmitter', 'controller.js');
 const transmitterController = require(transmitterControllerPath);
 
-const port = server.PORT;
+const port = serverConfig.PORT;
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log('server started at port ' + port);
     database.openConnection();
     transmitterController.listenToActivePorts();
+});
+
+const io = require('socket.io')(server);
+
+io.on('connection', function (socket) {
+    //? listening to user-connected event emitting from the client side
+    socket.on('user-connected', (data) => {
+        console.log('the user with id: ', data.id, ' is reconnected');
+    });
 });
