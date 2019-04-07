@@ -3,9 +3,6 @@ const path = require("path");
 const root_path = require("app-root-path").path;
 const readline = require("readline");
 
-const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
-const pusherManager = require(pusherManagerPath);
-
 const socketManagerPath = path.join("..", "socket_manager", "controller.js");
 const socketManager = require(socketManagerPath);
 
@@ -238,13 +235,11 @@ module.exports = {
                                 case "onData":
                                     if (portName)
                                         socketManager.emitOnPortDataEvent(portName, newContent);
-                                    // pusherManager.triggerOnPortData(portName, newContent);
                                     else
                                         console.log("Port name is undefined in logMessage()");
                                     break;
                                 case "onLog":
                                     socketManager.emitOnLogDuringTransmissionEvent(newContent);
-                                    // pusherManager.triggerOnLog(portName, newContent);
                                     break;
                                 default:
                                     console.log("something is wrong in logMessage(), default case!");

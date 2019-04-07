@@ -9,9 +9,6 @@ const fs = require("fs");
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
-// const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
-// const pusherManager = require(pusherManagerPath);
-
 const socketManagerPath = path.join("..", "socket_manager", "controller.js");
 const socketManager = require(socketManagerPath);
 
@@ -180,7 +177,6 @@ module.exports = {
             }
             if (count != portsCount) {
               console.log("Active ports list has changed, new count is: " + count + ", updating it ...");
-              // pusherManager.triggerOnPortActive(obj);
               socketManager.emitOnPortActiveEvent(obj);
               portsCount = count;
             }
@@ -482,7 +478,6 @@ module.exports = {
    * The promise is rejected when name is undefined, or there is no such port name, or when the port is not opened.
    * The promise is resolved when its executed successfully with a value of [true].
    * @param name of the port
-   * TODO: add pusher to push new data to the frontend
    */
   registerOnErrorEvent: name => {
     return new Promise((resolve, reject) => {
