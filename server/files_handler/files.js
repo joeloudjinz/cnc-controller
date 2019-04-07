@@ -6,6 +6,9 @@ const readline = require("readline");
 const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
 const pusherManager = require(pusherManagerPath);
 
+const socketManagerPath = path.join("..", "socket_manager", "controller.js");
+const socketManager = require(socketManagerPath);
+
 const imgDir = path.join(root_path, "server", "resources", "images");
 const gcodeDir = path.join(root_path, "server", "resources", "gcodes");
 const outputsDir = path.join(root_path, "server", "resources", "outputs");
@@ -234,12 +237,14 @@ module.exports = {
                             switch (type) {
                                 case "onData":
                                     if (portName)
-                                        pusherManager.triggerOnPortData(portName, newContent);
+                                        socketManager.emitOnPortDataEvent(portName, newContent);
+                                    // pusherManager.triggerOnPortData(portName, newContent);
                                     else
                                         console.log("Port name is undefined in logMessage()");
                                     break;
                                 case "onLog":
-                                    pusherManager.triggerOnLog(portName, newContent);
+                                    socketManager.emitOnLogDuringTransmissionEvent(newContent);
+                                    // pusherManager.triggerOnLog(portName, newContent);
                                     break;
                                 default:
                                     console.log("something is wrong in logMessage(), default case!");

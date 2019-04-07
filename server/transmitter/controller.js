@@ -9,8 +9,11 @@ const fs = require("fs");
 const fileHandlerPath = path.join("..", "files_handler", "files.js");
 const filesHandler = require(fileHandlerPath);
 
-const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
-const pusherManager = require(pusherManagerPath);
+// const pusherManagerPath = path.join("..", "pusher_manager", "controller.js");
+// const pusherManager = require(pusherManagerPath);
+
+const socketManagerPath = path.join("..", "socket_manager", "controller.js");
+const socketManager = require(socketManagerPath);
 
 const defaultBaudRate = 115200; //! used for grbl v0.9+
 
@@ -172,20 +175,19 @@ module.exports = {
             for (var i = 0, len = ports.length; i < len; i++) {
               if (ports[i].productId) {
                 obj[i + 1] = ports[i];
-                // activePorts.set(ports[i].comName, ports[i]);
                 count++;
               }
             }
             if (count != portsCount) {
               console.log("Active ports list has changed, new count is: " + count + ", updating it ...");
-              // console.log(obj);
-              pusherManager.triggerOnPortActive(obj);
+              // pusherManager.triggerOnPortActive(obj);
+              socketManager.emitOnPortActiveEvent(obj);
               portsCount = count;
             }
           },
           error => console.log(error.message)
         );
-    }, 2500);
+    }, 1500);
   },
   /**
    * Calculate the estimated time to send all lines of code in a file to the machine
@@ -1167,7 +1169,7 @@ listenToIncomingDataForSinglePort = (name) => {
           ports.get(name).isOpen
         );
         parsers.get(name).on("data", data => {
-          pusherManager.triggerOnSinglePortData(name, data);
+          socketManager.emitOnSinglePortDataEvent(name, data);
         });
       } else {
         console.error("listenToIncomingData: Port " + name + " is closed!");
