@@ -95,5 +95,23 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+    OnConversionErrorOccursEvent: (content) => {
+        if (isConnected) {
+            io.emit('onConversionErrorOccurs', {
+                data: content
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    emitOnConversionEndsEvent: (content) => {
+        if (isConnected) {
+            io.emit('onConversionEnds', {
+                data: content
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

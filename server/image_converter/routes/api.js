@@ -236,7 +236,6 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
                             });
                         });
                 }).catch((error) => {
-                    //! delete the uploaded image here
                     filesHandler.deleteImageFileSync(fileObject.filename);
                     res.status(500).send({
                         failure: "Internal error occurred while converting image, try again",
