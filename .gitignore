@@ -1,7 +1,7 @@
 node_modules
 client/
 client
+test/
 resources
 .jshintrc
-server/test.js
 server/.eslintrc.js

@@ -1,9 +1,14 @@
 const img2gcode = require("img2gcode");
-const root_path = require("app-root-path").path;
 const path = require("path");
+const {
+  Worker
+} = require('worker_threads');
 
 const dbConfigPath = path.join("..", "config", "database");
 const database = require(dbConfigPath);
+
+const workerPath = path.join(__dirname, 'scripts', 'gcode-conversion-worker.js');
+// const conversionWorker = require(workerPath);
 /**
  * ? This module exports functionalities about image conversion to be used in the app
  * @functions 2
@@ -101,6 +106,39 @@ module.exports = {
           resolve(results[0].count);
         }
       });
+    });
+  },
+  /**
+   * move the conversion process from the main thread 
+   * @param imagePath the path to the image
+   * @param params conversion parameters
+   */
+  workOnConvertImage: (imagePath, params) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const worker = new Worker(workerPath, {
+          workerData: {
+            imagePath,
+            params
+          }
+        });
+        worker.on('message', (message) => {
+          if (message.state === 'completed') {
+            resolve(message.data);
+          } else if (message.state === 'error') {
+            reject(message.data);
+          } else {
+            console.log(message.data);
+          }
+        });
+        worker.on('error', (error) => reject(error));
+        worker.on('exit', (code) => {
+          if (code !== 0)
+            reject(new Error(`Conversion Worker stopped with exit code ${code}`));
+        });
+      } catch (error) {
+        console.log("while launching worker:", error);
+      }
     });
   }
 };
