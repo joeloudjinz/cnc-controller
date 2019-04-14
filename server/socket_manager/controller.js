@@ -113,5 +113,12 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+    emitOnTransmissionEndsEvent: () => {
+        if (isConnected) {
+            io.emit('onTransmissionEnds');
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

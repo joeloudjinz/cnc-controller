@@ -829,6 +829,7 @@ module.exports = {
           setTimeout(() => {
             end = Date.now();
             const t = calculateProcessDuration();
+            socketManager.emitOnTransmissionEndsEvent();
             filesHandler.logMessage(
               dirName,
               logFileName,
