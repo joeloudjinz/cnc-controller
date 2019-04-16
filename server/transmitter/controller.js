@@ -159,7 +159,7 @@ writeAndDrain = (name, data) => {
 
 module.exports = {
   /**
-   * Check for the connected devices, which means the active ports in the server every 2.5s.
+   * Check for the connected devices, which means the preoccupied ports in the server every 1.5s.
    * It will push the new list to frontend.
    */
   listenToActivePorts: () => {
@@ -199,8 +199,8 @@ module.exports = {
     }
   },
   /**
-   * Initialize and open a port with a name and a baud rate, the promise is rejected when 'name' is undefined,
-   * or when an error occurs.
+   * Initialize and open a port with a name and a baud rate.
+   * the promise is rejected when 'name' is undefined, or when an error occurs.
    * It will put the port object into ports map.
    * @param name of the port
    * @param baudRate the baud rate for the port
@@ -245,7 +245,7 @@ module.exports = {
    * Initialize a delimiter parser for a given port.
    * The promise is rejected when the port does not exist, when the port is not opened, when name of the port is undefined,
    * or when an error occurs.
-   * The promise is resolved when its executed successfully with value of [true]
+   * The promise is resolved when it's executed successfully with value of [true]
    * @param name of the port
    */
   initializeDelimiterParser: name => {
@@ -278,8 +278,9 @@ module.exports = {
   /**
    * Return only connected ports list, NOT all the available ports.
    * The promise is rejected when an error occurs.
-   * The promise is resolved when its executed successfully with [object] holding list of ports and the count
-   * @return object with list of ports and the count.
+   * The promise is resolved when its executed successfully with [object] holding list of ports and the count and the status of 
+   * the server if there is a transmission process going on or not.
+   * @return object with list of ports, the count and the status of the server.
    */
   portsList: () => {
     return new Promise((resolve, reject) => {
@@ -355,15 +356,15 @@ module.exports = {
     });
   },
   /**
-   * returns the state of a given port compared with the value of iActive.
-   * if the given port name is opened, matches the value of the current port and isActive is true, it will resolve with true.
-   * if port is closed, it will resolve with false.
-   * if current port value is undefined, it will resolve with false.
+   * returns the state of a given port compared with the value of isActive.
+   * if the given port name is opened, matches the value of the current port and isActive is true, it will resolve with [true].
+   * if port is closed, it will resolve with [false].
+   * if current port value is undefined, it will resolve with [false].
    * @returns [boolean]
    */
   isPortActive: (name) => {
     return new Promise((resolve, reject) => {
-      if(currentPort){
+      if (currentPort) {
         if (name) {
           if (ports.has(name)) {
             if (ports.get(name).isOpen) {
@@ -375,13 +376,13 @@ module.exports = {
             }
           } else {
             resolve(false);
-            // reject("There is no such port named: " + name);
           }
         } else {
           reject("Port Name is undefined");
         }
-      }else{
-        //? resolving with true if currentPort = undefined which means it wasn't assigned by any function indicating that the port is not active
+      } else {
+        //? resolving with true if 'currentPort = undefined' which means it wasn't assigned 
+        //? by any function indicating that the port is not active
         resolve(false);
       }
     });
@@ -624,7 +625,6 @@ module.exports = {
       gcodeLinesReader.on("line", line => {
         if (line.charAt(0) === ";") {
           comments.set(codeLinesNbr, line);
-          //! filesHandler.writeGcodeCommentLine(dirName, fileName, line);
         } else {
           //? temp variable to hold the gcode characters of a line
           let temp = "";
@@ -656,7 +656,6 @@ module.exports = {
       gcodeLinesReader.on("close", () => {
         //? assigning the first line number to start send operation from it
         stoppedIn = codeLines.keys().next().value;
-        // console.log(stoppedIn);
         resolve(true);
       });
       gcodeLinesReader.on("error", error => {
@@ -724,7 +723,6 @@ module.exports = {
       }
       doLoop = true;
       currentPort = portName;
-      // const start = Date.now();
       while (doLoop) {
         //? testing if the current line number is not over the last line of code
         if (stoppedIn <= codeLinesNbr) {
@@ -738,6 +736,7 @@ module.exports = {
                 if (restToSend - chars.get(stoppedIn) >= 0) {
                   //? performing send operation and wait for it to end
                   isActive = true;
+                  //TODO: call emitServerStatusChanged(isActive)
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
@@ -829,6 +828,7 @@ module.exports = {
           setTimeout(() => {
             end = Date.now();
             const t = calculateProcessDuration();
+            //! this should be removed or replaced with emitServerStatusChanged(isActive)
             socketManager.emitOnTransmissionEndsEvent();
             filesHandler.logMessage(
               dirName,
@@ -1003,6 +1003,7 @@ module.exports = {
                     "onLog"
                   );
                   initializeProcessVariables();
+                  //TODO: call emitServerStatusChanged(isActive)
                   resolve(true);
                 }, lineSendDuration + 1000);
               } else {
@@ -1031,7 +1032,7 @@ module.exports = {
   },
   /**
    * Register on close event for a given port, it will remove the port instance from ports map 
-   * and it's corresponding parser from parsers when disconnected for this specific case
+   * and it's corresponding parser from parsers when disconnected for this specific case only.
    * @param name name of the port
    */
   registerOnCloseEvent: (name) => {
@@ -1075,15 +1076,14 @@ treatData = (data, portName) => {
     const splitted = data.split(":");
     if (data === "ok") {
       okCount++;
-      content = `-> Ok is received from port: [${portName}], The count: [${okCount}]`;
+      content = `-> Ok was received from port: [${portName}], The count: [${okCount}]`;
     } else if (splitted[0] === "error") {
       errorsCount++;
-      content = `-> An error is received from port: [${portName}], The count: [${errorsCount}], error code: [${
+      content = `-> An error was received from port: [${portName}], The count: [${errorsCount}], error code: [${
         splitted[1]
       }]`;
-      //! errors.set(stoppedIn, data);
     } else {
-      content = `-> Data is received from port: [${portName}], Raw data: [${data}] `;
+      content = `-> Data was received from port: [${portName}], Raw data: [${data}] `;
     }
     filesHandler.logMessage(
       globalDirName,
@@ -1129,12 +1129,12 @@ listenToIncomingData = name => {
   if (name) {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
-        console.log(
-          "listening for data started, port: " +
-          name +
-          ", open status: " +
-          ports.get(name).isOpen
-        );
+        // console.log(
+        //   "listening for data started, port: " +
+        //   name +
+        //   ", open status: " +
+        //   ports.get(name).isOpen
+        // );
         parsers.get(name).on("data", data => {
           treatData(data, name);
         });
@@ -1158,12 +1158,12 @@ listenToIncomingDataForSinglePort = (name) => {
   if (name) {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
-        console.log(
-          "listening for data started, port: " +
-          name +
-          ", open status: " +
-          ports.get(name).isOpen
-        );
+        // console.log(
+        //   "listening for data started, port: " +
+        //   name +
+        //   ", open status: " +
+        //   ports.get(name).isOpen
+        // );
         parsers.get(name).on("data", data => {
           socketManager.emitOnSinglePortDataEvent(name, data);
         });
