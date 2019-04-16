@@ -71,6 +71,7 @@ initializeProcessVariables = () => {
   okCount = 0;
   errorsCount = 0;
   isActive = false;
+  socketManager.emitServerStatusChanged(isActive);
   currentPort = undefined;
 };
 
@@ -737,6 +738,7 @@ module.exports = {
                   //? performing send operation and wait for it to end
                   isActive = true;
                   //TODO: call emitServerStatusChanged(isActive)
+                  socketManager.emitServerStatusChanged(isActive);
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
@@ -828,8 +830,8 @@ module.exports = {
           setTimeout(() => {
             end = Date.now();
             const t = calculateProcessDuration();
-            //! this should be removed or replaced with emitServerStatusChanged(isActive)
-            socketManager.emitOnTransmissionEndsEvent();
+            //? it was replaced by emitServerStatusChanged(isActive) in initializeProcessVariables() method
+            // socketManager.emitOnTransmissionEndsEvent();
             filesHandler.logMessage(
               dirName,
               logFileName,
@@ -1003,7 +1005,6 @@ module.exports = {
                     "onLog"
                   );
                   initializeProcessVariables();
-                  //TODO: call emitServerStatusChanged(isActive)
                   resolve(true);
                 }, lineSendDuration + 1000);
               } else {
