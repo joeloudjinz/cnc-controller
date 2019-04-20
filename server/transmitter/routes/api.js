@@ -529,7 +529,7 @@ router.post('/draw/pause', (req, res) => {
                         failure: 'Something is wrong!',
                         result
                     });
-                    console.log('result in /draw/pause is :', result);
+                    // console.log('result in /draw/pause is :', result);
                 }
             }).catch((error) => {
                 res.status(500).send({

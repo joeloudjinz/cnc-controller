@@ -127,6 +127,60 @@ router.get('/outputs/', (req, res) => {
         });
 });
 
-
+/**
+ * delete gcode file from gcodes directory or from output subdirectory
+ * TODO: delete from output subdirectory 
+ * TODO: add auth middleware
+ */
+router.delete('/gcodes', (req, res) => {
+    const fileName = req.query.fileName;
+    if (fileName) {
+        filesHandler
+            .deleteGCodeFile(fileName)
+            .then((result) => {
+                res.send({
+                    success: "File deleted successfully"
+                });
+            }).catch((error) => {
+                res.status(500).send({
+                    failure: "An error occurred while deleting file",
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "File name is undefined"
+        });
+    }
+});
+/**
+ * delete an output subdirectory
+ * TODO: add auth middleware
+ */
+router.delete('/outputs', (req, res) => {
+    const dirName = req.query.dirName;
+    if (dirName) {
+        filesHandler
+            .deleteOutputDirectory(dirName)
+            .then((result) => {
+                res.send({
+                    success: "Directory deleted successfully"
+                });
+            }).catch((error) => {
+                console.log(error);
+                res.status(500).send({
+                    failure: "An error occurred while deleting directory",
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "File name is undefined"
+        });
+    }
+});
+/**
+ * TODO: add delete output directory endpoint
+ */
 
 module.exports = router;

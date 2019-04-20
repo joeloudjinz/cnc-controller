@@ -96,6 +96,7 @@ module.exports = {
             console.log('socket.io is not instantiated');
         }
     },
+    //! not used
     OnConversionErrorOccursEvent: (content) => {
         if (isConnected) {
             io.emit('onConversionErrorOccurs', {
@@ -105,6 +106,7 @@ module.exports = {
             console.log('socket.io is not instantiated');
         }
     },
+    //! not used
     emitOnConversionEndsEvent: (content) => {
         if (isConnected) {
             io.emit('onConversionEnds', {
@@ -121,6 +123,10 @@ module.exports = {
     //         console.log('socket.io is not instantiated');
     //     }
     // },
+    /**
+     * used to inform the client about the state of the server if it's active or not
+     * @param status the current state of the server 
+     */
     emitServerStatusChanged: (status) => {
         if (isConnected) {
             io.emit('onServerStatusChanged', {

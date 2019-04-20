@@ -1,4 +1,5 @@
-const fs = require("fs");
+const fs = require("fs-extra");
+// const fse = require("fs-extra");
 const path = require("path");
 const root_path = require("app-root-path").path;
 const readline = require("readline");
@@ -138,6 +139,23 @@ module.exports = {
                         }
                     });
                 }
+            });
+        });
+    },
+    /**
+     * Asynchronously delete an output directory
+     * @param dirName directory name
+     */
+    deleteOutputDirectory(dirName) {
+        const newPath = path.join(outputsDir, dirName);
+        console.log(newPath);
+        return new Promise((resolve, reject) => {
+            fs.remove(newPath, (error) => {
+                if (error) {
+                    console.log(error);
+                    reject(error);
+                } else
+                    resolve(true);
             });
         });
     },
