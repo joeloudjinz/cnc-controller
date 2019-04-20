@@ -128,8 +128,7 @@ router.get('/outputs/', (req, res) => {
 });
 
 /**
- * delete gcode file from gcodes directory or from output subdirectory
- * TODO: delete from output subdirectory 
+ * delete gcode file from gcodes directory
  * TODO: add auth middleware
  */
 router.delete('/gcodes', (req, res) => {
@@ -180,7 +179,7 @@ router.delete('/outputs', (req, res) => {
     }
 });
 /**
- * TODO: add delete output directory endpoint
+ * TODO: add delete image file endpoint
  */
 
 module.exports = router;

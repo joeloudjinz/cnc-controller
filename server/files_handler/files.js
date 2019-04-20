@@ -125,7 +125,7 @@ module.exports = {
      * Asynchronous delete of a gcode file after checking the existence of it
      * @param fileName: the name and the extension of the file
      */
-    deleteGCodeFile: fileName => {
+    deleteGCodeFile: (fileName) => {
         const newPath = path.join(gcodeDir, fileName);
         console.log(newPath);
         return new Promise((resolve, reject) => {
