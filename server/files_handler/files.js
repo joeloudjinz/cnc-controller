@@ -92,7 +92,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.access(newPath, async error => {
                 if (error) {
-                    reject(error);
+                    resolve(false);
                 } else {
                     await fs.unlink(newPath, error => {
                         if (error) {

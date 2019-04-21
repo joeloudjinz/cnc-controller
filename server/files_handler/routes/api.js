@@ -187,10 +187,22 @@ router.delete('/images', (req, res) => {
         filesHandler
             .deleteImageFile(imageName)
             .then((result) => {
-
-                res.send({
-                    success: "Image deleted successfully"
-                });
+                const splitted = imageName.split('.');
+                //! if the filename is not like the usual, it will be like 'name.ext.gcode'
+                const fileName = splitted[0] + "." + splitted[1] + ".gcode";
+                console.log('fileName :', fileName);
+                filesHandler
+                    .deleteImageFile(fileName)
+                    .then((result) => {
+                        res.send({
+                            success: "Image deleted successfully"
+                        });
+                    }).catch((error) => {
+                        res.status(500).send({
+                            failure: "An error occurred while deleting the corresponding gcode file",
+                            error
+                        });
+                    });
             }).catch((error) => {
                 console.log(error);
                 res.status(500).send({
