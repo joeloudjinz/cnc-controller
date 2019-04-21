@@ -179,7 +179,29 @@ router.delete('/outputs', (req, res) => {
     }
 });
 /**
- * TODO: add delete image file endpoint
+ * TODO: add delete the corresponding gcode file of the image
  */
+router.delete('/images', (req, res) => {
+    const imageName = req.query.imageName;
+    if (imageName) {
+        filesHandler
+            .deleteImageFile(imageName)
+            .then((result) => {
 
+                res.send({
+                    success: "Image deleted successfully"
+                });
+            }).catch((error) => {
+                console.log(error);
+                res.status(500).send({
+                    failure: "An error occurred while deleting directory",
+                    error
+                });
+            });
+    } else {
+        res.status(404).send({
+            failure: "File name is undefined"
+        });
+    }
+});
 module.exports = router;
