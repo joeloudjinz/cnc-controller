@@ -165,6 +165,7 @@ router.delete('/outputs', (req, res) => {
         filesHandler
             .deleteOutputDirectory(dirName)
             .then((result) => {
+                socketManager.emitOutputSubDirectoryDeleted(dirName);
                 res.send({
                     success: "Directory deleted successfully"
                 });

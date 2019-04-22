@@ -148,5 +148,18 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+     /**
+     * used to update files tree in the client when deleting output subdirectory
+     * @param fileName gcode file name 
+     */
+     emitOutputSubDirectoryDeleted: (dirName) => {
+        if (isConnected) {
+            io.emit('onOutputSubDirectoryDeleted', {
+                dirName
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };
