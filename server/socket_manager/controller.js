@@ -135,5 +135,18 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+    /**
+     * used to update files tree in the client when deleting gcode file
+     * @param fileName gcode file name 
+     */
+     emitGcodeFileDeleted: (fileName) => {
+        if (isConnected) {
+            io.emit('onGcodeFileDeleted', {
+                fileName
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const path = require('path');
-const fs = require("fs");
 
 
 const fileHandlerPath = path.join('..', '..', 'files_handler', 'files');
@@ -8,6 +7,9 @@ const filesHandler = require(fileHandlerPath);
 
 const authPath = path.join('..', '..', 'middlewares', 'auth');
 const auth = require(authPath);
+
+const socketManagerPath = path.join("..", "..", "socket_manager", "controller.js");
+const socketManager = require(socketManagerPath);
 
 router.get('/download', (req, res) => {
     const filePath = req.query.path;
@@ -137,6 +139,7 @@ router.delete('/gcodes', (req, res) => {
         filesHandler
             .deleteGCodeFile(fileName)
             .then((result) => {
+                socketManager.emitGcodeFileDeleted(fileName);
                 res.send({
                     success: "File deleted successfully"
                 });
