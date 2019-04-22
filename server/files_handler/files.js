@@ -323,7 +323,7 @@ module.exports = {
     },
     /**
      * get the full path of gcode file in resources/gcodes directory
-     * @param fileName: gcode file name
+     * @param fileName: gcode file name without ext
      * @returns [String] full path to file
      */
     getGcodeFile: (fileName) => {
@@ -331,6 +331,30 @@ module.exports = {
             if (fileName) {
                 try {
                     const filePath = path.join(gcodeDir, fileName + ".gcode");
+                    fs.access(filePath, fs.constants.F_OK, (error) => {
+                        if (error) reject(error.message);
+                        else {
+                            resolve(filePath);
+                        }
+                    });
+                } catch (error) {
+                    reject(error.message);
+                }
+            } else {
+                reject("File name is undefined");
+            }
+        });
+    },
+    /**
+     * get the full path of image file in resources/images directory
+     * @param fileName: full image file name 
+     * @returns [String] full path to file
+     */
+    getImageFile: (fileName) => {
+        return new Promise((resolve, reject) => {
+            if (fileName) {
+                try {
+                    const filePath = path.join(imgDir, fileName);
                     fs.access(filePath, fs.constants.F_OK, (error) => {
                         if (error) reject(error.message);
                         else {

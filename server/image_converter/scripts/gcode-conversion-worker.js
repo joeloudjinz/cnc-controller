@@ -8,7 +8,7 @@ const {
 if (!isMainThread) {
     const imagePath = workerData.imagePath;
     const parameters = JSON.parse(workerData.params);
-
+    // console.log('parameters :', parameters);
     img2gcode.start({
             // It is mm
             toolDiameter: parameters.toolDiameter || 1,
@@ -32,10 +32,11 @@ if (!isMainThread) {
             });
         })
         .on("error", error => {
-            parentPort.postMessage({
-                state: 'error',
-                'data': error
-            });
+            console.log(error);
+            // parentPort.postMessage({
+            //     state: 'error',
+            //     'data': error
+            // });
         })
         .on("complete", data => {
             parentPort.postMessage({
