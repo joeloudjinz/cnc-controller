@@ -179,7 +179,8 @@ router.delete('/outputs', (req, res) => {
     }
 });
 /**
- * TODO: add delete the corresponding gcode file of the image
+ * Delete an image and it's corresponding gcode file if exists
+ * TODO: add auth middleware
  */
 router.delete('/images', (req, res) => {
     const imageName = req.query.imageName;
