@@ -140,7 +140,7 @@ module.exports = {
      * used to update files tree in the client when deleting gcode file
      * @param fileName gcode file name 
      */
-     emitGcodeFileDeleted: (fileName) => {
+    emitGcodeFileDeleted: (fileName) => {
         if (isConnected) {
             io.emit('onGcodeFileDeleted', {
                 fileName
@@ -149,14 +149,27 @@ module.exports = {
             console.log('socket.io is not instantiated');
         }
     },
-     /**
+    /**
      * used to update files tree in the client when deleting output subdirectory
      * @param fileName gcode file name 
      */
-     emitOutputSubDirectoryDeleted: (dirName) => {
+    emitOutputSubDirectoryDeleted: (dirName) => {
         if (isConnected) {
             io.emit('onOutputSubDirectoryDeleted', {
                 dirName
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    /**
+     * used to update files tree in the client when an image is deleted
+     * @param fileName gcode file name 
+     */
+    emitImageDeleted: (imageName) => {
+        if (isConnected) {
+            io.emit('onImageDeleted', {
+                imageName
             });
         } else {
             console.log('socket.io is not instantiated');
