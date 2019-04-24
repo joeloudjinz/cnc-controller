@@ -37,10 +37,14 @@ module.exports = {
     moveDotGcode: (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
             const newPath = path.join(gcodeDir, fileName);
-            await fs.rename(oldPath, newPath, err => {
-                if (err) {
-                    reject(err);
+            await fs.rename(oldPath, newPath, error => {
+                if (error) {
+                    reject(error);
                 } else {
+                    socketManager.emitGcodeFileAdded({
+                        name: fileName,
+                        path: newPath
+                    });
                     resolve(true);
                 }
             });
@@ -49,9 +53,9 @@ module.exports = {
     moveImage: async (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
             const newPath = path.join(imgDir, fileName);
-            await fs.rename(oldPath, newPath, err => {
-                if (err) {
-                    reject(err);
+            await fs.rename(oldPath, newPath, error => {
+                if (error) {
+                    reject(error);
                 } else {
                     resolve(newPath);
                 }
