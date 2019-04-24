@@ -187,7 +187,7 @@ module.exports = {
         }
     },
      /**
-     * used to update files tree in the client when new gcode file is added to the directory
+     * used to update files tree in the client when new image is added to the directory
      * @param fileName gcode file name 
      */
      emitImageAdded: (fileDetailsObject) => {
