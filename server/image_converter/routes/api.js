@@ -182,6 +182,7 @@ router.post('/convert/quick', auth, (req, res) => {
                                     }).then((result) => {
                                         res.send({
                                             success: "Image converted successfully",
+                                            data: errBlackPixel
                                         });
                                     }).catch((error) => {
                                         res.status(500).send({
