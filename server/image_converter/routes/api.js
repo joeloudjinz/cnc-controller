@@ -133,12 +133,12 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
 });
 
 router.post('/convert/quick', auth, (req, res) => {
-    // get image file name and params from query field
+    //? get image file name and params from query field
     const imageName = req.query.imageName;
     const parameters = req.body.parameters;
     if (imageName) {
         if (parameters) {
-            // get image file from images directory
+            //? get image file from images directory
             filesHandler
                 .getImageFile(imageName)
                 .then((imagePath) => {
