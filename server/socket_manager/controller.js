@@ -185,5 +185,16 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+     /**
+     * used to update files tree in the client when new gcode file is added to the directory
+     * @param fileName gcode file name 
+     */
+     emitImageAdded: (fileDetailsObject) => {
+        if (isConnected) {
+            io.emit('onImageAdded', fileDetailsObject);
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

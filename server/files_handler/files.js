@@ -57,6 +57,10 @@ module.exports = {
                 if (error) {
                     reject(error);
                 } else {
+                    socketManager.emitImageAdded({
+                        name: fileName,
+                        path: newPath
+                    });
                     resolve(newPath);
                 }
             });
