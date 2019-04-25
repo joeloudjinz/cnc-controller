@@ -14,7 +14,6 @@ const socketManager = require(socketManagerPath);
 /**
  * get the content of a file, either .gcode or .log
  * TODO: add auth middleware
- * TODO: check the existence of the file first
  */
 router.get('/download', (req, res) => {
     const filePath = req.query.path;
@@ -48,7 +47,6 @@ router.get('/download', (req, res) => {
 /**
  * return base64 of an image in 'images' directory
  * TODO: add auth middleware
- * TODO: check the existence of the image first
  */
 router.get('/display', (req, res) => {
     const imagePath = req.query.path;
@@ -192,7 +190,7 @@ router.delete('/gcodes', (req, res) => {
     }
 });
 /**
- * delete an output subdirectory
+ * delete a given output subdirectory
  * TODO: add auth middleware
  */
 router.delete('/outputs', (req, res) => {

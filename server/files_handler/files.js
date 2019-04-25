@@ -218,7 +218,7 @@ module.exports = {
         });
     },
     /**
-     * Asynchronously, Verify if a given file exist or not in the 
+     * Asynchronously, Verify if a given file exist or not
      * @param filePath path of the given file
      */
     doesFileExist: filePath => {
@@ -415,6 +415,11 @@ module.exports = {
             }
         });
     },
+    /**
+     * Reads all the content of the directories in 'resources'
+     * @param dirCode the code the subdirectory 1 for 'images', 2 for 'gcodes' & 3 for 'outputs' 
+     * @return [JSONObject] holding the content of 'resources'   
+     */
     readDirectoryContent: dirCode => {
         return new Promise((resolve, reject) => {
             let dirPath;
