@@ -14,18 +14,27 @@ const socketManager = require(socketManagerPath);
 /**
  * get the content of a file, either .gcode or .log
  * TODO: add auth middleware
+ * TODO: check the existence of the file first
  */
 router.get('/download', (req, res) => {
     const filePath = req.query.path;
     if (filePath) {
-        filesHandler.readFileLinsIntoArray(filePath)
+        filesHandler.doesFileExist()
             .then((result) => {
-                res.send({
-                    fileLines: result
-                });
+                filesHandler.readFileLinsIntoArray(filePath)
+                    .then((result) => {
+                        res.send({
+                            fileLines: result
+                        });
+                    }).catch((error) => {
+                        res.status(500).send({
+                            failure: "Couldn't read file lines!",
+                            error
+                        });
+                    });
             }).catch((error) => {
-                res.status(500).send({
-                    failure: "Couldn't read file lines!",
+                res.status(404).send({
+                    failure: "File does not exist anymore!",
                     error
                 });
             });
@@ -39,21 +48,30 @@ router.get('/download', (req, res) => {
 /**
  * return base64 of an image in 'images' directory
  * TODO: add auth middleware
+ * TODO: check the existence of the image first
  */
 router.get('/display', (req, res) => {
     const imagePath = req.query.path;
     if (imagePath) {
-        filesHandler
-            .encodeFileIntoBase64(imagePath)
-            .then((data) => {
-                const ext = imagePath.split(".").reverse()[0];
-                res.send({
-                    data,
-                    ext
-                });
+        filesHandler.doesFileExist(imagePath)
+            .then((result) => {
+                filesHandler
+                    .encodeFileIntoBase64(imagePath)
+                    .then((data) => {
+                        const ext = imagePath.split(".").reverse()[0];
+                        res.send({
+                            data,
+                            ext
+                        });
+                    }).catch((error) => {
+                        res.status(500).send({
+                            failure: "Couldn't read the file!",
+                            error
+                        });
+                    });
             }).catch((error) => {
-                res.status(500).send({
-                    failure: "Couldn't read the file!",
+                res.status(404).send({
+                    failure: "File does not exist anymore!",
                     error
                 });
             });
@@ -183,10 +201,16 @@ router.delete('/outputs', (req, res) => {
         filesHandler
             .deleteOutputDirectory(dirName)
             .then((result) => {
-                socketManager.emitOutputSubDirectoryDeleted(dirName);
-                res.send({
-                    success: "Directory deleted successfully"
-                });
+                if (result) {
+                    socketManager.emitOutputSubDirectoryDeleted(dirName);
+                    res.send({
+                        success: "Directory deleted successfully"
+                    });
+                } else {
+                    res.status(404).send({
+                        failure: "Directory does not exist anymore!"
+                    });
+                }
             }).catch((error) => {
                 console.log(error);
                 res.status(500).send({

@@ -180,22 +180,6 @@ module.exports = {
         });
     },
     /**
-     * Asynchronously delete an output directory
-     * @param dirName directory name
-     */
-    deleteOutputDirectory(dirName) {
-        const newPath = path.join(outputsDir, dirName);
-        console.log(newPath);
-        return new Promise((resolve, reject) => {
-            fs.remove(newPath, error => {
-                if (error) {
-                    console.log(error);
-                    reject(error);
-                } else resolve(true);
-            });
-        });
-    },
-    /**
      * Synchronous delete of a gcode file after checking the existence of it
      * @param fileName: the name and the extension of the file
      */
@@ -212,18 +196,38 @@ module.exports = {
         });
     },
     /**
-     * Synchronously, Verify if a given gcode file exist or not in the gcode resources directory
-     * @param fileName: gcode file name
+     * Asynchronously delete an output directory
+     * @param dirName directory name
      */
-    gCodeFileExist: fileName => {
-        const newPath = path.join(gcodeDir, fileName);
+    deleteOutputDirectory(dirName) {
+        const newPath = path.join(outputsDir, dirName);
         console.log(newPath);
-        return new Promise(async (resolve, reject) => {
-            fs.access(newPath, error => {
+        return new Promise((resolve, reject) => {
+            fs.access(newPath, (error) => {
                 if (error) {
                     console.log(error);
-                    reject(error);
-                } else resolve(newPath);
+                    resolve(false);
+                } else {
+                    fs.remove(newPath, error => {
+                        if (error) {
+                            reject(error);
+                        } else resolve(true);
+                    });
+                }
+            });
+        });
+    },
+    /**
+     * Asynchronously, Verify if a given file exist or not in the 
+     * @param filePath path of the given file
+     */
+    doesFileExist: filePath => {
+        return new Promise((resolve, reject) => {
+            fs.access(filePath, error => {
+                if (error) {
+                    console.log(error);
+                    reject(false);
+                } else resolve(true);
             });
         });
     },
