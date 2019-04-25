@@ -1,5 +1,4 @@
 const fs = require("fs-extra");
-// const fse = require("fs-extra");
 const path = require("path");
 const root_path = require("app-root-path").path;
 const readline = require("readline");
@@ -34,6 +33,11 @@ readSubDirectoryContent = dirPath => {
 };
 
 module.exports = {
+    /**
+     * move a given gcode file from an old directory to "gcodes"
+     * @param oldPath the current path to the file
+     * @param fileName the name of the file
+     */
     moveDotGcode: (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
             const newPath = path.join(gcodeDir, fileName);
@@ -50,6 +54,11 @@ module.exports = {
             });
         });
     },
+    /**
+     * move a given image from an old directory to "images"
+     * @param oldPath the current path to the image
+     * @param fileName the name of the image
+     */
     moveImage: async (oldPath, fileName) => {
         return new Promise(async (resolve, reject) => {
             const newPath = path.join(imgDir, fileName);
@@ -66,6 +75,10 @@ module.exports = {
             });
         });
     },
+    /**
+     * get the size of a given gcode file
+     * @param fileName the name of the file
+     */
     getGCodeFileStats: fileName => {
         const newPath = path.join(gcodeDir, fileName);
         // console.log(newPath);
@@ -133,12 +146,12 @@ module.exports = {
      * Asynchronous delete of a gcode file after checking the existence of it
      * @param fileName: the name and the extension of the file
      */
-    deleteGCodeFile: (fileName) => {
+    deleteGCodeFile: fileName => {
         const newPath = path.join(gcodeDir, fileName);
         console.log(newPath);
         return new Promise((resolve, reject) => {
             fs.access(newPath, async error => {
-                if (error) reject(error);
+                if (error) resolve(false);
                 else {
                     await fs.unlink(newPath, error => {
                         if (error) reject(error);
@@ -151,6 +164,22 @@ module.exports = {
         });
     },
     /**
+     * Synchronous delete of gcode file after checking the existence of it
+     * @param fileName: the name and the extension of the file
+     */
+    deleteGcodeFileSync: fileName => {
+        const newPath = path.join(gcodeDir, fileName);
+        console.log(newPath);
+        fs.access(newPath, error => {
+            if (error) {
+                // console.log(error);
+                return error;
+            } else {
+                fs.unlinkSync(newPath);
+            }
+        });
+    },
+    /**
      * Asynchronously delete an output directory
      * @param dirName directory name
      */
@@ -158,12 +187,11 @@ module.exports = {
         const newPath = path.join(outputsDir, dirName);
         console.log(newPath);
         return new Promise((resolve, reject) => {
-            fs.remove(newPath, (error) => {
+            fs.remove(newPath, error => {
                 if (error) {
                     console.log(error);
                     reject(error);
-                } else
-                    resolve(true);
+                } else resolve(true);
             });
         });
     },
@@ -187,16 +215,15 @@ module.exports = {
      * Synchronously, Verify if a given gcode file exist or not in the gcode resources directory
      * @param fileName: gcode file name
      */
-    gCodeFileExist: (fileName) => {
+    gCodeFileExist: fileName => {
         const newPath = path.join(gcodeDir, fileName);
         console.log(newPath);
         return new Promise(async (resolve, reject) => {
-            fs.access(newPath, (error) => {
+            fs.access(newPath, error => {
                 if (error) {
                     console.log(error);
                     reject(error);
-                } else
-                    resolve(newPath);
+                } else resolve(newPath);
             });
         });
     },
@@ -206,13 +233,13 @@ module.exports = {
      * @returns [String] path to new directory
      * @returns [false] if there was an error while creating directory
      */
-    addOutputDirectorySync: (dirName) => {
+    addOutputDirectorySync: dirName => {
         const newPath = path.join(outputsDir, dirName);
         try {
             fs.mkdirSync(newPath);
             return newPath;
         } catch (error) {
-            console.log('addOutputDirectorySync error :', error);
+            console.log("addOutputDirectorySync error :", error);
             return false;
         }
     },
@@ -221,11 +248,11 @@ module.exports = {
      * @param dirName: the name of the new directory
      * @returns [String] path to new directory
      */
-    addOutputDirectory: (dirName) => {
+    addOutputDirectory: dirName => {
         return new Promise((resolve, reject) => {
             if (dirName) {
                 const newPath = path.join(outputsDir, dirName);
-                fs.mkdir(newPath, (error) => {
+                fs.mkdir(newPath, error => {
                     if (error) reject(error);
                     resolve(newPath);
                 });
@@ -250,25 +277,33 @@ module.exports = {
                 const logPath = path.join(dirName, fileName + ".log");
                 try {
                     const t = new Date();
-                    const newContent = "[" + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + "." + t.getMilliseconds() + "] | " + content;
-                    fs.appendFileSync(
-                        logPath,
-                        newContent + "\n"
-                    );
+                    const newContent =
+                        "[" +
+                        t.getHours() +
+                        ":" +
+                        t.getMinutes() +
+                        ":" +
+                        t.getSeconds() +
+                        "." +
+                        t.getMilliseconds() +
+                        "] | " +
+                        content;
+                    fs.appendFileSync(logPath, newContent + "\n");
                     if (doPush) {
                         if (type) {
                             switch (type) {
                                 case "onData":
                                     if (portName)
                                         socketManager.emitOnPortDataEvent(portName, newContent);
-                                    else
-                                        console.log("Port name is undefined in logMessage()");
+                                    else console.log("Port name is undefined in logMessage()");
                                     break;
                                 case "onLog":
                                     socketManager.emitOnLogDuringTransmissionEvent(newContent);
                                     break;
                                 default:
-                                    console.log("something is wrong in logMessage(), default case!");
+                                    console.log(
+                                        "something is wrong in logMessage(), default case!"
+                                    );
                                     break;
                             }
                         } else {
@@ -277,7 +312,7 @@ module.exports = {
                     }
                     return true;
                 } catch (error) {
-                    console.log('logMessage error :', error);
+                    console.log("logMessage error :", error);
                     return false;
                 }
             } else {
@@ -301,7 +336,7 @@ module.exports = {
             fs.appendFileSync(commentFilePath, comment + "\n");
             return commentFilePath;
         } catch (error) {
-            console.log('writeGcodeCommentLine error :', error);
+            console.log("writeGcodeCommentLine error :", error);
             return false;
         }
     },
@@ -324,22 +359,21 @@ module.exports = {
             );
             return cleanCodePath;
         } catch (error) {
-            console.log('writeCleanGcodeLine error :', error);
+            console.log("writeCleanGcodeLine error :", error);
             return false;
         }
-
     },
     /**
      * get the full path of gcode file in resources/gcodes directory
      * @param fileName: gcode file name without ext
      * @returns [String] full path to file
      */
-    getGcodeFile: (fileName) => {
+    getGcodeFile: fileName => {
         return new Promise((resolve, reject) => {
             if (fileName) {
                 try {
                     const filePath = path.join(gcodeDir, fileName + ".gcode");
-                    fs.access(filePath, fs.constants.F_OK, (error) => {
+                    fs.access(filePath, fs.constants.F_OK, error => {
                         if (error) reject(error.message);
                         else {
                             resolve(filePath);
@@ -355,15 +389,15 @@ module.exports = {
     },
     /**
      * get the full path of image file in resources/images directory
-     * @param fileName: full image file name 
+     * @param fileName: full image file name
      * @returns [String] full path to file
      */
-    getImageFile: (fileName) => {
+    getImageFile: fileName => {
         return new Promise((resolve, reject) => {
             if (fileName) {
                 try {
                     const filePath = path.join(imgDir, fileName);
-                    fs.access(filePath, fs.constants.F_OK, (error) => {
+                    fs.access(filePath, fs.constants.F_OK, error => {
                         if (error) reject(error.message);
                         else {
                             resolve(filePath);
@@ -426,7 +460,7 @@ module.exports = {
             }
         });
     },
-    readFileLinsIntoArray: (filePath) => {
+    readFileLinsIntoArray: filePath => {
         return new Promise((resolve, reject) => {
             let lines = [];
             const gcodeLinesReader = readline.createInterface({
@@ -449,16 +483,19 @@ module.exports = {
      * @param filePath to be read and converted into base64 buffer
      * @returns [Buffer] of a file in base64 encode
      */
-    encodeFileIntoBase64: (filePath) => {
+    encodeFileIntoBase64: filePath => {
         return new Promise((resolve, reject) => {
-            fs.readFile(filePath, {
-                encoding: 'base64'
-            }, function (error, data) {
-                if (error) reject(error);
-                else {
-                    resolve(data);
+            fs.readFile(
+                filePath, {
+                    encoding: "base64"
+                },
+                function (error, data) {
+                    if (error) reject(error);
+                    else {
+                        resolve(data);
+                    }
                 }
-            });
+            );
         });
     }
 };

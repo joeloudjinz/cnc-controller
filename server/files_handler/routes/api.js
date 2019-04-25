@@ -11,6 +11,10 @@ const auth = require(authPath);
 const socketManagerPath = path.join("..", "..", "socket_manager", "controller.js");
 const socketManager = require(socketManagerPath);
 
+/**
+ * get the content of a file, either .gcode or .log
+ * TODO: add auth middleware
+ */
 router.get('/download', (req, res) => {
     const filePath = req.query.path;
     if (filePath) {
@@ -32,6 +36,10 @@ router.get('/download', (req, res) => {
     }
 });
 
+/**
+ * return base64 of an image in 'images' directory
+ * TODO: add auth middleware
+ */
 router.get('/display', (req, res) => {
     const imagePath = req.query.path;
     if (imagePath) {
@@ -58,6 +66,7 @@ router.get('/display', (req, res) => {
 
 /**
  * get all the files in resources directory
+ * TODO: add auth middleware
  */
 router.get('/', (req, res) => {
     let tree = {};
@@ -88,6 +97,7 @@ router.get('/', (req, res) => {
 });
 /**
  * get data of all images in images directory
+ * TODO: add auth middleware
  */
 router.get('/images/', (req, res) => {
     let tree = {};
@@ -102,6 +112,7 @@ router.get('/images/', (req, res) => {
 });
 /**
  * get data of all g-code files in g-codes directory
+ * TODO: add auth middleware
  */
 router.get('/gcodes/', (req, res) => {
     let tree = {};
@@ -116,6 +127,7 @@ router.get('/gcodes/', (req, res) => {
 });
 /**
  * get data of all files in the subdirectories of 'outputs' directory
+ * TODO: add auth middleware
  */
 router.get('/outputs/', (req, res) => {
     let tree = {};
@@ -139,10 +151,16 @@ router.delete('/gcodes', (req, res) => {
         filesHandler
             .deleteGCodeFile(fileName)
             .then((result) => {
-                socketManager.emitGcodeFileDeleted(fileName);
-                res.send({
-                    success: "File deleted successfully"
-                });
+                if (result) {
+                    socketManager.emitGcodeFileDeleted(fileName);
+                    res.send({
+                        success: "File deleted successfully"
+                    });
+                } else {
+                    res.status(404).send({
+                        failure: "File does not exist anymore!"
+                    });
+                }
             }).catch((error) => {
                 res.status(500).send({
                     failure: "An error occurred while deleting file",
@@ -192,21 +210,23 @@ router.delete('/images', (req, res) => {
         filesHandler
             .deleteImageFile(imageName)
             .then((result) => {
-                const splitted = imageName.split('.');
-                //! if the filename is not like the usual, it will be like 'name.ext.gcode'
-                const fileName = splitted[0] + "." + splitted[1] + ".gcode";
-                filesHandler
-                    .deleteGCodeFile(fileName)
-                    .then((result) => {}).catch((error) => {
-                        res.status(500).send({
-                            failure: "An error occurred while deleting the corresponding gcode file",
-                            error
-                        });
+                //? the file exist and it was deleted
+                if (result) {
+                    const splitted = imageName.split('.');
+                    //! NOTE: if the filename is not like the usual, it will be like 'name.ext.gcode'
+                    const fileName = splitted[0] + "." + splitted[1] + ".gcode";
+                    //? delete the corresponding gcode file
+                    filesHandler.deleteGcodeFileSync(fileName);
+                    socketManager.emitImageDeleted(imageName);
+                    res.send({
+                        success: "Image deleted successfully"
                     });
-                socketManager.emitImageDeleted(imageName);
-                res.send({
-                    success: "Image deleted successfully"
-                });
+                } else {
+                    //? the file does not exist in 'images' directory
+                    res.status(404).send({
+                        failure: "File does not exist anymore!"
+                    });
+                }
             }).catch((error) => {
                 console.log(error);
                 res.status(500).send({
