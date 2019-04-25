@@ -150,9 +150,9 @@ module.exports = {
    * move the conversion process from the main thread 
    * @param imagePath the path to the image
    * @param params conversion parameters
-   * @param fileObject the object from form data of the uploaded image 
+   * @param imageName the object from form data of the uploaded image 
    */
-  workOnConvertImage: (imagePath, params, fileObject) => {
+  workOnConvertImage: (imagePath, params, imageName) => {
     try {
       const worker = new Worker(workerPath, {
         workerData: {
@@ -162,7 +162,7 @@ module.exports = {
       });
       worker.on('message', (message) => {
         if (message.state === 'completed') {
-          handleConversionEndProcess(message.data, fileObject);
+          handleConversionEndProcess(message.data, imageName);
         } else if (message.state === 'error') {
           handleConversionErrorOccur(message.data);
         } else {
@@ -187,9 +187,9 @@ module.exports = {
  * Perform the rest of the operation when the conversion process has to the end
  * @param data the data return from img2gcode.start() function
  */
-handleConversionEndProcess = (data, fileObject) => {
+handleConversionEndProcess = (data, imageName) => {
   results = data;
-  const splitted = fileObject.filename.split(".");
+  const splitted = imageName.split(".");
   const fileName = splitted[0] + "." + splitted[1] + ".gcode";
   filesHandler.moveDotGcode(data.dirgcode, fileName)
     .then((result) => {
@@ -212,7 +212,7 @@ handleConversionEndProcess = (data, fileObject) => {
         const t = new Date(time);
         const startTime = `${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`;
         module.exports.storeConversionDetails({
-          image: fileObject.filename,
+          image: imageName,
           gcode: fileName,
           toolDiameter,
           sensitivity,
@@ -251,7 +251,7 @@ handleConversionEndProcess = (data, fileObject) => {
             });
         }).catch((error) => {
           console.log("while storing data", error);
-          filesHandler.deleteImageFileSync(fileObject.filename);
+          filesHandler.deleteImageFileSync(imageName);
           filesHandler.deleteGCodeFileSync(fileName);
         });
       } else {
