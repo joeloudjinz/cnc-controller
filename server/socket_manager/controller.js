@@ -218,5 +218,27 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+    /**
+     * used to inform the client that the quick conversion process has ended
+     * @param conversionDetails details of the quick conversion process 
+     */
+    emitQuickConversionEnded: (conversionDetails) => {
+        if (isConnected) {
+            io.emit('onQuickConversionEnded', conversionDetails);
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    /**
+     * used to inform the client that the quick conversion process has ended
+     * @param conversionDetails details of the quick conversion process 
+     */
+    emitQuickConversionErrorOccur: (errorDetails) => {
+        if (isConnected) {
+            io.emit('onQuickConversionErrorOccur', errorDetails);
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

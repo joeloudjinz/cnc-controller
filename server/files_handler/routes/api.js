@@ -18,7 +18,7 @@ const socketManager = require(socketManagerPath);
 router.get('/download', (req, res) => {
     const filePath = req.query.path;
     if (filePath) {
-        filesHandler.doesFileExist()
+        filesHandler.doesFileExist(filePath)
             .then((result) => {
                 filesHandler.readFileLinsIntoArray(filePath)
                     .then((result) => {

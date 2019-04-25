@@ -151,8 +151,9 @@ module.exports = {
    * @param imagePath the path to the image
    * @param params conversion parameters
    * @param imageName the object from form data of the uploaded image 
+   * @param isQuick to indicate if it's quick conversion or not
    */
-  workOnConvertImage: (imagePath, params, imageName) => {
+  workOnConvertImage: (imagePath, params, imageName, isQuick) => {
     try {
       const worker = new Worker(workerPath, {
         workerData: {
@@ -162,7 +163,7 @@ module.exports = {
       });
       worker.on('message', (message) => {
         if (message.state === 'completed') {
-          handleConversionEndProcess(message.data, imageName);
+          handleConversionEndProcess(message.data, imageName, isQuick);
         } else if (message.state === 'error') {
           handleConversionErrorOccur(message.data);
         } else {
@@ -187,7 +188,7 @@ module.exports = {
  * Perform the rest of the operation when the conversion process has to the end
  * @param data the data return from img2gcode.start() function
  */
-handleConversionEndProcess = (data, imageName) => {
+handleConversionEndProcess = (data, imageName, isQuick) => {
   results = data;
   const splitted = imageName.split(".");
   const fileName = splitted[0] + "." + splitted[1] + ".gcode";
@@ -229,23 +230,29 @@ handleConversionEndProcess = (data, imageName) => {
           filesHandler.getGCodeFileStats(fileName)
             .then((result) => {
               let size = result.size;
-              socketManager.emitConversionEnded({
-                toolDiameter,
-                sensitivity,
-                scaleAxes,
-                deepStep,
-                whiteZ,
-                blackZ,
-                safeZ,
-                feedrate,
-                errBlackPixel,
-                imgSize,
-                startTime,
-                endTime,
-                elapsedTime: (tt - t) * 0.001,
-                fileName: fileName,
-                size: size
-              });
+              if (isQuick) {
+                socketManager.emitQuickConversionEnded({
+                  data: errBlackPixel
+                });
+              } else {
+                socketManager.emitConversionEnded({
+                  toolDiameter,
+                  sensitivity,
+                  scaleAxes,
+                  deepStep,
+                  whiteZ,
+                  blackZ,
+                  safeZ,
+                  feedrate,
+                  errBlackPixel,
+                  imgSize,
+                  startTime,
+                  endTime,
+                  elapsedTime: (tt - t) * 0.001,
+                  fileName: fileName,
+                  size: size
+                });
+              }
             }).catch((error) => {
               console.log("while getting states", error);
             });
@@ -256,10 +263,11 @@ handleConversionEndProcess = (data, imageName) => {
         });
       } else {
         //? the file does not exist !!
-        console.log('the file does not exist');
+      handleConversionErrorOccur("The generated Gcode file was not founded, expected file name: " + fileName, isQuick);
+      console.log('the file does not exist');
       }
     }).catch((error) => {
-      handleConversionErrorOccur("Gcode file is generated but the process didn't end well, file name: " + fileName);
+      handleConversionErrorOccur("Gcode file is generated but the process didn't end well, file name: " + fileName, isQuick);
       console.log("while moving gcode file from 'images'", error);
     });
 };
@@ -268,10 +276,16 @@ handleConversionEndProcess = (data, imageName) => {
  * will inform the client with the error 
  * @param errorData error details
  */
-handleConversionErrorOccur = (errorData) => {
-  socketManager.emitConversionErrorOccur({
-    errorData
-  });
+handleConversionErrorOccur = (errorData, isQuick) => {
+  if (isQuick) {
+    socketManager.emitQuickConversionErrorOccur({
+      errorData
+    });
+  } else {
+    socketManager.emitConversionErrorOccur({
+      errorData
+    });
+  }
 };
 
 constructReturnObject = (data, isError) => {

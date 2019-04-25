@@ -25,7 +25,7 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const params = req.body.parameters;
     filesHandler.moveImage(fileObject.path, fileObject.filename)
         .then((newPath) => {
-            controller.workOnConvertImage(newPath, params, fileObject.filename);
+            controller.workOnConvertImage(newPath, params, fileObject.filename, false);
             res.send({
                 success: "Image conversion process has started successfully"
             });
@@ -48,65 +48,10 @@ router.post('/convert/quick', auth, (req, res) => {
                 .getImageFile(imageName)
                 .then((imagePath) => {
                     const params = JSON.stringify(parameters);
-                    controller.workOnConvertImage(imagePath, params);
-                        // .then((data) => {
-                        //     //? results holds the details of the conversion process
-                        //     results = data;
-                        //     const splitted = imageName.split(".");
-                        //     const fileName = splitted[0] + "." + splitted[1] + ".gcode";
-                        //     filesHandler.moveDotGcode(data.dirgcode, fileName)
-                        //         .then((result) => {
-                        //             const {
-                        //                 toolDiameter,
-                        //                 sensitivity,
-                        //                 scaleAxes,
-                        //                 deepStep,
-                        //                 whiteZ,
-                        //                 blackZ,
-                        //                 safeZ,
-                        //                 feedrate,
-                        //                 errBlackPixel,
-                        //                 time,
-                        //                 imgSize
-                        //             } = results.config;
-                        //             controller.storeConversionDetails({
-                        //                 image: imageName,
-                        //                 gcode: fileName,
-                        //                 toolDiameter,
-                        //                 sensitivity,
-                        //                 scaleAxes,
-                        //                 deepStep,
-                        //                 whiteZ,
-                        //                 blackZ,
-                        //                 safeZ,
-                        //                 feedrate,
-                        //                 time,
-                        //                 errBlackPixel,
-                        //                 imgSize
-                        //             }).then((result) => {
-                        //                 res.send({
-                        //                     success: "Image converted successfully",
-                        //                     data: errBlackPixel
-                        //                 });
-                        //             }).catch((error) => {
-                        //                 res.status(500).send({
-                        //                     failure: "Internal error occurred while storing data into Database, try again",
-                        //                     error
-                        //                 });
-                        //             });
-                        //         }).catch((error) => {
-                        //             res.status(500).send({
-                        //                 failure: "Internal error occurred while moving gcode to directory",
-                        //                 error
-                        //             });
-                        //         });
-                        // }).catch((error) => {
-                        //     console.log(error);
-                        //     res.status(500).send({
-                        //         failure: "Internal error occurred while converting image, try again",
-                        //         error
-                        //     });
-                        // });
+                    controller.workOnConvertImage(imagePath, params, imageName, true);
+                    res.send({
+                        success: "Image conversion process has started successfully"
+                    });
                 }).catch((error) => {
                     res.status(404).send({
                         failure: "Image file does not exist!",
