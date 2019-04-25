@@ -39,19 +39,24 @@ module.exports = {
      * @param fileName the name of the file
      */
     moveDotGcode: (oldPath, fileName) => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const newPath = path.join(gcodeDir, fileName);
-            await fs.rename(oldPath, newPath, error => {
-                if (error) {
-                    reject(error);
-                } else {
-                    socketManager.emitGcodeFileAdded({
-                        name: fileName,
-                        path: newPath
+            module.exports.doesFileExist(oldPath)
+                .then((result) => {
+                    fs.rename(oldPath, newPath, error => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            socketManager.emitGcodeFileAdded({
+                                name: fileName,
+                                path: newPath
+                            });
+                            resolve(true);
+                        }
                     });
-                    resolve(true);
-                }
-            });
+                }).catch((error) => {
+                    resolve(false);
+                });
         });
     },
     /**

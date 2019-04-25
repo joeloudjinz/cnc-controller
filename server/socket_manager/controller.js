@@ -179,20 +179,42 @@ module.exports = {
      * used to update files tree in the client when new gcode file is added to the directory
      * @param fileName gcode file name 
      */
-     emitGcodeFileAdded: (fileDetailsObject) => {
+    emitGcodeFileAdded: (fileDetailsObject) => {
         if (isConnected) {
             io.emit('onGcodeFileAdded', fileDetailsObject);
         } else {
             console.log('socket.io is not instantiated');
         }
     },
-     /**
+    /**
      * used to update files tree in the client when new image is added to the directory
      * @param fileName gcode file name 
      */
-     emitImageAdded: (fileDetailsObject) => {
+    emitImageAdded: (fileDetailsObject) => {
         if (isConnected) {
             io.emit('onImageAdded', fileDetailsObject);
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    /**
+     * used to inform the client that the conversion process has ended
+     * @param conversionDetails details of the conversion process 
+     */
+    emitConversionEnded: (conversionDetails) => {
+        if (isConnected) {
+            io.emit('onConversionEnded', conversionDetails);
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    /**
+     * used to inform the client that an error occurred during conversion process
+     * @param errorDetails details of the error 
+     */
+    emitConversionErrorOccur: (errorDetails) => {
+        if (isConnected) {
+            io.emit('onConversionErrorOccur', errorDetails);
         } else {
             console.log('socket.io is not instantiated');
         }
