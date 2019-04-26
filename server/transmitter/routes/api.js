@@ -17,7 +17,8 @@ const router = express.Router();
  * @param portName the name of the port
  */
 initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName) => {
-    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission", true, portName, "onLog");
+    const currentDate = new Date(Date.now).toDateString();
+    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission in " + currentDate, true, portName, "onLog");
     filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName, "onLog");
 };
 
@@ -67,9 +68,7 @@ router.get("/", (req, res) => {
  * @returns success response if operation started, with the estimated time to end the process
  * @returns [500] with a failure response if one operation didn't executed successfully and closes the port if opned
  * @returns [404] if one of the params is undefined, along with a failure message
- * TODO: store transmission data into transmission table
  * TODO: add auth middleware
- * TODO: add registerOnCloseEvent operation for the port
  */
 router.post("/draw", (req, res) => {
     const {
@@ -638,8 +637,6 @@ router.get('/draw/isActive', (req, res) => {
  */
 router.get('/isOpen', (req, res) => {
     const portName = req.query.portName;
-    // console.log('req.query :', req.query);
-    // console.log('portName :', portName);
     if (portName) {
         controller
             .isPortOpen(portName)
