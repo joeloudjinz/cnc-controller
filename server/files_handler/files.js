@@ -13,6 +13,7 @@ const outputsDir = path.join(root_path, "server", "resources", "outputs");
 /**
  * used to get the content of a directory by readDirectoryContent promise when the current file is a directory.
  * for outputs directory specifically.
+ * @param dirPath the path to directory
  */
 readSubDirectoryContent = dirPath => {
     let obj = {};
