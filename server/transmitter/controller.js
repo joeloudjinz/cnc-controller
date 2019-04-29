@@ -61,7 +61,7 @@ let start, end;
  * Used to initialize some global variables of transmission process, by stopSendingProcess()
  * Does not initialize globalDirName and globalLogFileName
  */
-initializeProcessVariables = () => {
+initializeProcessVariables = (target) => {
   codeLines.clear();
   chars.clear();
   comments.clear();
@@ -71,7 +71,7 @@ initializeProcessVariables = () => {
   okCount = 0;
   errorsCount = 0;
   isActive = false;
-  socketManager.emitServerStatusChanged(isActive);
+  socketManager.emitServerStatusChanged(isActive, target);
   currentPort = undefined;
 };
 
@@ -698,8 +698,7 @@ module.exports = {
                 if (restToSend - chars.get(stoppedIn) >= 0) {
                   //? performing send operation and wait for it to end
                   isActive = true;
-                  //TODO: call emitServerStatusChanged(isActive)
-                  socketManager.emitServerStatusChanged(isActive);
+                  socketManager.emitServerStatusChanged(isActive, target);
                   await writeAndDrain(portName, codeLines.get(stoppedIn))
                     //* when the send operation is completed
                     .then(result => {
@@ -817,7 +816,7 @@ module.exports = {
               portName,
               "onLog", target
             );
-            initializeProcessVariables();
+            initializeProcessVariables(target);
           }, lineSendDuration + 1000);
           isFull = false;
           doLoop = false;
@@ -965,7 +964,7 @@ module.exports = {
                     portName,
                     "onLog", target
                   );
-                  initializeProcessVariables();
+                  initializeProcessVariables(target);
                   resolve(true);
                 }, lineSendDuration + 1000);
               } else {

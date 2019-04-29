@@ -107,10 +107,11 @@ module.exports = {
      * used to inform the client about the state of the server if it's active or not
      * @param status the current state of the server 
      */
-    emitServerStatusChanged: (status) => {
+    emitServerStatusChanged: (status, target) => {
         if (isConnected) {
             io.emit('onServerStatusChanged', {
-                status
+                status,
+                target
             });
         } else {
             console.log('socket.io is not instantiated');
