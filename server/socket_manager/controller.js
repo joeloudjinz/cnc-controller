@@ -44,6 +44,7 @@ module.exports = {
      * this function will push received data from the port to the client.
      * @param portName
      * @param data
+     * @param target to whom the data should be pushed to
      */
     emitOnSinglePortDataEvent: (portName, data, target) => {
         if (isConnected) {
@@ -73,6 +74,7 @@ module.exports = {
      * this function will push received data from the port during transmission process to the client.
      * @param portName
      * @param content
+     * @param target to whom the data should be pushed to
      */
     emitOnPortDataEvent: (portName, content, target) => {
         if (isConnected) {
@@ -88,8 +90,8 @@ module.exports = {
     /**
      * used when transmitting gcode lines to the machine.
      * this function will push the log messages during transmission process to the client.
-     * @param newListObject
-     * TODO: add target here
+     * @param content
+     * @param target to whom the data should be pushed to
      */
     emitOnLogDuringTransmissionEvent: (content, target) => {
         if (isConnected) {
