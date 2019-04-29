@@ -71,14 +71,15 @@ module.exports = {
     /**
      * used when transmitting gcode lines to the machine.
      * this function will push received data from the port during transmission process to the client.
-     * @param newListObject
-     * TODO: add target here
+     * @param portName
+     * @param content
      */
-    emitOnPortDataEvent: (portName, content) => {
+    emitOnPortDataEvent: (portName, content, target) => {
         if (isConnected) {
             io.emit('onPortData', {
                 port: portName,
-                data: content
+                data: content,
+                target: target
             });
         } else {
             console.log('socket.io is not instantiated');
@@ -90,10 +91,11 @@ module.exports = {
      * @param newListObject
      * TODO: add target here
      */
-    emitOnLogDuringTransmissionEvent: (content) => {
+    emitOnLogDuringTransmissionEvent: (content, target) => {
         if (isConnected) {
             io.emit('onTransmissionLog', {
-                data: content
+                data: content,
+                target: target
             });
         } else {
             console.log('socket.io is not instantiated');

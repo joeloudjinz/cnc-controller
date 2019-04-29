@@ -281,7 +281,7 @@ module.exports = {
      * @returns [true] if executed successfully
      * @returns [false] if there was an error while appending data to file
      */
-    logMessage: (dirName, fileName, content, doPush, portName, type) => {
+    logMessage: (dirName, fileName, content, doPush, portName, type, target) => {
         if (dirName) {
             if (fileName) {
                 const logPath = path.join(dirName, fileName + ".log");
@@ -304,11 +304,11 @@ module.exports = {
                             switch (type) {
                                 case "onData":
                                     if (portName)
-                                        socketManager.emitOnPortDataEvent(portName, newContent);
+                                        socketManager.emitOnPortDataEvent(portName, newContent, target);
                                     else console.log("Port name is undefined in logMessage()");
                                     break;
                                 case "onLog":
-                                    socketManager.emitOnLogDuringTransmissionEvent(newContent);
+                                    socketManager.emitOnLogDuringTransmissionEvent(newContent, target);
                                     break;
                                 default:
                                     console.log(

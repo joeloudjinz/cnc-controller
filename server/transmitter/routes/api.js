@@ -16,10 +16,10 @@ const router = express.Router();
  * @param fileName the name of .log file, it's the current timestamp
  * @param portName the name of the port
  */
-initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName) => {
+initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName, target) => {
     const currentDate = new Date(Date.now).toDateString();
-    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission in " + currentDate, true, portName, "onLog");
-    filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName, "onLog");
+    filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission in " + currentDate, true, portName, "onLog", target);
+    filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName, "onLog", target);
 };
 
 /**
@@ -73,7 +73,8 @@ router.get("/", (req, res) => {
 router.post("/draw", (req, res) => {
     const {
         portName,
-        fileName
+        fileName,
+        target
     } = req.body;
     if (portName) {
         if (fileName) {
@@ -87,7 +88,7 @@ router.post("/draw", (req, res) => {
                             .initializeDelimiterParser(portName)
                             .then(result => {
                                 controller
-                                    .registerOnDataEvent(portName)
+                                    .registerOnDataEvent(portName, target)
                                     .then(() => {
                                         filesHandler
                                             .addOutputDirectory(currentTS)
@@ -98,8 +99,8 @@ router.post("/draw", (req, res) => {
                                                         controller
                                                             .readGcodeFileLines(dirPath, filePath, fileName)
                                                             .then(result => {
-                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName);
-                                                                controller.startSendingProcess(portName, dirPath, currentTS, true);
+                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
+                                                                controller.startSendingProcess(portName, dirPath, currentTS, true, target);
                                                                 res.send({
                                                                     success: "GCode transmission has started successfully",
                                                                     estimated: controller.getEstimatedTimeToSendCode()
@@ -173,8 +174,8 @@ router.post("/draw", (req, res) => {
                                         controller
                                             .readGcodeFileLines(dirPath, filePath, fileName)
                                             .then(result => {
-                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName);
-                                                controller.startSendingProcess(portName, dirPath, currentTS, true);
+                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
+                                                controller.startSendingProcess(portName, dirPath, currentTS, true, target);
                                                 res.send({
                                                     success: "GCode transmission has started successfully"
                                                 });

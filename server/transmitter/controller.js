@@ -404,20 +404,20 @@ module.exports = {
    * @Note don't use await, it does not work
    * @Note used by /draw endpoint
    */
-  registerOnDataEvent: name => {
+  registerOnDataEvent: (name, target) => {
     return new Promise((resolve, reject) => {
       if (name) {
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
             if (parsers.has(name)) {
               setTimeout(() => {
-                listenToIncomingData(name);
+                listenToIncomingData(name, target);
               }, 500);
             } else {
               initializeDelimiterParser(name)
                 .then(result => {
                   setTimeout(() => {
-                    listenToIncomingData(name);
+                    listenToIncomingData(name, target);
                   }, 500);
                 })
                 .catch(error => {
@@ -673,7 +673,7 @@ module.exports = {
    * @param logFileName the name of .log file of the current process, WITHOUT extension
    * @param isNewCall boolean value to distinct between new or resumed call of the function
    */
-  startSendingProcess: async (portName, dirName, logFileName, isNewCall) => {
+  startSendingProcess: async (portName, dirName, logFileName, isNewCall, target) => {
     if (stoppedIn != null) {
       //? for global use in the controller
       globalLogFileName = logFileName;
@@ -681,46 +681,7 @@ module.exports = {
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
         start = Date.now();
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number: [" + codeLinesNbr + "]",
-          true,
-          portName,
-          "onLog"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number of code: [" + codeLines.size + "]",
-          true,
-          portName,
-          "onLog"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Total lines number of comments: [" + comments.size + "]",
-          true,
-          portName,
-          "onLog"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Transmitting to port: " + portName,
-          true,
-          portName,
-          "onLog"
-        );
-        filesHandler.logMessage(
-          dirName,
-          logFileName,
-          "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(),
-          true,
-          portName,
-          "onLog"
-        );
+        logGcodeFileInformation(portName, target);
       }
       doLoop = true;
       currentPort = portName;
@@ -748,7 +709,7 @@ module.exports = {
                         "Line [N° " + stoppedIn + "] was sent",
                         true,
                         portName,
-                        "onLog"
+                        "onLog", target
                       );
                       //? subtract the number of chars of the sent line from the restToSend
                       restToSend -= chars.get(stoppedIn);
@@ -776,7 +737,7 @@ module.exports = {
                         "]",
                         true,
                         portName,
-                        "onLog"
+                        "onLog", target
                       );
                     });
                 } else {
@@ -820,7 +781,7 @@ module.exports = {
               "Max characters is reached, rest to send is: " + restToSend,
               true,
               portName,
-              "onLog"
+              "onLog", target
             );
             isFull = true;
             doLoop = false;
@@ -838,7 +799,7 @@ module.exports = {
               "All lines has been sent, in: " + t,
               true,
               portName,
-              "onLog"
+              "onLog", target
             );
             filesHandler.logMessage(
               dirName,
@@ -846,7 +807,7 @@ module.exports = {
               "Total of 'Ok' messages received: [" + okCount + "]",
               true,
               portName,
-              "onLog"
+              "onLog", target
             );
             filesHandler.logMessage(
               dirName,
@@ -854,7 +815,7 @@ module.exports = {
               "Total of 'error' messages received: [" + errorsCount + "]",
               true,
               portName,
-              "onLog"
+              "onLog", target
             );
             initializeProcessVariables();
           }, lineSendDuration + 1000);
@@ -870,7 +831,7 @@ module.exports = {
    * Pause send gcode lines operation
    * @param portName name of the port
    */
-  pauseSendingProcess: portName => {
+  pauseSendingProcess: (portName, target) => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
@@ -887,7 +848,7 @@ module.exports = {
                     "]",
                     true,
                     portName,
-                    "onLog"
+                    "onLog", target
                   );
                   resolve(true);
                 } catch (error) {
@@ -920,7 +881,7 @@ module.exports = {
    * Resume send gcode lines operation
    * @param portName name of the port
    */
-  resumeSendingProcess: portName => {
+  resumeSendingProcess: (portName, target) => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
@@ -931,7 +892,7 @@ module.exports = {
                   portName,
                   globalDirName,
                   globalLogFileName,
-                  false
+                  false, target
                 );
                 filesHandler.logMessage(
                   globalDirName,
@@ -941,7 +902,7 @@ module.exports = {
                   "]",
                   true,
                   portName,
-                  "onLog"
+                  "onLog", target
                 );
                 resolve(true);
               } else {
@@ -972,7 +933,7 @@ module.exports = {
    * Stop send gcode lines operation
    * @param portName name of the port
    */
-  stopSendingProcess: portName => {
+  stopSendingProcess: (portName, target) => {
     return new Promise((resolve, reject) => {
       if (portName) {
         if (ports.has(portName)) {
@@ -989,7 +950,7 @@ module.exports = {
                     "]",
                     true,
                     portName,
-                    "onLog"
+                    "onLog", target
                   );
                   end = Date.now();
                   const t = calculateProcessDuration();
@@ -1002,7 +963,7 @@ module.exports = {
                     t,
                     true,
                     portName,
-                    "onLog"
+                    "onLog", target
                   );
                   initializeProcessVariables();
                   resolve(true);
@@ -1065,6 +1026,49 @@ module.exports = {
     });
   }
 };
+logGcodeFileInformation = (portName, target) => {
+  filesHandler.logMessage(
+    globalDirName,
+    globalLogFileName,
+    "Total lines number: [" + codeLinesNbr + "]",
+    true,
+    portName,
+    "onLog",
+    target
+  );
+  filesHandler.logMessage(
+    globalDirName,
+    globalLogFileName,
+    "Total lines number of code: [" + codeLines.size + "]",
+    true,
+    portName,
+    "onLog", target
+  );
+  filesHandler.logMessage(
+    globalDirName,
+    globalLogFileName,
+    "Total lines number of comments: [" + comments.size + "]",
+    true,
+    portName,
+    "onLog", target
+  );
+  filesHandler.logMessage(
+    globalDirName,
+    globalLogFileName,
+    "Transmitting to port: " + portName,
+    true,
+    portName,
+    "onLog", target
+  );
+  filesHandler.logMessage(
+    globalDirName,
+    globalLogFileName,
+    "Estimated Time: " + module.exports.getEstimatedTimeToSendCode(),
+    true,
+    portName,
+    "onLog", target
+  );
+};
 /**
  * Treats incoming data from a specific port.
  * this function will resume sending gcode lines when ok response is sent from grbl,
@@ -1072,7 +1076,7 @@ module.exports = {
  * @param data incoming data value
  * @param portName name of the port that the data came from
  */
-treatData = (data, portName) => {
+treatData = (data, portName, target) => {
   if (data !== "") {
     const splitted = data.split(":");
     if (data === "ok") {
@@ -1092,7 +1096,7 @@ treatData = (data, portName) => {
       content,
       true,
       portName,
-      "onData"
+      "onData", target
     );
     //? add the number of chars of the sent line to rest to send
     if (chars.has(stoppedIn - 1)) {
@@ -1106,7 +1110,7 @@ treatData = (data, portName) => {
         portName,
         globalDirName,
         globalLogFileName,
-        false
+        false, target
       );
       isFull = false;
     }
@@ -1118,7 +1122,7 @@ treatData = (data, portName) => {
       content,
       true,
       portName,
-      "onData"
+      "onData", target
     );
   }
 };
@@ -1126,18 +1130,12 @@ treatData = (data, portName) => {
 /**
  * Called by registerOnDataEvent() method to register the event after opening a port by /draw endpoint.
  */
-listenToIncomingData = name => {
+listenToIncomingData = (name, target) => {
   if (name) {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
-        // console.log(
-        //   "listening for data started, port: " +
-        //   name +
-        //   ", open status: " +
-        //   ports.get(name).isOpen
-        // );
         parsers.get(name).on("data", data => {
-          treatData(data, name);
+          treatData(data, name, target);
         });
       } else {
         console.error("listenToIncomingData: Port " + name + " is closed!");
@@ -1163,14 +1161,14 @@ listenToIncomingDataForSinglePort = (name, target) => {
           socketManager.emitOnSinglePortDataEvent(name, data, target);
         });
       } else {
-        console.error("listenToIncomingData: Port " + name + " is closed!");
+        console.error("listenToIncomingDataForSinglePort: Port " + name + " is closed!");
       }
     } else {
       console.error(
-        "listenToIncomingData: There is no such port named: " + name
+        "listenToIncomingDataForSinglePort: There is no such port named: " + name
       );
     }
   } else {
-    console.error("listenToIncomingData: Name is Undefined");
+    console.error("listenToIncomingDataForSinglePort: Name is Undefined");
   }
 };
