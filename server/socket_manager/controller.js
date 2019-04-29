@@ -96,26 +96,6 @@ module.exports = {
             console.log('socket.io is not instantiated');
         }
     },
-    //! not used
-    OnConversionErrorOccursEvent: (content) => {
-        if (isConnected) {
-            io.emit('onConversionErrorOccurs', {
-                data: content
-            });
-        } else {
-            console.log('socket.io is not instantiated');
-        }
-    },
-    //! not used
-    emitOnConversionEndsEvent: (content) => {
-        if (isConnected) {
-            io.emit('onConversionEnds', {
-                data: content
-            });
-        } else {
-            console.log('socket.io is not instantiated');
-        }
-    },
     // emitOnTransmissionEndsEvent: () => {
     //     if (isConnected) {
     //         io.emit('onTransmissionEnds');
@@ -200,10 +180,14 @@ module.exports = {
     /**
      * used to inform the client that the conversion process has ended
      * @param conversionDetails details of the conversion process 
+     * @param target to whom the data should be pushed to
      */
-    emitConversionEnded: (conversionDetails) => {
+    emitConversionEnded: (conversionDetails, target) => {
         if (isConnected) {
-            io.emit('onConversionEnded', conversionDetails);
+            io.emit('onConversionEnded', {
+                conversionDetails,
+                target
+            });
         } else {
             console.log('socket.io is not instantiated');
         }
@@ -211,10 +195,14 @@ module.exports = {
     /**
      * used to inform the client that an error occurred during conversion process
      * @param errorDetails details of the error 
+     * @param target to whom the data should be pushed to
      */
-    emitConversionErrorOccur: (errorDetails) => {
+    emitConversionErrorOccur: (errorDetails, target) => {
         if (isConnected) {
-            io.emit('onConversionErrorOccur', errorDetails);
+            io.emit('onConversionErrorOccur', {
+                errorDetails,
+                target
+            });
         } else {
             console.log('socket.io is not instantiated');
         }
@@ -222,10 +210,14 @@ module.exports = {
     /**
      * used to inform the client that the quick conversion process has ended
      * @param conversionDetails details of the quick conversion process 
+     * @param target to whom the data should be pushed to
      */
-    emitQuickConversionEnded: (conversionDetails) => {
+    emitQuickConversionEnded: (conversionDetails, target) => {
         if (isConnected) {
-            io.emit('onQuickConversionEnded', conversionDetails);
+            io.emit('onQuickConversionEnded', {
+                conversionDetails,
+                target
+            });
         } else {
             console.log('socket.io is not instantiated');
         }
@@ -233,10 +225,14 @@ module.exports = {
     /**
      * used to inform the client that the quick conversion process has ended
      * @param conversionDetails details of the quick conversion process 
+     * @param target to whom the data should be pushed to
      */
-    emitQuickConversionErrorOccur: (errorDetails) => {
+    emitQuickConversionErrorOccur: (errorDetails, target) => {
         if (isConnected) {
-            io.emit('onQuickConversionErrorOccur', errorDetails);
+            io.emit('onQuickConversionErrorOccur', {
+                errorDetails,
+                target
+            });
         } else {
             console.log('socket.io is not instantiated');
         }

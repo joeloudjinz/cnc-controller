@@ -71,8 +71,9 @@ module.exports = {
    * @param params conversion parameters
    * @param imageName the object from form data of the uploaded image 
    * @param isQuick to indicate if it's quick conversion or not
+   * @param target to whom the data should be pushed to
    */
-  workOnConvertImage: (imagePath, params, imageName, isQuick) => {
+  workOnConvertImage: (imagePath, params, imageName, isQuick, target) => {
     try {
       const worker = new Worker(workerPath, {
         workerData: {
@@ -82,23 +83,23 @@ module.exports = {
       });
       worker.on('message', (message) => {
         if (message.state === 'completed') {
-          handleConversionEndProcess(message.data, imageName, isQuick);
+          handleConversionEndProcess(message.data, imageName, isQuick, target);
         } else if (message.state === 'error') {
-          handleConversionErrorOccur(message.data);
+          handleConversionErrorOccur(message.data, isQuick, target);
         } else {
           console.log("Message from the converter", message.data);
         }
       });
       worker.on('error', (error) => {
-        handleConversionErrorOccur(error);
+        handleConversionErrorOccur(error, isQuick, target);
       });
       worker.on('exit', (code) => {
         if (code !== 0) {
-          handleConversionErrorOccur(`Conversion Worker stopped with exit code ${code}`);
+          handleConversionErrorOccur(`Conversion Worker stopped with exit code ${code}`, isQuick, target);
         }
       });
     } catch (error) {
-      handleConversionErrorOccur(`Internal error occurred! ${error}`);
+      handleConversionErrorOccur(`Internal error occurred! ${error}`, isQuick, target);
       console.log("while launching worker:", error);
     }
   }
@@ -107,7 +108,7 @@ module.exports = {
  * Perform the rest of the operation when the conversion process successfully ended
  * @param data data returned from img2gcode.start() function
  */
-handleConversionEndProcess = (data, imageName, isQuick) => {
+handleConversionEndProcess = (data, imageName, isQuick, target) => {
   results = data;
   const splitted = imageName.split(".");
   const fileName = splitted[0] + "." + splitted[1] + ".gcode";
@@ -152,7 +153,7 @@ handleConversionEndProcess = (data, imageName, isQuick) => {
               if (isQuick) {
                 socketManager.emitQuickConversionEnded({
                   data: errBlackPixel
-                });
+                }, target);
               } else {
                 socketManager.emitConversionEnded({
                   toolDiameter,
@@ -170,7 +171,7 @@ handleConversionEndProcess = (data, imageName, isQuick) => {
                   elapsedTime: (tt - t) * 0.001,
                   fileName: fileName,
                   size: size
-                });
+                }, target);
               }
             }).catch((error) => {
               console.log("while getting states", error);
@@ -182,11 +183,11 @@ handleConversionEndProcess = (data, imageName, isQuick) => {
         });
       } else {
         //? the file does not exist !!
-        handleConversionErrorOccur("The generated Gcode file was not founded, expected file name: " + fileName, isQuick);
+        handleConversionErrorOccur("The generated Gcode file was not founded, expected file name: " + fileName, isQuick, target);
         console.log('the file does not exist');
       }
     }).catch((error) => {
-      handleConversionErrorOccur("Gcode file is generated but the process didn't end well, file name: " + fileName, isQuick);
+      handleConversionErrorOccur("Gcode file is generated but the process didn't end well, file name: " + fileName, isQuick, target);
       console.log("while moving gcode file from 'images'", error);
     });
 };
@@ -195,14 +196,14 @@ handleConversionEndProcess = (data, imageName, isQuick) => {
  * will inform the client with the error 
  * @param errorData error details
  */
-handleConversionErrorOccur = (errorData, isQuick) => {
+handleConversionErrorOccur = (errorData, isQuick, target) => {
   if (isQuick) {
     socketManager.emitQuickConversionErrorOccur({
       errorData
-    });
+    }, target);
   } else {
     socketManager.emitConversionErrorOccur({
       errorData
-    });
+    }, target);
   }
 };

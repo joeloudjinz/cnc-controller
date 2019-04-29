@@ -23,9 +23,11 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     //? req.file {fieldname, originalname, encoding, mimetype, buffer}
     const fileObject = req.file;
     const params = req.body.parameters;
+    const target = req.body.target;
+    console.log('target :', target);
     filesHandler.moveImage(fileObject.path, fileObject.filename)
         .then((newPath) => {
-            controller.workOnConvertImage(newPath, params, fileObject.filename, false);
+            controller.workOnConvertImage(newPath, params, fileObject.filename, false, target);
             res.send({
                 success: "Image conversion process has started successfully"
             });
