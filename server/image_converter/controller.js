@@ -151,9 +151,7 @@ handleConversionEndProcess = (data, imageName, isQuick, target) => {
             .then((result) => {
               let size = result.size;
               if (isQuick) {
-                socketManager.emitQuickConversionEnded({
-                  data: errBlackPixel
-                }, target);
+                socketManager.emitQuickConversionEnded(errBlackPixel, target);
               } else {
                 socketManager.emitConversionEnded({
                   toolDiameter,

@@ -43,6 +43,7 @@ router.post('/convert/quick', auth, (req, res) => {
     //? get image file name and params from query field
     const imageName = req.query.imageName;
     const parameters = req.body.parameters;
+    const target = req.body.target;
     if (imageName) {
         if (parameters) {
             //? get image file from images directory
@@ -50,7 +51,7 @@ router.post('/convert/quick', auth, (req, res) => {
                 .getImageFile(imageName)
                 .then((imagePath) => {
                     const params = JSON.stringify(parameters);
-                    controller.workOnConvertImage(imagePath, params, imageName, true);
+                    controller.workOnConvertImage(imagePath, params, imageName, true, target);
                     res.send({
                         success: "Image conversion process has started successfully"
                     });
