@@ -443,20 +443,20 @@ module.exports = {
    * The promise is resolved when its executed successfully with a value of [true].
    * @Note Used by /open endpoint
    */
-  registerOnDataEventForSinglePort: name => {
+  registerOnDataEventForSinglePort: (name, target) => {
     return new Promise((resolve, reject) => {
       if (name) {
         if (ports.has(name)) {
           if (ports.get(name).isOpen) {
             if (parsers.has(name)) {
               setTimeout(() => {
-                listenToIncomingDataForSinglePort(name);
+                listenToIncomingDataForSinglePort(name, target);
               }, 500);
             } else {
               initializeDelimiterParser(name)
                 .then(result => {
                   setTimeout(() => {
-                    listenToIncomingDataForSinglePort(name);
+                    listenToIncomingDataForSinglePort(name, target);
                   }, 500);
                 })
                 .catch(error => {
@@ -1155,18 +1155,12 @@ listenToIncomingData = name => {
 /**
  * Called by registerOnDataEventForSinglePort() method to register the event after opening a specific port by /open endpoint.
  */
-listenToIncomingDataForSinglePort = (name) => {
+listenToIncomingDataForSinglePort = (name, target) => {
   if (name) {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
-        // console.log(
-        //   "listening for data started, port: " +
-        //   name +
-        //   ", open status: " +
-        //   ports.get(name).isOpen
-        // );
         parsers.get(name).on("data", data => {
-          socketManager.emitOnSinglePortDataEvent(name, data);
+          socketManager.emitOnSinglePortDataEvent(name, data, target);
         });
       } else {
         console.error("listenToIncomingData: Port " + name + " is closed!");

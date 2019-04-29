@@ -246,6 +246,7 @@ router.post("/draw", (req, res) => {
  */
 router.post("/open", (req, res) => {
     const portName = req.body.portName;
+    const target = req.body.target;
     if (portName) {
         controller
             .openPort(portName)
@@ -256,7 +257,7 @@ router.post("/open", (req, res) => {
                         .initializeDelimiterParser(portName)
                         .then(result => {
                             controller
-                                .registerOnDataEventForSinglePort(portName)
+                                .registerOnDataEventForSinglePort(portName, target)
                                 .then(() => {
                                     controller
                                         .registerOnCloseEvent(portName)

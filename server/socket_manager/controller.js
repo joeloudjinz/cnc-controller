@@ -45,11 +45,12 @@ module.exports = {
      * @param portName
      * @param data
      */
-    emitOnSinglePortDataEvent: (portName, data) => {
+    emitOnSinglePortDataEvent: (portName, data, target) => {
         if (isConnected) {
             io.emit('onSinglePortData', {
                 portName,
-                data
+                data,
+                target
             });
         } else {
             console.log('socket.io is not instantiated');
@@ -71,6 +72,7 @@ module.exports = {
      * used when transmitting gcode lines to the machine.
      * this function will push received data from the port during transmission process to the client.
      * @param newListObject
+     * TODO: add target here
      */
     emitOnPortDataEvent: (portName, content) => {
         if (isConnected) {
@@ -86,6 +88,7 @@ module.exports = {
      * used when transmitting gcode lines to the machine.
      * this function will push the log messages during transmission process to the client.
      * @param newListObject
+     * TODO: add target here
      */
     emitOnLogDuringTransmissionEvent: (content) => {
         if (isConnected) {
@@ -96,13 +99,6 @@ module.exports = {
             console.log('socket.io is not instantiated');
         }
     },
-    // emitOnTransmissionEndsEvent: () => {
-    //     if (isConnected) {
-    //         io.emit('onTransmissionEnds');
-    //     } else {
-    //         console.log('socket.io is not instantiated');
-    //     }
-    // },
     /**
      * used to inform the client about the state of the server if it's active or not
      * @param status the current state of the server 
