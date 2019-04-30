@@ -667,7 +667,7 @@ module.exports = {
   /**
    * Sends a number of lines that don't pass 127 characters combined,
    * it can be used to resume sending data when there is more room for new line in Serial Receiver Buffer in treatData(), 
-   * and also in resumeSendingProcess() hen resuming the stopped process
+   * and also in resumeSendingProcess() when resuming the stopped process
    * @param portName name of the port
    * @param dirName path of the directory where the log file of send process reside
    * @param logFileName the name of .log file of the current process, WITHOUT extension

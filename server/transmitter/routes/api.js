@@ -17,7 +17,7 @@ const router = express.Router();
  * @param portName the name of the port
  */
 initializeLogFileForTransmissionProcess = (dirPath, filePath, fileName, portName, target) => {
-    const currentDate = new Date(Date.now).toDateString();
+    const currentDate = new Date(Date.now()).toDateString();
     filesHandler.logMessage(dirPath, fileName, "Starting Gcode Transmission in " + currentDate, true, portName, "onLog", target);
     filesHandler.logMessage(dirPath, fileName, "file: " + filePath, true, portName, "onLog", target);
 };
@@ -517,9 +517,10 @@ router.post('/pause', (req, res) => {
  */
 router.post('/draw/pause', (req, res) => {
     const portName = req.body.portName;
+    const target = req.body.target;
     if (portName) {
         controller
-            .pauseSendingProcess(portName)
+            .pauseSendingProcess(portName, target)
             .then((result) => {
                 if (result) {
                     res.send({
@@ -554,9 +555,10 @@ router.post('/draw/pause', (req, res) => {
  */
 router.post('/draw/resume', (req, res) => {
     const portName = req.body.portName;
+    const target = req.body.target;
     if (portName) {
         controller
-            .resumeSendingProcess(portName)
+            .resumeSendingProcess(portName, target)
             .then((result) => {
                 if (result) {
                     res.send({
@@ -590,9 +592,10 @@ router.post('/draw/resume', (req, res) => {
  */
 router.post('/draw/stop', (req, res) => {
     const portName = req.body.portName;
+    const target = req.body.target;
     if (portName) {
         controller
-            .stopSendingProcess(portName)
+            .stopSendingProcess(portName, target)
             .then((result) => {
                 if (result) {
                     res.send({

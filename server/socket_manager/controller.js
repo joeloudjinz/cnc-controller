@@ -2,8 +2,6 @@ let io;
 //? used to distinct if the 'io' variable is instantiated or not
 let isConnected = false;
 
-// let namespaces = new Map();
-
 module.exports = {
     /**
      * initiate socket.io instance.
