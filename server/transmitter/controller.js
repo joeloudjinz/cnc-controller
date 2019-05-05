@@ -666,7 +666,7 @@ module.exports = {
   },
   /**
    * Sends a number of lines that don't pass 127 characters combined,
-   * it can be used to resume sending data when there is more room for new line in Serial Receiver Buffer in treatData(), 
+   * it can be used to resume sending data when there is more room for new line in Serial Receiver Buffer in handleIncomingData(), 
    * and also in resumeSendingProcess() when resuming the stopped process
    * @param portName name of the port
    * @param dirName path of the directory where the log file of send process reside
@@ -1075,7 +1075,7 @@ logGcodeFileInformation = (portName, target) => {
  * @param data incoming data value
  * @param portName name of the port that the data came from
  */
-treatData = (data, portName, target) => {
+handleIncomingData = (data, portName, target) => {
   if (data !== "") {
     const splitted = data.split(":");
     if (data === "ok") {
@@ -1134,7 +1134,7 @@ listenToIncomingData = (name, target) => {
     if (ports.has(name)) {
       if (ports.get(name).isOpen) {
         parsers.get(name).on("data", data => {
-          treatData(data, name, target);
+          handleIncomingData(data, name, target);
         });
       } else {
         console.error("listenToIncomingData: Port " + name + " is closed!");
