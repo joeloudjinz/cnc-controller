@@ -681,7 +681,7 @@ module.exports = {
       //? if this call is new, create a new logging file for transmission process ith the first 4 lines
       if (isNewCall) {
         start = Date.now();
-        logGcodeFileInformation(portName, target);
+        logFirstLinesForTransmission(portName, target);
       }
       doLoop = true;
       currentPort = portName;
@@ -1025,7 +1025,12 @@ module.exports = {
     });
   }
 };
-logGcodeFileInformation = (portName, target) => {
+/**
+ * Used to add the first 6 lines information in the log file when starting a transmission process
+ * @param portName
+ * @param target
+ */
+logFirstLinesForTransmission = (portName, target) => {
   filesHandler.logMessage(
     globalDirName,
     globalLogFileName,

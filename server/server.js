@@ -17,9 +17,9 @@ app.use(cors());
 app.use(express.static(__dirname + '/public'));
 
 //? APIs of agent management
-const agentsManagementPath = path.join(__dirname, 'users_manager', 'routes', 'local_api');
-const agentsManagementLocalApis = require(agentsManagementPath);
-app.use('/api/local/agents', agentsManagementLocalApis);
+const usersManagerPath = path.join(__dirname, 'users_manager', 'routes', 'local_api');
+const usersManagerLocalApis = require(usersManagerPath);
+app.use('/api/local/agents', usersManagerLocalApis);
 
 //? APIs of authentication
 const authenticationPath = path.join(__dirname, 'authentication', 'routes', 'api');
