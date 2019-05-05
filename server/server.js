@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.static(__dirname + '/public'));
 
 //? APIs of agent management
-const agentsManagementPath = path.join(__dirname, 'agents_management', 'routes', 'local_api');
+const agentsManagementPath = path.join(__dirname, 'users_manager', 'routes', 'local_api');
 const agentsManagementLocalApis = require(agentsManagementPath);
 app.use('/api/local/agents', agentsManagementLocalApis);
 
