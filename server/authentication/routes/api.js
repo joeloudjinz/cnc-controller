@@ -13,7 +13,6 @@ const router = express.Router();
  * @returns 409 (Conflict) if the comparison of the sent token and the one in db failed
  * @returns 406 (Not Acceptable) if the refresh token has expired
  * @returns 401 (Unauthorized) if the token is invalid
- * TODO: apply operations loggin
  */
 router.post('/token', (req, res) => {
     // get elements from the body request
@@ -80,14 +79,13 @@ router.post('/login', (req, res) => {
         email,
         password
     } = req.body;
-    // let id;
     controller.findAgentByEmail(email)
         .then((agent) => {
             if (agent == false) {
                 res.status(404).send({
                     'failure': "Auth failed, these credentials do not match any record in our data center",
                     'error': agent
-                })
+                });
             } else {
                 bcrypt.compare(password, agent.password)
                     .then((result) => {
@@ -104,7 +102,6 @@ router.post('/login', (req, res) => {
                                                 last_name,
                                                 email,
                                                 id,
-                                                // is_admin
                                             } = agent;
                                             agent = null;
                                             const newAgent = {
@@ -112,7 +109,6 @@ router.post('/login', (req, res) => {
                                                 last_name,
                                                 email,
                                                 id,
-                                                // is_admin
                                             };
                                             res.status(200).send({
                                                 success: "Agent was found",
