@@ -19,7 +19,7 @@ app.use(express.static(__dirname + '/public'));
 //? APIs of agent management
 const usersManagerPath = path.join(__dirname, 'users_manager', 'routes', 'local_api');
 const usersManagerLocalApis = require(usersManagerPath);
-app.use('/api/local/agents', usersManagerLocalApis);
+app.use('/api/local/users', usersManagerLocalApis);
 
 //? APIs of authentication
 const authenticationPath = path.join(__dirname, 'authentication', 'routes', 'api');
