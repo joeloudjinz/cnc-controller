@@ -29,7 +29,7 @@ app.use('/api/local/auth', authenticationApis);
 //? APIs of Image conversion
 const imageConversionPath = path.join(__dirname, 'image_converter', 'routes', 'api');
 const imageConversionApis = require(imageConversionPath);
-app.use('/api/local/images', imageConversionApis);
+app.use('/api/local/conversions', imageConversionApis);
 
 //? APIs of GCode Handler
 const filesHandlerPath = path.join(__dirname, 'files_handler', 'routes', 'api');
