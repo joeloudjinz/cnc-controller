@@ -17,7 +17,6 @@ const router = express.Router();
  * @return 500(internal server error) if there was an error while hashing the password
  * @return 500(internal server error) if there was an error while inserting data
  * @return 409(conflict) if the email address already exist
- * TODO: apply operations logging
  */
 router.post('/create', auth, (req, res) => {
     const {
@@ -70,7 +69,6 @@ router.post('/create', auth, (req, res) => {
  * @returns the list of the agents who aren't deleted and not admins
  * @returns 500 if the query executed unsuccessfully
  * @returns 200 if it's successful
- * TODO: apply operations logging
  */
 router.get('/:id', auth, (req, res) => {
     const id = req.params.id;
@@ -97,7 +95,7 @@ router.get('/:id', auth, (req, res) => {
  * @returns the information of the agent
  * @returns 500 if the query executed unsuccessfully
  * @returns 200 if it's successful
- * TODO: apply operations logging
+ * ! i'm not working with this endpoint
  */
 router.get('/:id', auth, (req, res) => {
     controller.getAgentById(req.params.id)
@@ -116,7 +114,6 @@ router.get('/:id', auth, (req, res) => {
  * agent information's update endpoint
  * @return 500(internal server error) if there was an error while updating data
  * @return 409(conflict) if the email address already exist
- * TODO: apply operations logging 
  */
 router.put('/:id', auth, (req, res) => {
     const {
@@ -159,7 +156,6 @@ router.put('/:id', auth, (req, res) => {
  * @returns 500 if the query executed unsuccessfully
  * @returns 500 if the there was an error while hashing the new password
  * @returns 200 if it's successful
- * TODO: apply operations logging
  */
 router.put('/password/:id', auth, (req, res) => {
     const password = req.body.password;
@@ -189,7 +185,6 @@ router.put('/password/:id', auth, (req, res) => {
  * @returns the information of the agent
  * @returns 500 if the query executed unsuccessfully
  * @returns 200 if it's successful
- * TODO: apply operations logging
  */
 router.delete('/:id', auth, (req, res) => {
     //! "req.params" to retrieve query parameters from the request
@@ -217,7 +212,6 @@ router.delete('/:id', auth, (req, res) => {
  * @returns 200 true or false if the execution of the operation was successful
  * @returns 500 if the query executed unsuccessfully
  * @returns 404 if the id was wrong
- * TODO: apply operations logging
  */
 router.get('/role/:id', (req, res) => {
     // console.log(req.params.id);
@@ -256,21 +250,14 @@ router.get('/role/:id', (req, res) => {
  * @returns 500 if the there was an error while hashing the new password
  * @returns 400 (Bad Request) if no id was sent by the front-end
  * @returns 200 if it's successful
- * TODO: apply operations logging
  */
 router.get('/reset/:id', auth, (req, res) => {
-    // console.log(req.params.id);
-    //! test if id is defined
     if (req.params.id) {
         const id = req.params.id;
-        // generate password
         controller.generateString()
             .then((generated) => {
-                // hash password
-                // console.log(generated);
                 bcrypt.hash(generated, 10)
                     .then((hashed) => {
-                        // store the new password
                         controller.updateAgentPassword(hashed, id)
                             .then(() => {
                                 res.send({

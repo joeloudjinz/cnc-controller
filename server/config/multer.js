@@ -11,7 +11,7 @@ module.exports = multer.diskStorage({
     filename: function (req, file, callback) {
         //? extracting the extension of the image
         const ext = file.originalname.split(".").reverse()[0];
-        //? reformatting the shope of the date from toISOString() call
+        //? reformatting the shape of the date from toISOString() call
         let time = new Date().toISOString();
         time = time.replace(/-/gi, '');
         time = time.replace(/T/gi, '-');

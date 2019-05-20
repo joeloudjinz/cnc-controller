@@ -2,10 +2,6 @@ const path = require('path');
 const authControllerPath = path.join('..', 'authentication', 'controller');
 const controller = require(authControllerPath);
 
-
-/**
- * TODO: check if the token is sent in the request
- */
 module.exports = async (req, res, next) => {
     if(req.headers.authorization){
         const oldToken = req.headers.authorization.split(' ')[1] || req.body.token || req.params.token;
