@@ -292,7 +292,7 @@ router.get('/reset/:id', auth, (req, res) => {
  * get the count of agents only
  * @Note post method is used because get is confused with another rout !!!!
  */
-router.post('/count', (req, res) => {
+router.get('/agents/count', (req, res) => {
     controller
         .getAgentsCount()
         .then((result) => {
