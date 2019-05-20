@@ -24,19 +24,19 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const fileObject = req.file;
     const params = req.body.parameters;
     const target = req.body.target;
-    console.log('target :', target);
-    filesHandler.moveImage(fileObject.path, fileObject.filename)
-        .then((newPath) => {
-            controller.workOnConvertImage(newPath, params, fileObject.filename, false, target);
-            res.send({
-                success: "Image conversion process has started successfully"
-            });
-        }).catch((error) => {
-            res.status(500).send({
-                failure: "Internal error occurred, try again",
-                error
-            });
-        });
+    // console.log('target :', target);
+    controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target);
+    res.send({
+        success: "Image conversion process has started successfully"
+    });
+    // filesHandler.moveImage(fileObject.path, fileObject.filename)
+    //     .then((newPath) => {
+    //     }).catch((error) => {
+    //         res.status(500).send({
+    //             failure: "Internal error occurred, try again",
+    //             error
+    //         });
+    //     });
 });
 
 router.post('/convert/quick', auth, (req, res) => {
