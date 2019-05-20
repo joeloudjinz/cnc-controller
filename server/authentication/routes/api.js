@@ -14,7 +14,7 @@ const router = express.Router();
  * @returns 406 (Not Acceptable) if the refresh token has expired
  * @returns 401 (Unauthorized) if the token is invalid
  */
-router.post('/token', (req, res) => {
+router.post('/token/refresh', (req, res) => {
     // get elements from the body request
     const {
         email,
