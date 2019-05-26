@@ -19,7 +19,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             database
                 .getConnection()
-                .query('SELECT * FROM agents WHERE email=? AND is_deleted=?', [email, false], (error, results, fields) => {
+                .query('SELECT * FROM users WHERE email=? AND is_deleted=?', [email, false], (error, results, fields) => {
                     if (error) {
                         // console.log(error);
                         reject(error);
@@ -61,7 +61,7 @@ module.exports = {
                             reject(error);
                         } else {
                             // console.log(id);
-                            database.getConnection().query('UPDATE agents SET refresh_token=? WHERE id=?',
+                            database.getConnection().query('UPDATE users SET refresh_token=? WHERE id=?',
                                 [refresh_token, id],
                                 (error, results, fields) => {
                                     if (error) {
@@ -84,7 +84,7 @@ module.exports = {
     compareRefreshTokens: (id, refresh_token) => {
         return new Promise((resolve, reject) => {
             // console.log(id, refresh_token);
-            database.getConnection().query('SELECT COUNT(id) AS counts FROM agents WHERE id=? AND refresh_token=?',
+            database.getConnection().query('SELECT COUNT(id) AS counts FROM users WHERE id=? AND refresh_token=?',
                 [id, refresh_token],
                 (error, results, fields) => {
                     if (error) {
@@ -104,7 +104,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             database
                 .getConnection()
-                .query('UPDATE agents SET is_active=? WHERE id=?', [status, id], (error, results, fields) => {
+                .query('UPDATE users SET is_active=? WHERE id=?', [status, id], (error, results, fields) => {
                     if (error) {
                         reject(error);
                     } else {

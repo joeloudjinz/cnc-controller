@@ -8,7 +8,7 @@ const connection = database.getConnection();
 
 module.exports = {
     /**
-     * insert an agent object into agents table
+     * insert an agent object into users table
      * @param agent: object holds all the information of the agent (first name, last name, email and password)
      * @return promise: reject with the error from the database connection instance
      * @return promise: resolve with the result of the query
@@ -23,7 +23,7 @@ module.exports = {
             is_admin
         } = agent;
         return new Promise((resolve, reject) => {
-            connection.query('INSERT INTO `agents` (first_name, last_name, email, password, is_admin) VALUES (?,?,?,?,?)',
+            connection.query('INSERT INTO `users` (first_name, last_name, email, password, is_admin) VALUES (?,?,?,?,?)',
                 [firstName, lastName, email, password, is_admin],
                 (error, results, fields) => {
                     // error will be an Error if one occurred during the query
@@ -40,7 +40,7 @@ module.exports = {
         });
     },
     /**
-     * verify the uniqueness of an email in the table agents
+     * verify the uniqueness of an email in the table users
      * @param email
      * @return promise: reject if there was an error while executing the query
      * @return promise: resolve if the result has more then one row
@@ -49,7 +49,7 @@ module.exports = {
      */
     isUniqueEmail: (email) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT COUNT(id) AS count FROM agents WHERE email=?', [email], (error, results, fields) => {
+            connection.query('SELECT COUNT(id) AS count FROM users WHERE email=?', [email], (error, results, fields) => {
                 if (error) {
                     console.log(error);
                     reject(error);
@@ -65,7 +65,7 @@ module.exports = {
         });
     },
     /**
-     * verify the uniqueness of an email in the table agents excluding the current user email
+     * verify the uniqueness of an email in the table users excluding the current user email
      * @param email
      * @return promise: reject if there was an error while executing the query
      * @return promise: resolve if the result has more then one row
@@ -74,7 +74,7 @@ module.exports = {
      */
     isUniqueEmailForUpdate: (email, id) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT COUNT(id) AS count FROM agents WHERE id<>? AND email=?',
+            connection.query('SELECT COUNT(id) AS count FROM users WHERE id<>? AND email=?',
                 [id, email],
                 (error, results, fields) => {
                     if (error) {
@@ -93,14 +93,14 @@ module.exports = {
         });
     },
     /**
-     * get the list of undeleted agents in the system, including the admins, excluding the current agent
+     * get the list of undeleted users in the system, including the admins, excluding the current agent
      * @returns promise: reject if there was an error while executing the query
      * @returns promise: resolve(result) if the execution was successful
      * TODO: apply operations logging
      */
     getNonDeletedAgents: (id) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT id, first_name, last_name, email, is_active, is_admin FROM agents WHERE is_deleted=0 AND id!=?',
+            connection.query('SELECT id, first_name, last_name, email, is_active, is_admin FROM users WHERE is_deleted=0 AND id!=?',
                 [id],
                 (error, results, fields) => {
                     if (error) {
@@ -123,7 +123,7 @@ module.exports = {
      */
     getAgentById: (id) => {
         return new Promise((resolve, reject) => {
-            connection.query('SELECT id, first_name, last_name, email, is_active FROM agents WHERE id=? AND is_deleted=0',
+            connection.query('SELECT id, first_name, last_name, email, is_active FROM users WHERE id=? AND is_deleted=0',
                 [id],
                 (error, results, fields) => {
                     if (error) {
@@ -145,7 +145,7 @@ module.exports = {
     softDeleteAgent: (id) => {
         // console.log('in softDeleteAgent, id :', id);
         return new Promise((resolve, reject) => {
-            connection.query('UPDATE agents SET is_deleted=?, deleted_in=?, is_active=? WHERE id=?',
+            connection.query('UPDATE users SET is_deleted=?, deleted_in=?, is_active=? WHERE id=?',
                 [true, new Date(), false, id],
                 (error, results, fields) => {
                     if (error) {
@@ -167,7 +167,7 @@ module.exports = {
      */
     hardDeleteAgent: (id) => {
         return new Promise((resolve, reject) => {
-            connection.query('DELETE FROM agents WHERE id=?',
+            connection.query('DELETE FROM users WHERE id=?',
                 [id],
                 (error, results, fields) => {
                     if (error) {
@@ -188,7 +188,7 @@ module.exports = {
      */
     updateAgentInformation: (agent) => {
         return new Promise((resolve, reject) => {
-            connection.query('UPDATE agents SET first_name=?, last_name=?, email=? WHERE id=?',
+            connection.query('UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?',
                 [agent.first_name, agent.last_name, agent.email, agent.id],
                 (error, results, fields) => {
                     // console.log(agent);
@@ -212,7 +212,7 @@ module.exports = {
     updateAgentPassword: (hashed, id) => {
         // console.log(hashed, id);
         return new Promise((resolve, reject) => {
-            connection.query('UPDATE agents SET password=? WHERE id=?',
+            connection.query('UPDATE users SET password=? WHERE id=?',
                 [hashed, id],
                 (error, results, fields) => {
                     // console.log(agent);
@@ -237,7 +237,7 @@ module.exports = {
     isAdmin: (id) => {
         // console.log(id);
         return new Promise((resolve, reject) => {
-            connection.query('SELECT * FROM agents WHERE id=?', [id],
+            connection.query('SELECT * FROM users WHERE id=?', [id],
                 (error, results, fields) => {
                     if (error) {
                         reject(error);
@@ -275,7 +275,7 @@ module.exports = {
     },
     getAgentsCount: () => {
         return new Promise((resolve, reject) => {
-            const query = 'SELECT COUNT(id) AS count FROM agents WHERE is_admin=0 AND is_deleted=0';
+            const query = 'SELECT COUNT(id) AS count FROM users WHERE is_admin=0 AND is_deleted=0';
             connection.query(query, [], (error, results, fields) => {
                 if (error) {
                     reject(error);
@@ -289,7 +289,7 @@ module.exports = {
     },
     getAdminsCount: () => {
         return new Promise((resolve, reject) => {
-            const query = 'SELECT COUNT(id) AS count FROM agents WHERE is_admin=1 AND is_deleted=0';
+            const query = 'SELECT COUNT(id) AS count FROM users WHERE is_admin=1 AND is_deleted=0';
             connection.query(query, [], (error, results, fields) => {
                 if (error) {
                     reject(error);
