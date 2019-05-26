@@ -111,51 +111,6 @@ router.get('/', (req, res) => {
             console.log(error);
         });
 });
-/**
- * get data of all images in images directory
- * TODO: add auth middleware
- */
-router.get('/images/', (req, res) => {
-    let tree = {};
-    filesHandler
-        .readDirectoryContent(1)
-        .then((result) => {
-            tree.Images = result;
-            res.send(tree);
-        }).catch((error) => {
-            console.log(error);
-        });
-});
-/**
- * get data of all g-code files in g-codes directory
- * TODO: add auth middleware
- */
-router.get('/gcodes/', (req, res) => {
-    let tree = {};
-    filesHandler
-        .readDirectoryContent(2)
-        .then((result) => {
-            tree.Gcodes = result;
-            res.send(tree);
-        }).catch((error) => {
-            console.log(error);
-        });
-});
-/**
- * get data of all files in the subdirectories of 'outputs' directory
- * TODO: add auth middleware
- */
-router.get('/outputs/', (req, res) => {
-    let tree = {};
-    filesHandler
-        .readDirectoryContent(3)
-        .then((result) => {
-            tree.Outputs = result;
-            res.send(tree);
-        }).catch((error) => {
-            console.log(error);
-        });
-});
 
 /**
  * delete gcode file from gcodes directory
@@ -262,4 +217,56 @@ router.delete('/images', (req, res) => {
         });
     }
 });
+
+
+/**
+ * get data of all images in images directory
+ * TODO: add auth middleware
+ * @Note NOT used
+ */
+router.get('/images/', (req, res) => {
+    let tree = {};
+    filesHandler
+        .readDirectoryContent(1)
+        .then((result) => {
+            tree.Images = result;
+            res.send(tree);
+        }).catch((error) => {
+            console.log(error);
+        });
+});
+/**
+ * get data of all g-code files in g-codes directory
+ * TODO: add auth middleware
+ * @Note NOT used
+ */
+router.get('/gcodes/', (req, res) => {
+    let tree = {};
+    filesHandler
+        .readDirectoryContent(2)
+        .then((result) => {
+            tree.Gcodes = result;
+            res.send(tree);
+        }).catch((error) => {
+            console.log(error);
+        });
+});
+/**
+ * get data of all files in the subdirectories of 'outputs' directory
+ * TODO: add auth middleware
+ * @Note NOT used
+ */
+router.get('/outputs/', (req, res) => {
+    let tree = {};
+    filesHandler
+        .readDirectoryContent(3)
+        .then((result) => {
+            tree.Outputs = result;
+            res.send(tree);
+        }).catch((error) => {
+            console.log(error);
+        });
+});
+
+
 module.exports = router;
