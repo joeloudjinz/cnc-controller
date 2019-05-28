@@ -3,6 +3,8 @@ const express = require('express');
 const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+
 
 const dbConfigPath = path.join(__dirname, 'config', 'database');
 const database = require(dbConfigPath);
@@ -11,6 +13,7 @@ const serverConfigPath = path.join(__dirname, 'config', 'server');
 const serverConfig = require(serverConfigPath);
 
 //? to parse body as json
+app.use(helmet());
 app.use(body_parser.json());
 app.use(cors());
 
