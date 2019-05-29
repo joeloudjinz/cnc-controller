@@ -95,7 +95,7 @@ router.get('/:id', auth, (req, res) => {
  * @returns the information of the agent
  * @returns 500 if the query executed unsuccessfully
  * @returns 200 if it's successful
- * ! i'm not working with this endpoint
+ * ! i'm not using this endpoint
  */
 router.get('/:id', auth, (req, res) => {
     controller.getAgentById(req.params.id)

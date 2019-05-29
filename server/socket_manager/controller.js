@@ -235,5 +235,31 @@ module.exports = {
         } else {
             console.log('socket.io is not instantiated');
         }
+    },
+    /**
+     * used to inform the client that a user was added
+     * @param user the data of the new user
+     */
+     emitOnNewUserAdded: (user) => {
+        if (isConnected) {
+            io.emit('OnNewUserAdded', {
+                user
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
+    },
+    /**
+     * used to inform the client that a user was deleted
+     * @param userId the id of the deleted user
+     */
+     emitOnUserDeleted: (userId) => {
+        if (isConnected) {
+            io.emit('onUserDeleted', {
+                userId
+            });
+        } else {
+            console.log('socket.io is not instantiated');
+        }
     }
 };

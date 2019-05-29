@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt');
 const dbConfigPath = path.join('..', 'config', 'database');
 const database = require(dbConfigPath);
 
+const socketManagerPath = path.join("..", "socket_manager", "controller.js");
+const socketManager = require(socketManagerPath);
+
 const connection = database.getConnection();
 
 module.exports = {
@@ -33,7 +36,12 @@ module.exports = {
                     }
                     // results will contain the results of the query
                     else {
-                        resolve(results);
+                        getNonDeletedAgentByEmail(email).then((result) => {
+                            socketManager.emitOnNewUserAdded(result);
+                            resolve(results);
+                        }).catch((err) => {
+                            console.log("error while getting added user data", err);
+                        });
                     }
                     // fields will contain information about the returned results fields (if any)
                 });
@@ -152,6 +160,7 @@ module.exports = {
                         reject(error);
                         // console.log('when softDeleteAgent, error :', error);
                     } else {
+                        socketManager.emitOnUserDeleted(id);
                         resolve(results);
                     }
                 }
@@ -301,3 +310,20 @@ module.exports = {
         });
     }
 };
+
+getNonDeletedAgentByEmail = (email) => {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT id, first_name, last_name, email, is_active, is_admin FROM users WHERE is_deleted=0 AND email=?',
+            [email],
+            (error, results, fields) => {
+                if (error) {
+                    console.log(error);
+                    reject(error);
+                } else {
+                    // console.log(results);
+                    resolve(results);
+                }
+            }
+        );
+    });
+}
