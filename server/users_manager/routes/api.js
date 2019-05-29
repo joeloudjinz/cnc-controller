@@ -30,7 +30,7 @@ router.post('/create', auth, (req, res) => {
         .then(() => {
             bcrypt.hash(password, 10)
                 .then((hashed) => {
-                    controller.insertAgent({
+                    controller.insertUser({
                             firstName,
                             lastName,
                             email,
@@ -38,7 +38,7 @@ router.post('/create', auth, (req, res) => {
                             is_admin
                         })
                         .then((results) => {
-                            res.status(201).send({
+                            res.status(200).send({
                                 success: "A new Agent was added successfully",
                                 data: results
                             });

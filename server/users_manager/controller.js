@@ -17,7 +17,7 @@ module.exports = {
      * @return promise: resolve with the result of the query
      * TODO: apply operations logging
      */
-    insertAgent: (agent) => {
+    insertUser: (agent) => {
         const {
             firstName,
             lastName,
