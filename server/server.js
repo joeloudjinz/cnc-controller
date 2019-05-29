@@ -12,15 +12,15 @@ const database = require(dbConfigPath);
 const serverConfigPath = path.join(__dirname, 'config', 'server');
 const serverConfig = require(serverConfigPath);
 
-//? to parse body as json
 app.use(helmet());
+//? to parse body as json
 app.use(body_parser.json());
 app.use(cors());
 
 app.use(express.static(__dirname + '/public'));
 
 //? APIs of agent management
-const usersManagerPath = path.join(__dirname, 'users_manager', 'routes', 'local_api');
+const usersManagerPath = path.join(__dirname, 'users_manager', 'routes', 'api');
 const usersManagerLocalApis = require(usersManagerPath);
 app.use('/api/local/users', usersManagerLocalApis);
 
