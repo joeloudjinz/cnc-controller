@@ -15,7 +15,6 @@ module.exports = {
      * @param agent: object holds all the information of the agent (first name, last name, email and password)
      * @return promise: reject with the error from the database connection instance
      * @return promise: resolve with the result of the query
-     * TODO: apply operations logging
      */
     insertUser: (agent) => {
         const {
@@ -53,7 +52,6 @@ module.exports = {
      * @return promise: reject if there was an error while executing the query
      * @return promise: resolve if the result has more then one row
      * @return promise: reject(false) if there was no row in the result of the query
-     * TODO: apply operations logging
      */
     isUniqueEmail: (email) => {
         return new Promise((resolve, reject) => {
@@ -78,7 +76,6 @@ module.exports = {
      * @return promise: reject if there was an error while executing the query
      * @return promise: resolve if the result has more then one row
      * @return promise: reject(false) if there was no row in the result of the query
-     * TODO: apply operations logging
      */
     isUniqueEmailForUpdate: (email, id) => {
         return new Promise((resolve, reject) => {
@@ -104,7 +101,6 @@ module.exports = {
      * get the list of undeleted users in the system, including the admins, excluding the current agent
      * @returns promise: reject if there was an error while executing the query
      * @returns promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     getNonDeletedAgents: (id) => {
         return new Promise((resolve, reject) => {
@@ -127,7 +123,6 @@ module.exports = {
      * @params id: the id of the agent
      * @return promise: reject(error) if there was an error while executing the query
      * @return promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     getAgentById: (id) => {
         return new Promise((resolve, reject) => {
@@ -148,7 +143,6 @@ module.exports = {
      * @params id: the id of the agent
      * @return promise: reject(error) if there was an error while executing the query
      * @return promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     softDeleteAgent: (id) => {
         // console.log('in softDeleteAgent, id :', id);
@@ -172,7 +166,6 @@ module.exports = {
      * @params id: the id of the agent
      * @return promise: reject(error) if there was an error while executing the query
      * @return promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     hardDeleteAgent: (id) => {
         return new Promise((resolve, reject) => {
@@ -193,7 +186,6 @@ module.exports = {
      * @params agent object
      * @returns promise: reject(error) if there was an error while executing the query
      * @returns promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     updateAgentInformation: (agent) => {
         return new Promise((resolve, reject) => {
@@ -216,7 +208,6 @@ module.exports = {
      * @params agent object
      * @returns promise: reject(error) if there was an error while executing the query
      * @returns promise: resolve(result) if the execution was successful
-     * TODO: apply operations logging
      */
     updateAgentPassword: (hashed, id) => {
         // console.log(hashed, id);
@@ -241,7 +232,6 @@ module.exports = {
      * @returns promise: reject(error) if there was an error while executing the query
      * @returns promise: reject(no id) if there is no matching id value
      * @returns promise: resolve(true | false) if the execution was successful
-     * TODO: apply operations logging
      */
     isAdmin: (id) => {
         // console.log(id);
@@ -267,7 +257,6 @@ module.exports = {
      * generate a string of 8 characters 
      * @returns promise: reject(error) if there was an error 
      * @returns promise: resolve(result) if the string was generated successfully
-     * TODO: apply operations logging
      */
     generateString: () => {
         let generated = "";
