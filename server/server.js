@@ -10,13 +10,6 @@ if (dotenv.error) {
     console.log("Couldn't parse environment file!", dotenv.error);
 }
 
-const credentials = {
-    host: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USERNAME,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME
-};
-
 const dbConfigPath = path.join(__dirname, 'config', 'database');
 const databaseObject = require(dbConfigPath);
 
@@ -58,16 +51,7 @@ const port = process.env.PORT;
 
 const server = app.listen(port, () => {
     console.log('server started at port ' + port);
-    databaseObject.initializeConnection(credentials)
-        .then((result) => {
-            if (result) {
-                databaseObject.openConnection();
-                console.log("Database object initialized successfully");
-            } else
-                console.log("Database object wasn't initialized successfully");
-        }).catch((error) => {
-            console.log("Database object NOT initialized", error);
-        });
+    databaseObject.openConnection();
     transmitterController.listenToActivePorts();
 });
 
