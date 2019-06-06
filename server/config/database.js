@@ -1,6 +1,10 @@
 const mysql = require('mysql');
 const dotenv = require('dotenv').config();
 
+if (dotenv.error) {
+    console.log("Couldn't parse environment file!", dotenv.error);
+}
+
 const credentials = {
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USERNAME,
@@ -11,16 +15,6 @@ const credentials = {
 let connection = mysql.createConnection(credentials);
 
 module.exports = {
-    // initializeConnection: (credentials) => {
-    //     return new Promise(async (resolve, reject) => {
-    //         try {
-    //             connection = await mysql.createConnection(credentials);
-    //             connection != undefined ? resolve(true) : resolve(false);
-    //         } catch (error) {
-    //             reject(error.message);
-    //         }
-    //     });
-    // },
     openConnection: () => {
         connection.connect((error) => {
             if (error) {
