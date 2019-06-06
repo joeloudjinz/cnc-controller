@@ -9,6 +9,8 @@ services:
         command: npm run dev
         depends_on:
             - db
+        volumes:
+            - .:/usr/src/app
         ports:
             - "8080:8080"
         expose:
