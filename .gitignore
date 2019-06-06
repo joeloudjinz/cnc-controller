@@ -1,2 +1,9 @@
 node_modules
 client/
+client
+test/
+resources
+.jshintrc
+server/.eslintrc.js
+server/.env
+.env

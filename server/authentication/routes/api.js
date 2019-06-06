@@ -1,8 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const path = require('path');
 
-const controller = require('../controller');
-// const auth = require('../../middlewares/auth');
+const controllerPath = path.join('..', 'controller');
+const controller = require(controllerPath);
 
 const router = express.Router();
 /**
@@ -12,9 +13,8 @@ const router = express.Router();
  * @returns 409 (Conflict) if the comparison of the sent token and the one in db failed
  * @returns 406 (Not Acceptable) if the refresh token has expired
  * @returns 401 (Unauthorized) if the token is invalid
- * TODO: apply operations loggin
  */
-router.post('/token', (req, res) => {
+router.post('/token/refresh', (req, res) => {
     // get elements from the body request
     const {
         email,
@@ -79,48 +79,53 @@ router.post('/login', (req, res) => {
         email,
         password
     } = req.body;
-    // let id;
     controller.findAgentByEmail(email)
         .then((agent) => {
             if (agent == false) {
                 res.status(404).send({
                     'failure': "Auth failed, these credentials do not match any record in our data center",
                     'error': agent
-                })
+                });
             } else {
                 bcrypt.compare(password, agent.password)
                     .then((result) => {
                         if (result) {
-                            controller.generateToken({
-                                    email,
-                                    id: agent.id
-                                })
-                                .then((tokens) => {
-                                    const {
-                                        first_name,
-                                        last_name,
-                                        email,
-                                        id,
-                                        // is_admin
-                                    } = agent;
-                                    agent = null;
-                                    const newAgent = {
-                                        first_name,
-                                        last_name,
-                                        email,
-                                        id,
-                                        // is_admin
-                                    };
-                                    res.status(200).send({
-                                        success: "Agent was found",
-                                        agent: newAgent,
-                                        token: tokens.token,
-                                        refresh_token: tokens.refresh_token
-                                    });
-                                })
-                                .catch((error) => {
+                            controller.deactivateAgent(agent.id, true)
+                                .then((result) => {
+                                    controller.generateToken({
+                                            email,
+                                            id: agent.id
+                                        })
+                                        .then((tokens) => {
+                                            const {
+                                                first_name,
+                                                last_name,
+                                                email,
+                                                id,
+                                            } = agent;
+                                            agent = null;
+                                            const newAgent = {
+                                                first_name,
+                                                last_name,
+                                                email,
+                                                id,
+                                            };
+                                            res.status(200).send({
+                                                success: "Agent was found",
+                                                agent: newAgent,
+                                                token: tokens.token,
+                                                refresh_token: tokens.refresh_token
+                                            });
+                                        })
+                                        .catch((error) => {
+                                            res.status(500).send({
+                                                failure: "Auth Failed, internal error occurred",
+                                                error
+                                            });
+                                        });
+                                }).catch((err) => {
                                     res.status(500).send({
-                                        failure: "Auth Failed, internal error occurred",
+                                        failure: "internal error ocurred, try again",
                                         error
                                     });
                                 });
@@ -150,7 +155,7 @@ router.post('/login', (req, res) => {
  * @return 500 if there was an error while updating the status
  */
 router.post('/logout', (req, res) => {
-    controller.deactivateAgent(req.body.id)
+    controller.deactivateAgent(req.body.id, false)
         .then((result) => {
             res.send({
                 'success': 'goodby',

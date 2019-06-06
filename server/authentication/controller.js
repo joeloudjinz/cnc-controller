@@ -1,6 +1,13 @@
 const jwt = require('jsonwebtoken');
-const database = require('../config/database');
-const secret = 'loujein-0000-inno-acad';
+const path = require('path');
+const dotenv = require('dotenv').config();
+
+const dbConfigPath = path.join('..', 'config', 'database');
+const database = require(dbConfigPath);
+
+// const serverConfigPath = path.join('..', 'config', 'server');
+// const server = require(serverConfigPath);
+const secret = process.env.TOKEN_SECRET;
 
 module.exports = {
     /**
@@ -13,7 +20,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             database
                 .getConnection()
-                .query('SELECT * FROM agents WHERE email=? AND is_deleted=?', [email, false], (error, results, fields) => {
+                .query('SELECT * FROM users WHERE email=? AND is_deleted=?', [email, false], (error, results, fields) => {
                     if (error) {
                         // console.log(error);
                         reject(error);
@@ -49,13 +56,13 @@ module.exports = {
                         token,
                         date: new Date()
                     }, secret, {
-                        expiresIn: "1h"
+                        expiresIn: "24h"
                     }, (error, refresh_token) => {
                         if (error) {
                             reject(error);
                         } else {
                             // console.log(id);
-                            database.getConnection().query('UPDATE agents SET refresh_token=? WHERE id=?',
+                            database.getConnection().query('UPDATE users SET refresh_token=? WHERE id=?',
                                 [refresh_token, id],
                                 (error, results, fields) => {
                                     if (error) {
@@ -77,8 +84,8 @@ module.exports = {
     },
     compareRefreshTokens: (id, refresh_token) => {
         return new Promise((resolve, reject) => {
-            console.log(id, refresh_token);
-            database.getConnection().query('SELECT COUNT(id) AS counts FROM agents WHERE id=? AND refresh_token=?',
+            // console.log(id, refresh_token);
+            database.getConnection().query('SELECT COUNT(id) AS counts FROM users WHERE id=? AND refresh_token=?',
                 [id, refresh_token],
                 (error, results, fields) => {
                     if (error) {
@@ -94,11 +101,11 @@ module.exports = {
                 })
         });
     },
-    deactivateAgent: (id) => {
+    deactivateAgent: (id, status) => {
         return new Promise((resolve, reject) => {
             database
                 .getConnection()
-                .query('UPDATE agents SET is_active=? WHERE id=?', [false, id], (error, results, fields) => {
+                .query('UPDATE users SET is_active=? WHERE id=?', [status, id], (error, results, fields) => {
                     if (error) {
                         reject(error);
                     } else {
@@ -109,7 +116,7 @@ module.exports = {
     },
     validateToken: (token) => {
         return new Promise((resolve, reject) => {
-            jwt.verify(token, 'loujein-0000-inno-acad', (error, decoded) => {
+            jwt.verify(token, secret, (error, decoded) => {
                 if (error) {
                     reject(error);
                 } else {

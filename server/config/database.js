@@ -1,29 +1,29 @@
 const mysql = require('mysql');
+const dotenv = require('dotenv').config();
 
-const host = 'localhost';
-const user = 'root';
-const pass = '';
-const database = 'cnc_iiot';
+if (dotenv.error) {
+    console.log("Couldn't parse environment file!", dotenv.error);
+}
 
-const connection = mysql.createConnection({
-    host: host,
-    user: user,
-    password: pass,
-    database: database
-});
+const credentials = {
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME
+};
+
+let connection = mysql.createConnection(credentials);
 
 module.exports = {
     openConnection: () => {
-        return new Promise((resolve, reject) => {
-            connection.connect((error) => {
-                if (error) {
-                    console.log("database connection error" + error.stack);
-                    reject(error);
-                }else{
-                    console.log("connection established, as " + connection.threadId);
-                    resolve();
-                }
-            });
+        connection.connect((error) => {
+            if (error) {
+                console.log("database connection error" + error.stack);
+                // reject(error);
+            } else {
+                console.log("connection established, as " + connection.threadId);
+                // resolve();
+            }
         });
     },
     closeConnection: () => {
@@ -38,4 +38,4 @@ module.exports = {
     getConnection: () => {
         return connection;
     }
-}
+};
