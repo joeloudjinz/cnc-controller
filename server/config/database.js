@@ -13,10 +13,10 @@ module.exports = {
         return new Promise((resolve, reject) => {
             try {
                 connection = mysql.createConnection(credentials);
-                resolve(true);
+                connection != undefined ? resolve(true) : resolve(false);
             } catch (error) {
-                console.log("Error while initializing database object", error.message);
-                reject(false);
+                // console.log("Error while initializing database object", );
+                reject(error.message);
             }
         });
     },
