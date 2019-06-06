@@ -1,26 +1,25 @@
 const mysql = require('mysql');
-require('dotenv').config();
+// require('dotenv').config();
 
-const {
-    host,
-    user,
-    pass,
-    database
-} = process.env;
+// console.log(host,
+//     user,
+//     pass,
+//     database);
 
-console.log(host,
-    user,
-    pass,
-    database);
-
-const connection = mysql.createConnection({
-    host: host,
-    user: user,
-    password: pass,
-    database: database
-});
+let connection = undefined;
 
 module.exports = {
+    initializeConnection: (credentials) => {
+        return new Promise((resolve, reject) => {
+            try {
+                connection = mysql.createConnection(credentials);
+                resolve(true);
+            } catch (error) {
+                console.log("Error while initializing database object", error.message);
+                reject(false);
+            }
+        });
+    },
     openConnection: () => {
         return new Promise((resolve, reject) => {
             connection.connect((error) => {

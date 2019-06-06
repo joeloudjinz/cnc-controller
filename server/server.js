@@ -7,13 +7,20 @@ const helmet = require('helmet');
 const dotenv = require('dotenv').config();
 
 if (dotenv.error) {
-    console.log(dotenv.error);
+    console.log("Couldn't parse environment file!", dotenv.error);
 }
 
-console.log('dotenv.parsed :', dotenv.parsed);
+const credentials = {
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME
+};
+
+// console.log('dotenv.parsed :', dotenv.parsed);
 
 const dbConfigPath = path.join(__dirname, 'config', 'database');
-const database = require(dbConfigPath);
+const databaseObject = require(dbConfigPath);
 
 // const serverConfigPath = path.join(__dirname, 'config', 'server');
 // const serverConfig = require(serverConfigPath);
@@ -56,7 +63,7 @@ const port = process.env.PORT;
 
 const server = app.listen(port, () => {
     console.log('server started at port ' + port);
-    database.openConnection();
+    databaseObject.openConnection();
     // transmitterController.listenToActivePorts();
 });
 
