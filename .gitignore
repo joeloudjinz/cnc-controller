@@ -5,3 +5,4 @@ test/
 resources
 .jshintrc
 server/.eslintrc.js
+server/.env
