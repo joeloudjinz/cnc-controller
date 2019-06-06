@@ -1,36 +1,45 @@
-version: '3'
+version: "3"
 
 services:
-    mysql1:
-        image: mysql:5.7
-        environment:
-            MYSQL_ROOT_PASSWORD: root
-        ports:
-            - ":3306:3306"
-        volumes:
-            -   type: bind
-                source: ./docker/db
-                target: /docker-entrypoint-initdb.d
-        expose:
-            - "3306"
-        networks:
-            - app-network
-    myapp:
+    app:
+        container_name: node_app
         build:
-            context: ./docker/node
+            context: .
+            dockerfile: Dockerfile
         command: npm run dev
         depends_on:
-            - mysql1
+            - db
         ports:
             - "8080:8080"
         expose:
             - "8080"
         links:
-            - mysql1
+            - db
         networks:
-            - app-network
-        command: ["./wait-for-db.sh"]
+            - cnc-network
+        environment:
+            WAIT_HOSTS: mysql:3306
+        # command: ["./wait-for-db.sh"]
+
+    db:
+        container_name: cnc_db
+        image: mysql:5.7
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+            - MYSQL_DATABASE=${DATABASE_NAME}
+            - MYSQL_USER=${DATABASE_USERNAME}
+            - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+        ports:
+            - "3306:3306"
+        volumes:
+            - type=bind
+            - source=./docker/db
+            - target=/docker-entrypoint-initdb.d
+        expose:
+            - "3306"
+        networks:
+            - cnc-network
 
 networks:
-    app-network:
-        driver: bridge
+  cnc-network:
+    driver: bridge
