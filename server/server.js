@@ -63,7 +63,16 @@ const port = process.env.PORT;
 
 const server = app.listen(port, () => {
     console.log('server started at port ' + port);
-    databaseObject.openConnection();
+    databaseObject.initializeConnection(credentials)
+        .then((result) => {
+            if (result) {
+                databaseObject.openConnection();
+                console.log("Database object initialized successfully");
+            } else
+                console.log("Database object wasn't initialized successfully");
+        }).catch((error) => {
+            console.log("Database object NOT initialized", error);
+        });
     // transmitterController.listenToActivePorts();
 });
 
