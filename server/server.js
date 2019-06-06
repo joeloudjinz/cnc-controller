@@ -4,13 +4,15 @@ const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
+const dotenv = require('dotenv');
 
+dotenv.config();
 
 const dbConfigPath = path.join(__dirname, 'config', 'database');
 const database = require(dbConfigPath);
 
-const serverConfigPath = path.join(__dirname, 'config', 'server');
-const serverConfig = require(serverConfigPath);
+// const serverConfigPath = path.join(__dirname, 'config', 'server');
+// const serverConfig = require(serverConfigPath);
 
 app.use(helmet());
 //? to parse body as json
@@ -46,7 +48,7 @@ app.use('/api/local/ports', transmitterAPI);
 const transmitterControllerPath = path.join(__dirname, 'transmitter', 'controller.js');
 const transmitterController = require(transmitterControllerPath);
 
-const port = serverConfig.PORT;
+const port = process.env.PORT;
 
 const server = app.listen(port, () => {
     console.log('server started at port ' + port);
