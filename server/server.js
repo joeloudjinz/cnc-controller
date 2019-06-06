@@ -4,9 +4,13 @@ const body_parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv').config();
 
-dotenv.config();
+if (dotenv.error) {
+    console.log(dotenv.error);
+}
+
+console.log('dotenv.parsed :', dotenv.parsed);
 
 const dbConfigPath = path.join(__dirname, 'config', 'database');
 const database = require(dbConfigPath);
@@ -53,17 +57,17 @@ const port = process.env.PORT;
 const server = app.listen(port, () => {
     console.log('server started at port ' + port);
     database.openConnection();
-    transmitterController.listenToActivePorts();
+    // transmitterController.listenToActivePorts();
 });
 
-const socketManagerPath = path.join(__dirname, 'socket_manager', 'controller.js');
-const socketManager = require(socketManagerPath);
+// const socketManagerPath = path.join(__dirname, 'socket_manager', 'controller.js');
+// const socketManager = require(socketManagerPath);
 
-socketManager
-    .initiateSocketIOInstance(server)
-    .then((status) => {
-        console.log('status :', status);
-        socketManager.startListening();
-    }).catch((error) => {
-        console.log(error);
-    });
+// socketManager
+//     .initiateSocketIOInstance(server)
+//     .then((status) => {
+//         console.log('status :', status);
+//         socketManager.startListening();
+//     }).catch((error) => {
+//         console.log(error);
+//     });
