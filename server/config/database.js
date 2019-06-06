@@ -8,6 +8,11 @@ const {
     database
 } = process.env;
 
+console.log(host,
+    user,
+    pass,
+    database);
+
 const connection = mysql.createConnection({
     host: host,
     user: user,
