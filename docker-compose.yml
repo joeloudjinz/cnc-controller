@@ -1,7 +1,36 @@
 version: '3'
+
 services:
-  dev:
-    image: node:11
-    volumes:
-      - .:/usr/src/service
-    working_dir: /usr/src/service
+    mysql1:
+        image: mysql:5.7
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - ":3306:3306"
+        volumes:
+            -   type: bind
+                source: ./docker/db
+                target: /docker-entrypoint-initdb.d
+        expose:
+            - "3306"
+        networks:
+            - app-network
+    myapp:
+        build:
+            context: ./docker/node
+        command: npm run dev
+        depends_on:
+            - mysql1
+        ports:
+            - "8080:8080"
+        expose:
+            - "8080"
+        links:
+            - mysql1
+        networks:
+            - app-network
+        command: ["./wait-for-db.sh"]
+
+networks:
+    app-network:
+        driver: bridge
