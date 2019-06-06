@@ -15,22 +15,19 @@ module.exports = {
                 connection = mysql.createConnection(credentials);
                 connection != undefined ? resolve(true) : resolve(false);
             } catch (error) {
-                // console.log("Error while initializing database object", );
                 reject(error.message);
             }
         });
     },
     openConnection: () => {
-        return new Promise((resolve, reject) => {
-            connection.connect((error) => {
-                if (error) {
-                    console.log("database connection error" + error.stack);
-                    reject(error);
-                } else {
-                    console.log("connection established, as " + connection.threadId);
-                    resolve();
-                }
-            });
+        connection.connect((error) => {
+            if (error) {
+                console.log("database connection error" + error.stack);
+                reject(error);
+            } else {
+                console.log("connection established, as " + connection.threadId);
+                resolve();
+            }
         });
     },
     closeConnection: () => {
