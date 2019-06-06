@@ -17,13 +17,8 @@ const credentials = {
     database: process.env.DATABASE_NAME
 };
 
-// console.log('dotenv.parsed :', dotenv.parsed);
-
 const dbConfigPath = path.join(__dirname, 'config', 'database');
 const databaseObject = require(dbConfigPath);
-
-// const serverConfigPath = path.join(__dirname, 'config', 'server');
-// const serverConfig = require(serverConfigPath);
 
 app.use(helmet());
 //? to parse body as json
@@ -73,17 +68,17 @@ const server = app.listen(port, () => {
         }).catch((error) => {
             console.log("Database object NOT initialized", error);
         });
-    // transmitterController.listenToActivePorts();
+    transmitterController.listenToActivePorts();
 });
 
-// const socketManagerPath = path.join(__dirname, 'socket_manager', 'controller.js');
-// const socketManager = require(socketManagerPath);
+const socketManagerPath = path.join(__dirname, 'socket_manager', 'controller.js');
+const socketManager = require(socketManagerPath);
 
-// socketManager
-//     .initiateSocketIOInstance(server)
-//     .then((status) => {
-//         console.log('status :', status);
-//         socketManager.startListening();
-//     }).catch((error) => {
-//         console.log(error);
-//     });
+socketManager
+    .initiateSocketIOInstance(server)
+    .then((status) => {
+        console.log('status :', status);
+        socketManager.startListening();
+    }).catch((error) => {
+        console.log(error);
+    });
