@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const dotenv = require('dotenv').config();
 
 const dbConfigPath = path.join('..', 'config', 'database');
 const database = require(dbConfigPath);
 
-const serverConfigPath = path.join('..', 'config', 'server');
-const server = require(serverConfigPath);
-const secret = server.TOKEN_SECRET;
+// const serverConfigPath = path.join('..', 'config', 'server');
+// const server = require(serverConfigPath);
+const secret = process.env.TOKEN_SECRET;
 
 module.exports = {
     /**
