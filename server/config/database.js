@@ -17,10 +17,10 @@ module.exports = {
         connection.connect((error) => {
             if (error) {
                 console.log("database connection error" + error.stack);
-                reject(error);
+                // reject(error);
             } else {
                 console.log("connection established, as " + connection.threadId);
-                resolve();
+                // resolve();
             }
         });
     },
