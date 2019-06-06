@@ -1,9 +1,12 @@
 const mysql = require('mysql');
+require('dotenv').config();
 
-const host = 'localhost';
-const user = 'root';
-const pass = '';
-const database = 'cnc_iiot';
+const {
+    host,
+    user,
+    pass,
+    database
+} = process.env;
 
 const connection = mysql.createConnection({
     host: host,
@@ -19,7 +22,7 @@ module.exports = {
                 if (error) {
                     console.log("database connection error" + error.stack);
                     reject(error);
-                }else{
+                } else {
                     console.log("connection established, as " + connection.threadId);
                     resolve();
                 }
