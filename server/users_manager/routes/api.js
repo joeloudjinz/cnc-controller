@@ -97,19 +97,19 @@ router.get('/:id', auth, (req, res) => {
  * @returns 200 if it's successful
  * ! i'm not using this endpoint
  */
-router.get('/:id', auth, (req, res) => {
-    controller.getAgentById(req.params.id)
-        .then((result) => {
-            res.send({
-                data: result
-            });
-        }).catch((err) => {
-            res.status(500).send({
-                failure: 'An error occurred while retrieving data',
-                error: err
-            });
-        });
-});
+// router.get('/:id', auth, (req, res) => {
+//     controller.getAgentById(req.params.id)
+//         .then((result) => {
+//             res.send({
+//                 data: result
+//             });
+//         }).catch((err) => {
+//             res.status(500).send({
+//                 failure: 'An error occurred while retrieving data',
+//                 error: err
+//             });
+//         });
+// });
 /**
  * agent information's update endpoint
  * @return 500(internal server error) if there was an error while updating data
