@@ -5,7 +5,6 @@ const controller = require(authControllerPath);
 module.exports = async (req, res, next) => {
     if (req.headers.authorization) {
         const oldToken = req.headers.authorization.split(' ')[1] || req.body.token || req.params.token;
-        // console.log('oldToken :', oldToken);
         if (oldToken) {
             controller.validateToken(oldToken)
                 .then((result) => {
@@ -17,6 +16,7 @@ module.exports = async (req, res, next) => {
                             error
                         });
                     } else {
+                        // InvalidAccessToken
                         return res.status(401).send({
                             failure: 'Unauthorized, invalid access token!',
                             error
