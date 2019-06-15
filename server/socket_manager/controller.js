@@ -1,5 +1,10 @@
 let io;
 //? used to distinct if the 'io' variable is instantiated or not
+const path = require('path');
+
+// const controllerPath = path.join('..', 'authentication', 'controller');
+// const authenticationController = require(controllerPath);
+
 let isConnected = false;
 
 module.exports = {
@@ -29,14 +34,31 @@ module.exports = {
         if (isConnected) {
             io.on('connection', function (socket) {
                 //? listening to user-connected event emission from the client side
-                socket.on('user-connected', (data) => {
-                    console.log('the user with id: ', data.id, ' is reconnected');
-                });
+                // socket.on('changeUserActiveState', (data) => {
+                //     console.log("data is ", data);
+                //     authenticationController.deactivateAgent(data.id, data.state);
+                // });
             });
         } else {
             return false;
         }
     },
+    /**
+     * used when opening a port from port panel and send data to that port.
+     * this function will push received data from the port to the client.
+     * @param id
+     * @param state
+     */
+    // emitOnUserAccountStatusChanged: (id, state) => {
+    //     if (isConnected) {
+    //         io.emit('userAccountStateChanged', {
+    //             id,
+    //             state
+    //         });
+    //     } else {
+    //         console.log('socket.io is not instantiated');
+    //     }
+    // },
     /**
      * used when opening a port from port panel and send data to that port.
      * this function will push received data from the port to the client.
@@ -240,9 +262,9 @@ module.exports = {
      * used to inform the client that a user was added
      * @param user the data of the new user
      */
-     emitOnNewUserAdded: (user) => {
+    emitOnNewUserAdded: (user) => {
         if (isConnected) {
-            io.emit('OnNewUserAdded', {
+            io.emit('onNewUserAdded', {
                 user
             });
         } else {
@@ -253,7 +275,7 @@ module.exports = {
      * used to inform the client that a user was deleted
      * @param userId the id of the deleted user
      */
-     emitOnUserDeleted: (userId) => {
+    emitOnUserDeleted: (userId) => {
         if (isConnected) {
             io.emit('onUserDeleted', {
                 userId
