@@ -264,8 +264,9 @@ module.exports = {
      */
     emitOnNewUserAdded: (user) => {
         if (isConnected) {
+            console.log("new user added", user[0]);
             io.emit('onNewUserAdded', {
-                user
+                user: user[0]
             });
         } else {
             console.log('socket.io is not instantiated');
