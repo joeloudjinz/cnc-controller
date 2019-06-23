@@ -21,12 +21,10 @@ module.exports = multer.diskStorage({
         // TODO: add M or Z depending on the value of laserModeStatus in request body
         const {
             laserModeStatus,
-            powerOff,
-            powerOn
         } = req.body;
-        console.log('laserModeStatus :', laserModeStatus);
-        console.log('powerOff :', powerOff);
-        console.log('powerOn :', powerOn);
+        // console.log('laserModeStatus :', laserModeStatus);
+        // console.log('powerOff :', powerOff);
+        // console.log('powerOn :', powerOn);
         //? to give the file a new name
         let name;
         if (laserModeStatus === true || laserModeStatus === 'true')

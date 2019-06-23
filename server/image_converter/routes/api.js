@@ -26,18 +26,30 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const target = req.body.target;
     // console.log('params :', params);
     // TODO: get laserModeStatus from body
+    const {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    } = req.body;
+    console.log('laserModeStatus :', laserModeStatus);
+    console.log('powerOff :', powerOff);
+    console.log('powerOn :', powerOn);
     // TODO: send laserModeStatus to worker
-    controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target);
+    controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target, {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    });
     res.send({
         success: "Image conversion process has started successfully"
     });
-    filesHandler.moveImage(fileObject.path, fileObject.filename)
-        .then((newPath) => {}).catch((error) => {
-            res.status(500).send({
-                failure: "Internal error occurred, try again",
-                error
-            });
-        });
+    // filesHandler.moveImage(fileObject.path, fileObject.filename)
+    //     .then((newPath) => {}).catch((error) => {
+    //         res.status(500).send({
+    //             failure: "Internal error occurred, try again",
+    //             error
+    //         });
+    //     });
 });
 
 router.post('/convert/quick', auth, (req, res) => {
