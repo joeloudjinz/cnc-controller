@@ -75,6 +75,7 @@ module.exports = {
    */
   workOnConvertImage: (imagePath, params, imageName, isQuick, target) => {
     try {
+      // TODO: send laserModeStatus to worker script
       const worker = new Worker(workerPath, {
         workerData: {
           imagePath,

@@ -8,6 +8,8 @@ const {
 if (!isMainThread) {
     const imagePath = workerData.imagePath;
     const parameters = JSON.parse(workerData.params);
+    // TODO: extract laserModeStatus from worker data
+    // TODO: prepare conversion params here before using them in start, use laserModeStatus to set them properly 
     // console.log('parameters :', parameters);
     img2gcode.start({
         // It is mm

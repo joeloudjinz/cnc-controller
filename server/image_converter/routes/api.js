@@ -24,7 +24,9 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const fileObject = req.file;
     const params = req.body.parameters;
     const target = req.body.target;
+    // TODO: get laserModeStatus from body
     // console.log('target :', target);
+    // TODO: send laserModeStatus to worker
     controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target);
     res.send({
         success: "Image conversion process has started successfully"
@@ -51,6 +53,8 @@ router.post('/convert/quick', auth, (req, res) => {
                 .getImageFile(imageName)
                 .then((imagePath) => {
                     const params = JSON.stringify(parameters);
+                    // TODO: get laserModeStatus from body
+                    // TODO: send laserModeStatus to worker
                     controller.workOnConvertImage(imagePath, params, imageName, true, target);
                     res.send({
                         success: "Image conversion process has started successfully"
