@@ -816,6 +816,8 @@ module.exports = {
               portName,
               "onLog", target
             );
+            // TODO: disable laser mode here
+            // TODO: add a log message with "Laser mode is disabled for safety, from port panel make sure it is disabled!"
             initializeProcessVariables(target);
           }, lineSendDuration + 1000);
           isFull = false;
@@ -964,6 +966,8 @@ module.exports = {
                     portName,
                     "onLog", target
                   );
+                  // TODO: disable laser mode here
+                  // TODO: add a log message with "Laser mode is disabled for safety, from port panel make sure it is disabled!"
                   initializeProcessVariables(target);
                   resolve(true);
                 }, lineSendDuration + 1000);
@@ -1175,4 +1179,4 @@ listenToIncomingDataForSinglePort = (name, target) => {
   } else {
     console.error("listenToIncomingDataForSinglePort: Name is Undefined");
   }
-}; 
+};

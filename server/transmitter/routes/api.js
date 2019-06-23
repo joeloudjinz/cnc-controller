@@ -66,7 +66,7 @@ router.get("/", (req, res) => {
  * @param portName name of the port
  * @param fileName name of gcode file
  * @returns success response if operation started, with the estimated time to end the process
- * @returns [500] with a failure response if one operation didn't executed successfully and closes the port if opned
+ * @returns [500] with a failure response if one operation didn't executed successfully and closes the port if opened
  * @returns [404] if one of the params is undefined, along with a failure message
  * TODO: add auth middleware
  */
@@ -90,6 +90,7 @@ router.post("/draw", (req, res) => {
                                 controller
                                     .registerOnDataEvent(portName, target)
                                     .then(() => {
+                                        // TODO: add laser mode configuration here by calling writeToPort with laser mode toggling command
                                         filesHandler
                                             .addOutputDirectory(currentTS)
                                             .then(dirPath => {
@@ -164,6 +165,7 @@ router.post("/draw", (req, res) => {
                                     });
                             });
                     } else {
+                        // TODO: add laser mode configuration here by calling writeToPort with laser mode toggling command
                         //? false, means the port was already opened previously 
                         filesHandler
                             .addOutputDirectory(currentTS)
