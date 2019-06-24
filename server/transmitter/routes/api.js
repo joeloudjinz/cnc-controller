@@ -79,6 +79,15 @@ router.post("/draw", (req, res) => {
     if (portName) {
         if (fileName) {
             const currentTS = "" + Date.now();
+            // TODO: depending on the file name, activate or deactivate the laser mode
+            const splitted = fileName.split(".");
+            let laserMode = '';
+            if (splitted[1].charAt(3) === "M") {
+                laserMode = "$32=1\r";
+            } else {
+                laserMode = "$32=0\r";
+            }
+            console.log('laserMode :', laserMode);
             controller
                 .openPort(portName)
                 .then(result => {
@@ -91,33 +100,47 @@ router.post("/draw", (req, res) => {
                                     .registerOnDataEvent(portName, target)
                                     .then(() => {
                                         // TODO: add laser mode configuration here by calling writeToPort with laser mode toggling command
-                                        filesHandler
-                                            .addOutputDirectory(currentTS)
-                                            .then(dirPath => {
+                                        controller.writeDataToPort(portName, laserMode)
+                                            .then((result) => {
+                                                console.log('result :', result);
                                                 filesHandler
-                                                    .getGcodeFile(fileName)
-                                                    .then(filePath => {
-                                                        controller
-                                                            .readGcodeFileLines(dirPath, filePath, fileName)
-                                                            .then(result => {
-                                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
-                                                                controller.startSendingProcess(portName, dirPath, currentTS, true, target);
-                                                                res.send({
-                                                                    success: "GCode transmission has started successfully",
-                                                                    estimated: controller.getEstimatedTimeToSendCode()
-                                                                });
-                                                            })
-                                                            .catch(error => {
+                                                    .addOutputDirectory(currentTS)
+                                                    .then(dirPath => {
+                                                        filesHandler
+                                                            .getGcodeFile(fileName)
+                                                            .then(filePath => {
+                                                                controller
+                                                                    .readGcodeFileLines(dirPath, filePath, fileName)
+                                                                    .then(result => {
+                                                                        initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
+                                                                        controller.startSendingProcess(portName, dirPath, currentTS, true, target);
+                                                                        res.send({
+                                                                            success: "GCode transmission has started successfully",
+                                                                            estimated: controller.getEstimatedTimeToSendCode()
+                                                                        });
+                                                                    })
+                                                                    .catch(error => {
+                                                                        const preError = error;
+                                                                        controller
+                                                                            .closePort(portName)
+                                                                            .then(result => {
+                                                                                res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                                            })
+                                                                            .catch(error => {
+                                                                                controller.closePort(portName).then(result => {
+                                                                                    res.status(500).send(errorObject("Reading file lines", preError, false));
+                                                                                });
+                                                                            });
+                                                                    });
+                                                            }).catch(error => {
                                                                 const preError = error;
                                                                 controller
                                                                     .closePort(portName)
                                                                     .then(result => {
-                                                                        res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                                        res.status(500).send(errorObject("Getting gcode file", preError, true));
                                                                     })
                                                                     .catch(error => {
-                                                                        controller.closePort(portName).then(result => {
-                                                                            res.status(500).send(errorObject("Reading file lines", preError, false));
-                                                                        });
+                                                                        res.status(500).send(errorObject("Getting gcode file", preError, false));
                                                                     });
                                                             });
                                                     }).catch(error => {
@@ -125,21 +148,21 @@ router.post("/draw", (req, res) => {
                                                         controller
                                                             .closePort(portName)
                                                             .then(result => {
-                                                                res.status(500).send(errorObject("Getting gcode file", preError, true));
+                                                                res.status(500).send(errorObject("Creating output directory", preError, true));
                                                             })
                                                             .catch(error => {
-                                                                res.status(500).send(errorObject("Getting gcode file", preError, false));
+                                                                res.status(500).send(errorObject("Creating output directory", preError, false));
                                                             });
                                                     });
-                                            }).catch(error => {
+                                            }).catch((error) => {
                                                 const preError = error;
                                                 controller
                                                     .closePort(portName)
                                                     .then(result => {
-                                                        res.status(500).send(errorObject("Creating output directory", preError, true));
+                                                        res.status(500).send(errorObject("Toggling laser mode", preError, true));
                                                     })
                                                     .catch(error => {
-                                                        res.status(500).send(errorObject("Creating output directory", preError, false));
+                                                        res.status(500).send(errorObject("Toggling laser mode", preError, false));
                                                     });
                                             });
                                     }).catch(error => {
@@ -166,56 +189,69 @@ router.post("/draw", (req, res) => {
                             });
                     } else {
                         // TODO: add laser mode configuration here by calling writeToPort with laser mode toggling command
-                        //? false, means the port was already opened previously 
-                        filesHandler
-                            .addOutputDirectory(currentTS)
-                            .then(dirPath => {
+                        controller.writeDataToPort(portName, laserMode)
+                            .then((result) => {
+                                //? false, means the port was already opened previously 
                                 filesHandler
-                                    .getGcodeFile(fileName)
-                                    .then(filePath => {
-                                        controller
-                                            .readGcodeFileLines(dirPath, filePath, fileName)
-                                            .then(result => {
-                                                initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
-                                                controller.startSendingProcess(portName, dirPath, currentTS, true, target);
-                                                res.send({
-                                                    success: "GCode transmission has started successfully"
-                                                });
-                                            })
-                                            .catch(error => {
+                                    .addOutputDirectory(currentTS)
+                                    .then(dirPath => {
+                                        filesHandler
+                                            .getGcodeFile(fileName)
+                                            .then(filePath => {
+                                                controller
+                                                    .readGcodeFileLines(dirPath, filePath, fileName)
+                                                    .then(result => {
+                                                        initializeLogFileForTransmissionProcess(dirPath, filePath, currentTS, portName, target);
+                                                        controller.startSendingProcess(portName, dirPath, currentTS, true, target);
+                                                        res.send({
+                                                            success: "GCode transmission has started successfully"
+                                                        });
+                                                    })
+                                                    .catch(error => {
+                                                        const preError = error;
+                                                        controller
+                                                            .closePort(portName)
+                                                            .then(result => {
+                                                                res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                            })
+                                                            .catch(error => {
+                                                                controller.closePort(portName).then(result => {
+                                                                    res.status(500).send(errorObject("Reading file lines", preError, false));
+                                                                });
+                                                            });
+                                                    });
+
+                                            }).catch(error => {
                                                 const preError = error;
                                                 controller
                                                     .closePort(portName)
                                                     .then(result => {
-                                                        res.status(500).send(errorObject("Reading file lines", preError, true));
+                                                        res.status(500).send(errorObject("Getting gcode file", preError, true));
                                                     })
                                                     .catch(error => {
-                                                        controller.closePort(portName).then(result => {
-                                                            res.status(500).send(errorObject("Reading file lines", preError, false));
-                                                        });
+                                                        res.status(500).send(errorObject("Getting gcode file", preError, false));
                                                     });
                                             });
-
                                     }).catch(error => {
                                         const preError = error;
                                         controller
                                             .closePort(portName)
                                             .then(result => {
-                                                res.status(500).send(errorObject("Getting gcode file", preError, true));
+                                                res.status(500).send(errorObject("Creating output directory", preError, true));
                                             })
                                             .catch(error => {
-                                                res.status(500).send(errorObject("Getting gcode file", preError, false));
+                                                res.status(500).send(errorObject("Creating output directory", preError, false));
                                             });
                                     });
-                            }).catch(error => {
+                            }).catch((error) => {
                                 const preError = error;
                                 controller
                                     .closePort(portName)
                                     .then(result => {
-                                        res.status(500).send(errorObject("Creating output directory", preError, true));
+                                        res.status(500).send(errorObject("Toggling laser mode", preError, true));
                                     })
                                     .catch(error => {
-                                        res.status(500).send(errorObject("Creating output directory", preError, false));
+                                        res.status(500).send(errorObject("Toggling laser mode", preError, false));
                                     });
                             });
                     }

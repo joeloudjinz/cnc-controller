@@ -28,9 +28,9 @@ module.exports = multer.diskStorage({
         //? to give the file a new name
         let name;
         if (laserModeStatus === true || laserModeStatus === 'true')
-            name = "M" + time + "." + ext;
+            name = time + "M." + ext;
         else
-            name = "Z" + time + "." + ext;
+            name = time + "Z." + ext;
         callback(null, name);
     }
 });
