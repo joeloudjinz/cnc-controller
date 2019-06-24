@@ -75,7 +75,7 @@ module.exports = {
    */
   workOnConvertImage: (imagePath, params, imageName, isQuick, target, laserConfig) => {
     try {
-      console.log('laserConfig :', laserConfig);
+      // console.log('laserConfig :', laserConfig);
       const worker = new Worker(workerPath, {
         workerData: {
           imagePath,

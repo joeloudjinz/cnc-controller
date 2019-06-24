@@ -55,7 +55,7 @@ if (!isMainThread) {
             dirImg: imagePath
         }
     }
-    console.log('configuration :', configuration);
+    // console.log('configuration :', configuration);
     img2gcode.start(configuration)
         .on("log", str => {
             if (str === '-> Openping and reading...') {

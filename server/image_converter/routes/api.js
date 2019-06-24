@@ -31,9 +31,9 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
         powerOff,
         powerOn
     } = req.body;
-    console.log('laserModeStatus :', laserModeStatus);
-    console.log('powerOff :', powerOff);
-    console.log('powerOn :', powerOn);
+    // console.log('laserModeStatus :', laserModeStatus);
+    // console.log('powerOff :', powerOff);
+    // console.log('powerOn :', powerOn);
     // TODO: send laserModeStatus to worker
     controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target, {
         laserModeStatus,
