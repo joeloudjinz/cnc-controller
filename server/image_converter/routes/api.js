@@ -24,16 +24,12 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const fileObject = req.file;
     const params = req.body.parameters;
     const target = req.body.target;
-    // console.log('params :', params);
     // TODO: get laserModeStatus from body
     const {
         laserModeStatus,
         powerOff,
         powerOn
     } = req.body;
-    // console.log('laserModeStatus :', laserModeStatus);
-    // console.log('powerOff :', powerOff);
-    // console.log('powerOn :', powerOn);
     // TODO: send laserModeStatus to worker
     controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target, {
         laserModeStatus,
@@ -57,6 +53,12 @@ router.post('/convert/quick', auth, (req, res) => {
     const imageName = req.query.imageName;
     const parameters = req.body.parameters;
     const target = req.body.target;
+    // TODO: get laserModeStatus from body
+    const {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    } = req.body.laserConfig;
     if (imageName) {
         if (parameters) {
             //? get image file from images directory
@@ -64,9 +66,12 @@ router.post('/convert/quick', auth, (req, res) => {
                 .getImageFile(imageName)
                 .then((imagePath) => {
                     const params = JSON.stringify(parameters);
-                    // TODO: get laserModeStatus from body
                     // TODO: send laserModeStatus to worker
-                    controller.workOnConvertImage(imagePath, params, imageName, true, target);
+                    controller.workOnConvertImage(imagePath, params, imageName, true, target, {
+                        laserModeStatus,
+                        powerOff,
+                        powerOn
+                    });
                     res.send({
                         success: "Image conversion process has started successfully"
                     });
@@ -94,7 +99,6 @@ router.get('/count', auth, (req, res) => {
     controller
         .getConversionsCount()
         .then((result) => {
-            // console.log('result :', result);
             res.send({
                 success: 'Counted successfully',
                 count: result
