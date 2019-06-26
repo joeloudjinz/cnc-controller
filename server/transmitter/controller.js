@@ -52,7 +52,7 @@ let isActive = false;
 let currentPort;
 
 //? represents the duration of the timeout to send one line of code
-const lineSendDuration = 700;
+const lineSendDuration = 400;
 
 //? time when draw operation started and ended
 let start, end;
@@ -816,8 +816,10 @@ module.exports = {
               portName,
               "onLog", target
             );
+            // TODO: disable laser mode here
+            // TODO: add a log message with "Laser mode is disabled for safety, from port panel make sure it is disabled!"
             initializeProcessVariables(target);
-          }, lineSendDuration + 1000);
+          }, lineSendDuration + 1400);
           isFull = false;
           doLoop = false;
         }
@@ -964,9 +966,11 @@ module.exports = {
                     portName,
                     "onLog", target
                   );
+                  // TODO: disable laser mode here
+                  // TODO: add a log message with "Laser mode is disabled for safety, from port panel make sure it is disabled!"
                   initializeProcessVariables(target);
                   resolve(true);
-                }, lineSendDuration + 1000);
+                }, lineSendDuration + 1400);
               } else {
                 console.log(
                   "resumeSendingProcess(), .log file name is undefined"
@@ -1175,4 +1179,4 @@ listenToIncomingDataForSinglePort = (name, target) => {
   } else {
     console.error("listenToIncomingDataForSinglePort: Name is Undefined");
   }
-}; 
+};

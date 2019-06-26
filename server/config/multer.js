@@ -17,7 +17,17 @@ module.exports = multer.diskStorage({
         time = time.replace(/T/gi, '-');
         time = time.replace(/:/gi, '');
         time = time.replace(/Z/gi, '');
+        //? distinguishing between Z or M mode
+        // TODO: add M or Z depending on the value of laserModeStatus in request body
+        const {
+            laserModeStatus,
+        } = req.body;
         //? to give the file a new name
-        callback(null, time + "." + ext);
+        let name;
+        if (laserModeStatus === true || laserModeStatus === 'true')
+            name = time + "M." + ext;
+        else
+            name = time + "Z." + ext;
+        callback(null, name);
     }
 });

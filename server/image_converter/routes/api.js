@@ -24,14 +24,23 @@ router.post('/convert', auth, upload.single('image'), (req, res) => {
     const fileObject = req.file;
     const params = req.body.parameters;
     const target = req.body.target;
-    // console.log('target :', target);
-    controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target);
+    // TODO: get laserModeStatus from body
+    const {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    } = req.body;
+    // TODO: send laserModeStatus to worker
+    controller.workOnConvertImage(fileObject.path, params, fileObject.filename, false, target, {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    });
     res.send({
         success: "Image conversion process has started successfully"
     });
     // filesHandler.moveImage(fileObject.path, fileObject.filename)
-    //     .then((newPath) => {
-    //     }).catch((error) => {
+    //     .then((newPath) => {}).catch((error) => {
     //         res.status(500).send({
     //             failure: "Internal error occurred, try again",
     //             error
@@ -44,6 +53,12 @@ router.post('/convert/quick', auth, (req, res) => {
     const imageName = req.query.imageName;
     const parameters = req.body.parameters;
     const target = req.body.target;
+    // TODO: get laserModeStatus from body
+    const {
+        laserModeStatus,
+        powerOff,
+        powerOn
+    } = req.body.laserConfig;
     if (imageName) {
         if (parameters) {
             //? get image file from images directory
@@ -51,7 +66,12 @@ router.post('/convert/quick', auth, (req, res) => {
                 .getImageFile(imageName)
                 .then((imagePath) => {
                     const params = JSON.stringify(parameters);
-                    controller.workOnConvertImage(imagePath, params, imageName, true, target);
+                    // TODO: send laserModeStatus to worker
+                    controller.workOnConvertImage(imagePath, params, imageName, true, target, {
+                        laserModeStatus,
+                        powerOff,
+                        powerOn
+                    });
                     res.send({
                         success: "Image conversion process has started successfully"
                     });
@@ -79,7 +99,6 @@ router.get('/count', auth, (req, res) => {
     controller
         .getConversionsCount()
         .then((result) => {
-            // console.log('result :', result);
             res.send({
                 success: 'Counted successfully',
                 count: result

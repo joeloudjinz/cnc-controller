@@ -73,12 +73,15 @@ module.exports = {
    * @param isQuick to indicate if it's quick conversion or not
    * @param target to whom the data should be pushed to
    */
-  workOnConvertImage: (imagePath, params, imageName, isQuick, target) => {
+  workOnConvertImage: (imagePath, params, imageName, isQuick, target, laserConfig) => {
     try {
+      // console.log('laserConfig :', laserConfig);
       const worker = new Worker(workerPath, {
         workerData: {
           imagePath,
-          params
+          params,
+          // TODO: send laserModeStatus to worker script
+          laserConfig
         }
       });
       worker.on('message', (message) => {
