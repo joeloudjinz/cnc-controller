@@ -1,7 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import { config } from './config/env';
 import { limiter, sanitizeMongo, sanitizeXss, preventParamPollution, securityHeaders } from './middleware/security';
+import { initializeDatabase } from './database/data-source';
+import { globalErrorHandler } from './errors/AppError';
 
 const app = express();
 
@@ -24,16 +26,16 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 // Error handling middleware
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+app.use(globalErrorHandler);
 
 const PORT = config.PORT;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} in ${config.NODE_ENV} mode`);
+// Initialize database and start the server
+initializeDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} in ${config.NODE_ENV} mode`);
+  });
 });
 
 export default app;
-export { server };
+export { app };
