@@ -7,3 +7,6 @@ resources
 server/.eslintrc.js
 server/.env
 .env
+
+.idea
+dist
