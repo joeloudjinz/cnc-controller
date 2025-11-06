@@ -40,8 +40,10 @@
       "@utils/*": ["src/utils/*"],
       "@middleware/*": ["src/middleware/*"],
       "@models/*": ["src/models/*"],
+      "@repositories/*": ["src/repositories/*"],
       "@routes/*": ["src/routes/*"],
-      "@test/*": ["test/*"]
+      "@test/*": ["test/*"],
+      "@dto/*": ["src/dto/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
