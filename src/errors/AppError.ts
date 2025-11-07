@@ -20,7 +20,65 @@ export abstract class AppError extends Error {
   }
 }
 
-// Specific error classes
+// File-related errors
+export class FileProcessingError extends AppError {
+  constructor(description: string = 'Error processing file') {
+    super('FILE_PROCESSING_ERROR', 500, description);
+  }
+}
+
+export class FileUploadError extends AppError {
+  constructor(description: string = 'Error uploading file') {
+    super('FILE_UPLOAD_ERROR', 400, description);
+  }
+}
+
+export class FileNotFoundError extends AppError {
+  constructor(filePath: string) {
+    super('FILE_NOT_FOUND_ERROR', 404, `File not found: ${filePath}`);
+  }
+}
+
+export class FileConversionError extends AppError {
+  constructor(description: string = 'Error converting file') {
+    super('FILE_CONVERSION_ERROR', 500, description);
+  }
+}
+
+// Authentication-related errors
+export class InvalidCredentialsError extends AppError {
+  constructor(description: string = 'Invalid credentials') {
+    super('INVALID_CREDENTIALS_ERROR', 401, description);
+  }
+}
+
+export class TokenExpiredError extends AppError {
+  constructor(description: string = 'Token has expired') {
+    super('TOKEN_EXPIRED_ERROR', 401, description);
+  }
+}
+
+export class InvalidTokenError extends AppError {
+  constructor(description: string = 'Invalid token') {
+    super('INVALID_TOKEN_ERROR', 401, description);
+  }
+}
+
+// Authorization-related errors
+export class InsufficientPermissionsError extends AppError {
+  constructor(description: string = 'Insufficient permissions') {
+    super('INSUFFICIENT_PERMISSIONS_ERROR', 403, description);
+  }
+}
+
+// Rate limiting errors
+export class RateLimitError extends AppError {
+  constructor(description: string = 'Rate limit exceeded') {
+    super('RATE_LIMIT_ERROR', 429, description);
+  }
+}
+
+// Database-related errors
 export class DatabaseConnectionError extends AppError {
   constructor(description: string = 'Database connection failed') {
     super('DATABASE_CONNECTION_ERROR', 500, description);
@@ -58,7 +116,12 @@ export class ForbiddenError extends AppError {
 }
 
 // Global error handler middleware
-export const globalErrorHandler = (err: Error, _req: any, res: any, _next: any) => {
+export const globalErrorHandler = (
+  err: Error,
+  _req: any,
+  res: any,
+  _next: any
+) => {
   if (err instanceof AppError) {
     return res.status(err.httpCode).json({
       status: 'error',
@@ -75,6 +138,16 @@ export const globalErrorHandler = (err: Error, _req: any, res: any, _next: any) 
       statusCode: 400,
       message: 'Database query failed',
       details: err.message,
+    });
+  }
+
+  // Handle validation errors from Zod
+  if ((err as any).name === 'ZodError') {
+    return res.status(400).json({
+      status: 'error',
+      statusCode: 400,
+      message: 'Validation failed',
+      details: (err as any).errors,
     });
   }
 

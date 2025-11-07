@@ -1,11 +1,13 @@
-import { QueryRunner } from 'typeorm';
-import { AppDataSource } from './data-source';
+import { QueryRunner, DataSource } from 'typeorm';
 
 /**
  * Helper function to execute database operations within a transaction
  */
-export const executeInTransaction = async <T>(operation: (queryRunner: QueryRunner) => Promise<T>): Promise<T> => {
-  const queryRunner = AppDataSource.createQueryRunner();
+export const executeInTransaction = async <T>(
+  dataSource: DataSource, 
+  operation: (queryRunner: QueryRunner) => Promise<T>
+): Promise<T> => {
+  const queryRunner = dataSource.createQueryRunner();
   await queryRunner.connect();
   await queryRunner.startTransaction();
 
@@ -25,7 +27,10 @@ export const executeInTransaction = async <T>(operation: (queryRunner: QueryRunn
  * Base service class that provides transaction support
  */
 export abstract class TransactionalService {
-  protected async executeInTransaction<T>(operation: (queryRunner: QueryRunner) => Promise<T>): Promise<T> {
-    return executeInTransaction(operation);
+  protected async executeInTransaction<T>(
+    dataSource: DataSource,
+    operation: (queryRunner: QueryRunner) => Promise<T>
+  ): Promise<T> {
+    return executeInTransaction(dataSource, operation);
   }
 }
