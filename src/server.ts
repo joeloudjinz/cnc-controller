@@ -1,9 +1,18 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { config } from './config/env';
-import { limiter, sanitizeMongo, sanitizeXss, preventParamPollution, securityHeaders } from './middleware/security';
+import { 
+  limiter, 
+  sanitizeMongo, 
+  sanitizeXss, 
+  preventParamPollution, 
+  securityHeaders 
+} from './middleware/security';
 import { initializeDatabase } from './database/data-source';
 import { globalErrorHandler } from './errors/AppError';
+import { container } from './inversify/container';
+import { IUserService } from './services/interfaces/IUserService';
+import { TYPES } from './inversify/types';
 
 const app = express();
 
@@ -20,9 +29,11 @@ app.use(express.json({ limit: '10mb' })); // Using express.json instead of body-
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Basic route
+// Example route using dependency injection
 app.get('/', (_req: Request, res: Response) => {
-  res.json({ message: 'CNC Controller API is running!' });
+  // Get a service instance from the container
+  const userService = container.get<IUserService>(TYPES.IUserService);
+  res.json({ message: `CNC Controller API is running! UserService is ready: ${!!userService}` });
 });
 
 // Error handling middleware
